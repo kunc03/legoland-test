@@ -34,6 +34,7 @@
         :showDate="historyData?.show_hide_character_collection?.show_character_date"
         :showLocation="historyData?.show_hide_character_collection?.show_location"
         :showPoint="historyData?.show_hide_character_collection?.show_point"
+        :showRarity="historyData?.show_hide_character_collection?.show_character_rarity"
       />
     </template>
   </div>

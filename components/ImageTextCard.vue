@@ -8,7 +8,7 @@
       ]"
       @click="handleClick"
     >
-      <div v-if="!history" class="w-[40%] flex items-center">
+      <div v-if="showImage" class="w-[40%] flex items-center">
         <CharacterCard :image="imageCard" :isDisabled="isDisabled"  :bgColor="setOpacity('#009245')" />
       </div>
       <slot name="text"></slot>
@@ -93,6 +93,10 @@ const props = defineProps({
   isDisabled: {
     type: Boolean,
     default: false,
+  },
+  showImage: {
+    type: Boolean,
+    default: true,
   },
 })
 
