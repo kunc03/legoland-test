@@ -20,6 +20,7 @@
               ? historyDetailData.character_image
               : duck
           "
+          :bgColor="settings?.character_collection?.show_hide_character_collection?.step_2_image_background_color"
         />
       </div>
       <div class="flex flex-col gap-2 p-5">
