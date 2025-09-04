@@ -12,33 +12,33 @@
     }"
   >
     <div
-      class="flex flex-col gap-5 mx-auto my-10 font-bold text-center text-exd-gray-scorpion"
+      class="flex flex-col mx-auto my-10 font-bold text-center text-exd-gray-scorpion"
     >
-      <p class="text-[19px]">完了しました</p>
+      <p class="text-[20px]">{{ $t('completed') }}</p>
       <p class="text-exd-1424">
         {{ settings?.prize?.step_2?.swipe_exchange?.data?.page_sub_title_2 }}
       </p>
     </div>
     <div class="relative flex-1 w-full">
       <p
-        class="text-[19px] text-center font-bold"
+        class="text-[26px] text-center font-bold"
         :style="{
           color: settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
           borderColor:
             settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
         }"
       >
-        交換済
+        {{ $t('replaced') }}
       </p>
       <div
-        class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[38px]"
+        class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[25px]"
         :style="{
           color: settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
           borderColor:
             settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
         }"
       >
-        {{ settings?.prize?.step_2?.swipe_exchange?.data?.text_3 || '' }}
+        {{ prizeName || '' }}
       </div>
     </div>
   </div>
@@ -67,9 +67,11 @@ definePageMeta({
 
 const router = useRouter()
 const settings = useState('settings')
+const prizeName = localStorage.getItem('prize_name')
 
 const goTo = (type) => {
   localStorage.removeItem('CLAIM_SUCCESS')
+  localStorage.removeItem('prize_name')
   switch (type) {
     case 'top':
       router.push('/dashboard')

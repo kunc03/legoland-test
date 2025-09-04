@@ -106,6 +106,7 @@
               :textColor="
                 settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
               "
+              :autocomplete="getAutocomplete(item)"
             />
 
             <p
@@ -501,6 +502,13 @@ const errorPasswordMessage = ref('')
 
 const form = ref({})
 const redeemData = computed(() => settings.value?.prize?.step_2?.[type.value]?.data || {})
+
+const getAutocomplete = (item) => {
+  if (item.name === 'password') {
+    return 'new-password'
+  }
+  return 'off'
+}
 
 const emailRegex = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
