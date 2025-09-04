@@ -85,6 +85,7 @@ import emptyImage from '~/assets/images/no-image.svg'
 
 const settings = useState('settings')
 const langPanel = ref(false)
+
 const langPanelToggle = (event) => {
   langPanel.value = !langPanel.value
 }

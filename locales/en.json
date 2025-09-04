@@ -349,5 +349,6 @@
   "answerRequired": "The answer field is required",
   "textOnlyAllowed": "Only text is allowed",
   "notRegistered": "You are not yet registered. You will need to register as a new member by selecting the ‘Register’ button.",
-  "notVerified": "You have registered but you have not verified your registration yet. Please verify your registration through your email."
+  "notVerified": "You have registered but you have not verified your registration yet. Please verify your registration through your email.",
+  "phoneInfo": "This phone number will only be used as a login ID and will not be used for any other purposes."
 }

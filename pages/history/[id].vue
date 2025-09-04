@@ -118,7 +118,7 @@
           />
         </div>
 
-        <div class="w-full">
+        <div v-if="historyData?.show_redemption" class="w-full">
           <Skeleton v-if="isFetching" class="!w-full !h-72" />
           <div
             class="relative"

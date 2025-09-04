@@ -12,9 +12,16 @@ const charTitleImage = ref('')
 
 const rarityImage = reactive({
   x: 50,
-  y: 360,
+  y: 330,
   width: 300,
   height: 120,
+})
+
+const charImage = reactive({
+  x: 70,
+  y: 70,
+  width: 260,
+  height: 240,
 })
 
 const handleRarity = () => {
@@ -49,7 +56,7 @@ onMounted(() => {
       if (is15ProScreen) {
         rarityImage.height = 90
       } else if (isShortScreen) {
-        rarityImage.y = 340
+        rarityImage.y = 330
       }
     }
 
@@ -144,11 +151,11 @@ onMounted(() => {
       </foreignObject> -->
       <image
         v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character"
-        height="260"
-        width="260"
+        :height="charImage.height"
+        :width="charImage.width"
         :href="props.imageSrc"
-        x="70"
-        y="70"
+        :x="charImage.x"
+        :y="charImage.y"
       />
       <svg
         v-if="

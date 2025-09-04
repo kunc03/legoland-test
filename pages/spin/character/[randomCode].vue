@@ -57,7 +57,7 @@
 
       <div
         v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title"
-        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[17%] px-4 py-3 h-auto rounded-lg w-[30vw] sm:w-[150px]"
+        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[23%] sm:bottom-[28%] px-4 py-3 h-auto rounded-lg w-[30vw] sm:w-[150px]"
         :class="hideCharacterInfo ? 'sm:bottom-[15%] bottom-[14.5%]' : 'sm:bottom-[23%] bottom-[21.5%]'"
       >
         <p class="text-[3.3vw] sm:text-[17px] max-w-[278px] text-center">{{ charName }}</p>
@@ -194,6 +194,8 @@ definePageMeta({
   layout: 'gacha-machine',
 })
 
+const settings = useState('settings')
+
 const { setSourceFrom } = useRegister()
 
 const opIntro = ref(false)
@@ -228,8 +230,6 @@ const popupLink = ref('')
 const popupDescription = ref('')
 const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
-
-const settings = useState('settings')
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
