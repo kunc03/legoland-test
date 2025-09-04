@@ -344,6 +344,8 @@ import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
 
+const settings = useState('settings')
+
 const router = useRouter()
 const route = useRoute()
 const errorMessages = ref('')
@@ -378,7 +380,9 @@ const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
 
-const settings = useState('settings')
+function stripHtml(html = '') {
+  return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
+}
 
 const aboutSpinItems = ref([
   { id: 1, name: 'R', percen: 30, desc: 'normalMorizzoAndKiccoro' },

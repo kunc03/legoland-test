@@ -35,26 +35,21 @@ const config = useRuntimeConfig()
 
 const settings = useState('settings')
 
-useHead({
+const requestURL = useRequestURL()
+const url = requestURL.origin
+
+useSeoMeta({
   title: settings.value?.global?.ogp?.title,
-  meta: [
-    { name: 'description', content: stripHtml(settings.value?.global?.ogp?.title) },
-    // Facebook
-    { name: 'og:title', content: settings.value?.global?.ogp?.title },
-    { name: 'og:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-    { name: 'og:image', content: settings.value?.global?.ogp?.image },
-    { name: 'og:url', content: config.public.META_URL },
-    { name: 'og:type', content: 'Website' },
-    { name: 'og:image:width', content: '1200' },
-    { name: 'og:image:height', content: '630' },
-    // twitter
-    { name: 'twitter:title', content: settings.value?.global?.ogp?.title },
-    { name: 'twitter:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-    { name: 'twitter:image', content: settings.value?.global?.ogp?.image },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:image:width', content: '1200' },
-    { name: 'twitter:image:height', content: '630' },
-  ],
+  description: stripHtml(settings.value?.global?.ogp?.description),
+  ogTitle: settings.value?.global?.ogp?.title,
+  ogDescription: stripHtml(settings.value?.global?.ogp?.description),
+  ogImage: settings.value?.global?.ogp?.image,
+  ogUrl: url,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: settings.value?.global?.ogp?.title,
+  twitterDescription: stripHtml(settings.value?.global?.ogp?.description),
+  twitterImage: settings.value?.global?.ogp?.image,
 })
 
 function stripHtml(html = '') {

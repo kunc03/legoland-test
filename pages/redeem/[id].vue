@@ -114,6 +114,12 @@
             >
               {{ t('postalCodeInformation') }}
             </p>
+            <p
+              v-if="item.name === 'phone_number'"
+              class="mt-2 font-normal text-exd-1320 text-exd-gray-scorpion"
+            >
+              {{ t('phoneInfo') }}
+            </p>
 
             <GenderSelection
               v-if="item.type === 'select_button'"

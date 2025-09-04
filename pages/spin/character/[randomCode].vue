@@ -194,6 +194,8 @@ definePageMeta({
   layout: 'gacha-machine',
 })
 
+const settings = useState('settings')
+
 const { setSourceFrom } = useRegister()
 
 const opIntro = ref(false)
@@ -228,8 +230,6 @@ const popupLink = ref('')
 const popupDescription = ref('')
 const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
-
-const settings = useState('settings')
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
