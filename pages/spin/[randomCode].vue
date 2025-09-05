@@ -21,7 +21,7 @@
       </div>
       
       <div v-if="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'" class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8">
-        <p class="underline cursor-pointer sm:text-exd-1424 text-exd-1218 text-exd-gray-scorpion" @click="handleAboutSpin">{{ settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text }}</p>
+        <p class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218" @click="handleAboutSpin">{{ settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text }}</p>
       </div>
 
       <SolidButton
@@ -379,6 +379,23 @@ const locationBlocked = ref(false)
 const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
+
+const requestURL = useRequestURL()
+const url = requestURL.origin
+
+useSeoMeta({
+  title: 'settings.value?.global?.ogp?.title',
+  description: 'stripHtml(settings.value?.global?.ogp?.description)',
+  ogTitle: 'settings.value?.global?.ogp?.title',
+  ogDescription: 'stripHtml(settings.value?.global?.ogp?.description)',
+  ogImage: 'settings.value?.global?.ogp?.image',
+  ogUrl: url,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'settings.value?.global?.ogp?.title',
+  twitterDescription: 'stripHtml(settings.value?.global?.ogp?.description)',
+  twitterImage: 'settings.value?.global?.ogp?.image',
+})
 
 function stripHtml(html = '') {
   return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
