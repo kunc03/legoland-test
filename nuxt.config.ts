@@ -90,7 +90,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/spin/**': { ssr: false },
+    '/spin/**': { ssr: true },
   },
 
   tailwindcss: {

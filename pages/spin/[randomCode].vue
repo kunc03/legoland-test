@@ -380,33 +380,6 @@ const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
 
-const requestURL = useRequestURL()
-const url = requestURL.origin
-
-useSeoMeta({
-  title: 'settings.value?.global?.ogp?.title',
-  description: 'stripHtml(settings.value?.global?.ogp?.description)',
-  ogTitle: 'settings.value?.global?.ogp?.title',
-  ogDescription: 'stripHtml(settings.value?.global?.ogp?.description)',
-  ogImage: 'settings.value?.global?.ogp?.image',
-  ogUrl: url,
-  ogType: 'website',
-  twitterCard: 'summary_large_image',
-  twitterTitle: 'settings.value?.global?.ogp?.title',
-  twitterDescription: 'stripHtml(settings.value?.global?.ogp?.description)',
-  twitterImage: 'settings.value?.global?.ogp?.image',
-})
-
-function stripHtml(html = '') {
-  return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
-}
-
-const aboutSpinItems = ref([
-  { id: 1, name: 'R', percen: 30, desc: 'normalMorizzoAndKiccoro' },
-  { id: 2, name: 'SR', percen: 65, desc: 'localMorizzoAndKiccoro' },
-  { id: 3, name: 'SSR', percen: 5, desc: 'aniversaryMorizzoAndKiccoro' },
-]);
-
 const handleCloseModalSpinWarning = () => {
   modalSpinWarning.value = false
 }
