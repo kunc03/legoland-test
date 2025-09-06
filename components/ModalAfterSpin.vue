@@ -193,11 +193,16 @@ const requestURL = useRequestURL()
 const url = requestURL.origin
 
 function stripHtml(html) {
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return div.textContent || div.innerText || ''
+  if (import.meta.client) {
+    const div = document.createElement('div')
+    div.innerHTML = html
+    return div.textContent || div.innerText || ''
+  }
+  return html
 }
+
 const cleanDescription = stripHtml(description)
+
 const quote = cleanDescription + ' ' + url
 
 const handleToRedirect = async () => {
