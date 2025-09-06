@@ -21,7 +21,7 @@
       </div>
       
       <div v-if="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'" class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8">
-        <p class="underline cursor-pointer sm:text-exd-1424 text-exd-1218 text-exd-gray-scorpion" @click="handleAboutSpin">{{ settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text }}</p>
+        <p class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218" @click="handleAboutSpin">{{ settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text }}</p>
       </div>
 
       <SolidButton
@@ -379,16 +379,6 @@ const locationBlocked = ref(false)
 const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
-
-function stripHtml(html = '') {
-  return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
-}
-
-const aboutSpinItems = ref([
-  { id: 1, name: 'R', percen: 30, desc: 'normalMorizzoAndKiccoro' },
-  { id: 2, name: 'SR', percen: 65, desc: 'localMorizzoAndKiccoro' },
-  { id: 3, name: 'SSR', percen: 5, desc: 'aniversaryMorizzoAndKiccoro' },
-]);
 
 const handleCloseModalSpinWarning = () => {
   modalSpinWarning.value = false

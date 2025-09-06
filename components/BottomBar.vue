@@ -43,8 +43,10 @@
       </div>
 
       <div
-        class="inline-flex flex-row ml-[27%] sm:ml-[24%] justify-around w-full pt-4 sm:pt-2"
-        :style="{ marginLeft: settings?.flow?.screens?.show_point_in_footer ? '27%' : '0%' }"
+        class="inline-flex flex-row justify-around w-full pt-4 sm:pt-2"
+        :class="{
+          'ml-[100px]': settings?.flow?.screens?.show_point_in_footer,
+        }"
       >
         <BottomBarMenuIcon
           v-for="(item, index) in dynamicItems"

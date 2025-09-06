@@ -23,7 +23,7 @@
         <!-- <img :src="tapScreen" alt="intl" width="280" class="" preload /> -->
 
         <p
-          class="font-semibold text-center underline cursor-pointer text-exd-gray-scorpion text-exd-1320"
+          class="font-semibold text-center text-white underline cursor-pointer sm:text-exd-1320 text-exd-1218"
           @click.stop="openBookmarkLink"
         >
           {{ settings?.gacha?.user_tap_splash_screen?.url?.url_text }}
