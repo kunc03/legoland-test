@@ -275,6 +275,10 @@ const fetchingPrizeData = async () => {
   try {
     const { data } = await useFetchApi('GET', 'prize-list/' + id)
     prizeDetailData.value = data
+
+    if (data) {
+      localStorage.setItem('prize_name', data.name)
+    }
   } catch (error) {
     console.log(error)
   } finally {
