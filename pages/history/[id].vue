@@ -358,27 +358,31 @@ const initializeMap = async (lat, long) => {
 const updateMetaHead = () => {
   useHead({
     meta: [
-      { name: 'description', content: settings.value?.global?.ogp?.description },
+      { name: 'description', content: stripHtml(settings.value?.global?.ogp?.description) },
       // Facebook
       { name: 'og:title', content: title },
-      { name: 'og:description', content: settings.value?.global?.ogp?.description },
+      { name: 'og:description', content: stripHtml(settings.value?.global?.ogp?.description) },
       { name: 'og:image', content: image },
       { name: 'og:url', content: url },
       { name: 'og:type', content: 'Website' },
 
       // twitter
       { name: 'twitter:title', content: title },
-      { name: 'twitter:description', content: settings.value?.global?.ogp?.description },
+      { name: 'twitter:description', content: stripHtml(settings.value?.global?.ogp?.description) },
       { name: 'twitter:image', content: image },
       { name: 'twitter:card', content: 'summary_large_image' },
 
       // // LINE
       { name: 'line:title', content: title },
-      { name: 'line:description', content: settings.value?.global?.ogp?.description },
+      { name: 'line:description', content: stripHtml(settings.value?.global?.ogp?.description) },
       { name: 'line:image', content: image },
       { name: 'line:card', content: 'summary_large_image' },
     ],
   })
+}
+
+function stripHtml(html = '') {
+  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
 }
 
 const share = (type) => {
