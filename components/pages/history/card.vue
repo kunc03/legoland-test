@@ -5,7 +5,7 @@
     :has-rounded="true"
     :is-fetching="isFetching"
     :show-image="settings?.character_collection?.show_hide_character_collection?.show_character_image"
-    :bg-color="settings?.character_collection?.show_hide_character_collection?.image_background_color"
+    :bg-color="bgColor"
   >
     <template v-slot:text v-if="!isFetching">
       <div class="flex flex-col justify-center w-full gap-1 pr-4 overflow-hidden ">
@@ -72,6 +72,9 @@ const props = defineProps({
   showRarity: {
     type: Boolean
   },
+  bgColor: {
+    type: String
+  }
 })
 
 const characterImage = props.data.image || noImage

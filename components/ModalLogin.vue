@@ -86,7 +86,7 @@
             }"
           />
         </div>
-<!--
+
         <a
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
@@ -100,7 +100,7 @@
               ?.forgot_password_text || ''
           }}
         </a>
--->
+
         <SolidButton
           :label="
             settings?.register_login?.registration_login_pop_up?.button_1_text
