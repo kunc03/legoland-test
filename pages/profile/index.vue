@@ -125,7 +125,7 @@
                 settings?.register_login?.membership_registration_page
                   ?.button_text_and_color?.color
               "
-              :autocomplete="item.name"
+              :autocomplete="getAutocomplete(item)"
             />
 
             <p
@@ -577,15 +577,12 @@ const getTerms = async () => {
 
 const handleCloseDialog = () => (isErrorMessage.value = false)
 
-const getAgeOptions = () => [
-  { value: 1, label: t('10') },
-  { value: 2, label: t('20') },
-  { value: 3, label: t('30') },
-  { value: 4, label: t('40') },
-  { value: 5, label: t('50') },
-  { value: 6, label: t('60') },
-  { value: 7, label: t('70') },
-]
+const getAutocomplete = (item) => {
+  if (item.name === 'password') {
+    return 'new-password'
+  }
+  return 'off'
+}
 
 const alphanumericRegex = /^[a-zA-Z0-9]{8,}$/
 

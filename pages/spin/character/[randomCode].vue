@@ -57,10 +57,10 @@
 
       <div
         v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title"
-        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[23%] sm:bottom-[28%] px-4 py-3 h-auto rounded-lg w-[30vw] sm:w-[150px]"
+        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[23%] px-4 py-3 h-auto rounded-lg w-[30vw] sm:w-[150px]"
         :class="hideCharacterInfo ? 'sm:bottom-[15%] bottom-[14.5%]' : 'sm:bottom-[23%] bottom-[21.5%]'"
       >
-        <p class="text-[3.3vw] sm:text-[17px] max-w-[278px] text-center">{{ charName }}</p>
+        <p class="text-[17px] sm:text-[20px] max-w-[278px] text-center">{{ charName }}</p>
       </div>
     </div>
 

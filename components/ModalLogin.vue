@@ -35,7 +35,7 @@
         <div
           v-for="(item, index) in visibleLoginFields"
           :key="index"
-          class="!w-full p-0"
+          class="!w-full p-0 mb-2"
         >
           <InputText
             v-if="item.type !== 'date'"
@@ -86,7 +86,7 @@
             }"
           />
         </div>
-
+<!--
         <a
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
@@ -97,10 +97,10 @@
         >
           {{
             settings?.register_login?.registration_login_pop_up
-              ?.forgot_password_text
+              ?.forgot_password_text || ''
           }}
         </a>
-
+-->
         <SolidButton
           :label="
             settings?.register_login?.registration_login_pop_up?.button_1_text
