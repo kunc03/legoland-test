@@ -20,5 +20,5 @@ export function useAppSeo(settings: any, url: string) {
 }
 
 function stripHtml(html = '') {
-  return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
+  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
 }
