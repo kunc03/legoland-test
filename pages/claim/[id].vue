@@ -2,15 +2,15 @@
   <HeaderBar hasBack withLogo />
   <div
     class="flex flex-col mt-20 grow"
-  >
-    <!-- :style="{
+    :style="{
       background:
         step2Data?.background_page.type === 'image'
           ? `url(${step2Data?.background_page.value})`
           : step2Data?.background_page.value,
       'background-size': 'cover',
       'background-repeat': 'no-repeat',
-    }" -->
+    }"
+  >
     <p
       class="text-exd-1724 text-center font-extrabold max-w-[356px] mx-auto p-4 my-4"
       :style="{ color: textColor }"
