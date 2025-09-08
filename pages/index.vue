@@ -13,7 +13,7 @@
     <div class="flex flex-col items-center justify-end h-full">
 
       <div
-        class="w-full h-[150px] flex flex-col justify-end pb-[10%] items-center gap-3"
+        class="w-full h-[150px] flex flex-col justify-end pb-[8%] items-center gap-3"
       >
         <p
           class="font-semibold text-center text-white underline cursor-pointer sm:text-exd-1320 text-exd-1218"
