@@ -31,7 +31,7 @@
         {{ $t('replaced') }}
       </p>
       <div
-        class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[25px]"
+        class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[25px] min-h-12"
         :style="{
           color: settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
           borderColor:
@@ -67,7 +67,7 @@ definePageMeta({
 
 const router = useRouter()
 const settings = useState('settings')
-const prizeName = localStorage.getItem('prize_name')
+const prizeName = ref('')
 
 const goTo = (type) => {
   localStorage.removeItem('CLAIM_SUCCESS')
@@ -84,4 +84,10 @@ const goTo = (type) => {
       break
   }
 }
+
+onMounted(() => {
+  if (import.meta.client) {
+    prizeName.value = localStorage.getItem('prize_name')
+  }
+})
 </script>
