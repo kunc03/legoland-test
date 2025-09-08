@@ -24,10 +24,8 @@
       <img
         :src="settings.global.logo"
         alt="intl"
-        width="210"
-        height="58"
         preload
-        class="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+        class="absolute w-auto h-[90%] transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
       />
     </div>
     <div class="pr-5 shrink-0">
