@@ -10,7 +10,7 @@ const giftType = reactive({
 
 const pointType = reactive({
   x: 60,
-  y: -30,
+  y: 20,
   width: 300,
   height: 250,
 })
