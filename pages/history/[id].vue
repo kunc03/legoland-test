@@ -7,9 +7,7 @@
       {{ historyData?.page_title }}
     </p>
   </HeaderBar>
-  <div 
-    class="flex flex-col gap-3 px-8 pt-32 text-black"
-    >
+  <div class="flex flex-col gap-3 px-8 pt-32 text-black">
     <div class="max-w-sm bg-white rounded-lg shadow">
       <div class="w-full overflow-hidden rounded-t-lg">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
@@ -20,7 +18,9 @@
               ? historyDetailData.character_image
               : duck
           "
-          :bgColor="settings?.character_collection?.step_2_image_background_color"
+          :bgColor="
+            settings?.character_collection?.step_2_image_background_color
+          "
         />
       </div>
       <div class="flex flex-col gap-2 p-5">
@@ -41,8 +41,17 @@
             class="!h-3 !bg-exd-gold !rounded-full"
             width="2rem "
           />
-          
-          <img v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character_rarity" :src="rarityImg" alt="rarity icon" class="w-10" />
+
+          <img
+            v-if="
+              !isFetching &&
+              settings?.flow?.screens?.spin_gacha_2_screen
+                ?.show_character_rarity
+            "
+            :src="rarityImg"
+            alt="rarity icon"
+            class="w-10"
+          />
         </div>
         <div v-if="isFetching" class="flex items-center gap-5 text-exd-1218">
           <Skeleton
@@ -227,7 +236,8 @@ const id = route.params.id
 const title = config.public.META_TITLE
 const description = config.public.META_DESCRIPTION
 const image = config.public.META_IMAGE
-const url = config.public.META_URL
+const requestURL = useRequestURL()
+const url = requestURL.origin
 const quote = config.public.META_QUOTE
 const historyDetailData = ref({})
 const props = defineProps(['id'])
@@ -356,24 +366,24 @@ const initializeMap = async (lat, long) => {
 }
 
 const updateMetaHead = () => {
-  useHead({
-    meta: [
-      // SEO
-      { name: 'description', content: stripHtml(settings.value?.global?.ogp?.description) },
+  const title = settings.value?.global?.ogp?.title || process.env.META_TITLE
+  const description =
+    stripHtml(settings.value?.global?.ogp?.description) ||
+    process.env.META_DESCRIPTION
+  const image = settings.value?.global?.ogp?.image || process.env.META_IMAGE
 
-      // Open Graph (Facebook, LinkedIn, LINE, dsb)
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-      { property: 'og:image', content: image },
-      { property: 'og:url', content: url },
-      { property: 'og:type', content: 'website' },
-
-      // Twitter
-      { name: 'twitter:title', content: title },
-      { name: 'twitter:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-      { name: 'twitter:image', content: image },
-      { name: 'twitter:card', content: 'summary_large_image' },
-    ],
+  useSeoMeta({
+    title,
+    description,
+    ogTitle: title,
+    ogDescription: description,
+    ogImage: image,
+    ogUrl: url || process.env.META_URL,
+    ogType: 'website',
+    twitterCard: 'summary_large_image',
+    twitterTitle: title,
+    twitterDescription: description,
+    twitterImage: image,
   })
 }
 
