@@ -358,25 +358,21 @@ const initializeMap = async (lat, long) => {
 const updateMetaHead = () => {
   useHead({
     meta: [
+      // SEO
       { name: 'description', content: stripHtml(settings.value?.global?.ogp?.description) },
-      // Facebook
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-      { name: 'og:image', content: image },
-      { name: 'og:url', content: url },
-      { name: 'og:type', content: 'Website' },
 
-      // twitter
+      // Open Graph (Facebook, LinkedIn, LINE, dsb)
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: stripHtml(settings.value?.global?.ogp?.description) },
+      { property: 'og:image', content: image },
+      { property: 'og:url', content: url },
+      { property: 'og:type', content: 'website' },
+
+      // Twitter
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: stripHtml(settings.value?.global?.ogp?.description) },
       { name: 'twitter:image', content: image },
       { name: 'twitter:card', content: 'summary_large_image' },
-
-      // // LINE
-      { name: 'line:title', content: title },
-      { name: 'line:description', content: stripHtml(settings.value?.global?.ogp?.description) },
-      { name: 'line:image', content: image },
-      { name: 'line:card', content: 'summary_large_image' },
     ],
   })
 }
