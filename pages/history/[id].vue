@@ -412,9 +412,10 @@ const share = (type) => {
 }
 
 const generateUrlToShare = () => {
+
   let objectToShare = {
-    url: url,
-    quote: quote,
+    url: `${url}?t=${Date.now()}`,
+    quote: quote + ` ${url}`,
   }
 
   try {
@@ -429,7 +430,7 @@ const generateUrlToShare = () => {
       '/share/' +
       historyDetailData.value.character_id +
       '/' +
-      historyDetailData.value.location_id
+      historyDetailData.value.location_id + `?t=${Date.now()}`
   } catch (error) {
     console.log(error)
   }
