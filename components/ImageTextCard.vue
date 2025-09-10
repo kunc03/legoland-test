@@ -8,8 +8,8 @@
       ]"
       @click="handleClick"
     >
-      <div v-if="!history" class="w-[40%] flex items-center">
-        <CharacterCard :image="imageCard" :isDisabled="isDisabled"  :bgColor="setOpacity('#009245')" />
+      <div v-if="showImage" class="w-[40%] flex items-center">
+        <CharacterCard :image="imageCard" :isDisabled="isDisabled" :bgColor="bgColor" />
       </div>
       <slot name="text"></slot>
       <div
@@ -94,6 +94,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showImage: {
+    type: Boolean,
+    default: true,
+  },
+  bgColor: {
+    type: String
+  }
 })
 
 const handleClick = (event) => {
@@ -109,12 +116,4 @@ const handleClick = (event) => {
 const roundedClass = computed(() => {
   return props.hasRounded ? 'rounded-xl' : 'rounded-none'
 })
-
-const setOpacity = (bgColor) => {
-  const hex = bgColor.replace('#', '')
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, 0.1)`
-}
 </script>

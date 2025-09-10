@@ -7,9 +7,7 @@
       {{ historyData?.page_title }}
     </p>
   </HeaderBar>
-  <div 
-    class="flex flex-col gap-3 px-8 pt-32 text-black"
-    >
+  <div class="flex flex-col gap-3 px-8 pt-32 text-black">
     <div class="max-w-sm bg-white rounded-lg shadow">
       <div class="w-full overflow-hidden rounded-t-lg">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
@@ -19,6 +17,9 @@
             historyDetailData.character_image != null
               ? historyDetailData.character_image
               : duck
+          "
+          :bgColor="
+            settings?.character_collection?.step_2_image_background_color
           "
         />
       </div>
@@ -40,8 +41,17 @@
             class="!h-3 !bg-exd-gold !rounded-full"
             width="2rem "
           />
-          
-          <img v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character_rarity" :src="rarityImg" alt="rarity icon" class="w-10" />
+
+          <img
+            v-if="
+              !isFetching &&
+              settings?.flow?.screens?.spin_gacha_2_screen
+                ?.show_character_rarity
+            "
+            :src="rarityImg"
+            alt="rarity icon"
+            class="w-10"
+          />
         </div>
         <div v-if="isFetching" class="flex items-center gap-5 text-exd-1218">
           <Skeleton
@@ -118,7 +128,7 @@
           />
         </div>
 
-        <div class="w-full">
+        <div v-if="historyData?.show_redemption" class="w-full">
           <Skeleton v-if="isFetching" class="!w-full !h-72" />
           <div
             class="relative"
@@ -226,7 +236,8 @@ const id = route.params.id
 const title = config.public.META_TITLE
 const description = config.public.META_DESCRIPTION
 const image = config.public.META_IMAGE
-const url = config.public.META_URL
+const requestURL = useRequestURL()
+const url = requestURL.origin
 const quote = config.public.META_QUOTE
 const historyDetailData = ref({})
 const props = defineProps(['id'])
@@ -355,29 +366,29 @@ const initializeMap = async (lat, long) => {
 }
 
 const updateMetaHead = () => {
-  useHead({
-    meta: [
-      { name: 'description', content: settings.value?.global?.ogp?.description },
-      // Facebook
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: settings.value?.global?.ogp?.description },
-      { name: 'og:image', content: image },
-      { name: 'og:url', content: url },
-      { name: 'og:type', content: 'Website' },
+  const title = settings.value?.global?.ogp?.title || process.env.META_TITLE
+  const description =
+    stripHtml(settings.value?.global?.ogp?.description) ||
+    process.env.META_DESCRIPTION
+  const image = settings.value?.global?.ogp?.image || process.env.META_IMAGE
 
-      // twitter
-      { name: 'twitter:title', content: title },
-      { name: 'twitter:description', content: settings.value?.global?.ogp?.description },
-      { name: 'twitter:image', content: image },
-      { name: 'twitter:card', content: 'summary_large_image' },
-
-      // // LINE
-      { name: 'line:title', content: title },
-      { name: 'line:description', content: settings.value?.global?.ogp?.description },
-      { name: 'line:image', content: image },
-      { name: 'line:card', content: 'summary_large_image' },
-    ],
+  useSeoMeta({
+    title,
+    description,
+    ogTitle: title,
+    ogDescription: description,
+    ogImage: image,
+    ogUrl: url || process.env.META_URL,
+    ogType: 'website',
+    twitterCard: 'summary_large_image',
+    twitterTitle: title,
+    twitterDescription: description,
+    twitterImage: image,
   })
+}
+
+function stripHtml(html = '') {
+  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
 }
 
 const share = (type) => {
@@ -401,9 +412,10 @@ const share = (type) => {
 }
 
 const generateUrlToShare = () => {
+
   let objectToShare = {
-    url: url,
-    quote: quote,
+    url: `${url}?t=${Date.now()}`,
+    quote: quote + ` ${url}`,
   }
 
   try {
@@ -418,7 +430,7 @@ const generateUrlToShare = () => {
       '/share/' +
       historyDetailData.value.character_id +
       '/' +
-      historyDetailData.value.location_id
+      historyDetailData.value.location_id + `?t=${Date.now()}`
   } catch (error) {
     console.log(error)
   }

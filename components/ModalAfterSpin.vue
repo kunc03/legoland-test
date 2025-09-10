@@ -35,9 +35,10 @@
 
           <!-- Modal Text -->
           <div
-            :class="[
-              'font-bold px-4 text-exd-1530 text-center text-exd-gray-scorpion'
-            ]"
+            :class="{
+              'font-bold px-4 text-exd-1530 text-center text-exd-gray-scorpion': true,
+              'py-10': afterGacha?.data?.button_and_social_media === 'button'
+            }"
             style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
           >
             <p class="max-h-[200px] px-8 leading-normal whitespace-pre-line">
@@ -192,11 +193,16 @@ const requestURL = useRequestURL()
 const url = requestURL.origin
 
 function stripHtml(html) {
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return div.textContent || div.innerText || ''
+  if (import.meta.client) {
+    const div = document.createElement('div')
+    div.innerHTML = html
+    return div.textContent || div.innerText || ''
+  }
+  return html
 }
+
 const cleanDescription = stripHtml(description)
+
 const quote = cleanDescription + ' ' + url
 
 const handleToRedirect = async () => {

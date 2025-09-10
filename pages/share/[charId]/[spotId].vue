@@ -3,7 +3,7 @@
     <Title> {{ shareDetailData?.character_name }}</Title>
     <Meta
       name="description"
-      :content="shareDetailData?.character_description"
+      :content="stripHtml(shareDetailData?.character_description)"
     />
 
     <Meta name="og:url" :content="`${url}/${charId}/${spotId}`" />
@@ -11,7 +11,7 @@
     <Meta name="og:title" :content="shareDetailData?.character_name" />
     <Meta
       name="og:description"
-      :content="shareDetailData?.character_description"
+      :content="stripHtml(shareDetailData?.character_description)"
     />
     <Meta name="og:image" :content="shareDetailData?.character_image" />
     <Meta
@@ -24,7 +24,7 @@
     <Meta name="twitter:title" :content="shareDetailData?.character_name" />
     <Meta
       name="twitter:description"
-      :content="shareDetailData?.character_description"
+      :content="stripHtml(shareDetailData?.character_description)"
     />
     <Meta name="twitter:image" :content="shareDetailData?.character_image" />
     <Meta
@@ -222,7 +222,7 @@
           raised
           @click="
             () =>
-              navigateTo('https://horishoten75th.dela-kuji.jp/', {
+              navigateTo(url, {
                 external: true,
                 open: {
                   target: '_blank',
@@ -280,6 +280,10 @@ const socialMediaLinks = ref([])
 const LOCALE = useCookie('LOCALE')
 const backToTop = () => {
   return navigateTo('/')
+}
+
+function stripHtml(html = '') {
+  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
 }
 
 const isValidPath = computed(() => {

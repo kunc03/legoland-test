@@ -35,7 +35,7 @@
         <div
           v-for="(item, index) in visibleLoginFields"
           :key="index"
-          class="!w-full p-0"
+          class="!w-full p-0 mb-2"
         >
           <InputText
             v-if="item.type !== 'date'"
@@ -97,7 +97,7 @@
         >
           {{
             settings?.register_login?.registration_login_pop_up
-              ?.forgot_password_text
+              ?.forgot_password_text || ''
           }}
         </a>
 

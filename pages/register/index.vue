@@ -22,7 +22,7 @@
         'background-repeat': 'no-repeat',
       }"
     >
-      <h1
+      <!-- <h1
         class="text-center flex flex-col text-1416 text-exd-gray-scorpion pb-4 w-full max-w-[360px] mx-auto"
       >
         {{
@@ -46,7 +46,7 @@
         >
           00000000000
         </p>
-      </div>
+      </div> -->
       <div class="flex flex-col px-3 grow">
         <div
           v-for="(item, index) in visibleRegisterFields"
@@ -719,6 +719,10 @@ const handleApiError = (error) => {
     : ''
 
   errorAgeMessage.value = Array.isArray(response?.age) ? response.age[0] : ''
+
+  errorPhoneNumber.value = Array.isArray(response?.phone_number)
+    ? response.phone_number[0]
+    : ''
 
   if (response.email) {
     if (

@@ -16,28 +16,7 @@ const settings = useState('settings')
 const requestURL = useRequestURL()
 const url = requestURL.origin
 
-useSeoMeta({
-  title: () => settings.value?.global?.ogp?.title,
-  description: () => stripHtml(settings.value?.global?.ogp?.description),
-
-  // Open Graph
-  ogTitle: () => settings.value?.global?.ogp?.title,
-  ogDescription: () => stripHtml(settings.value?.global?.ogp?.description),
-  ogImage: () => settings.value?.global?.ogp?.image,
-  ogUrl: () => url,
-  ogType: 'website',
-  ogSiteName: settings.value?.global?.ogp?.title,
-
-  // Twitter
-  twitterCard: 'summary_large_image',
-  twitterTitle: () => settings.value?.global?.ogp?.title,
-  twitterDescription: () => stripHtml(settings.value?.global?.ogp?.description),
-  twitterImage: () => settings.value?.global?.ogp?.image,
-})
-
-function stripHtml(html = '') {
-  return html.replace(/<\/?[^>]+(>|$)/g, '').trim()
-}
+useAppSeo(settings.value, url)
 
 onMounted(() => {
   if (!route.path.includes('quiz')) {

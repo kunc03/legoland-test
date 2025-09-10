@@ -19,7 +19,7 @@
     </p>
 
     <div
-      class="flex flex-col justify-between gap-5 py-8 grow px-7"
+      class="flex flex-col justify-between gap-5 py-8 bg-exd-banana grow px-7"
     >
       <div class="flex flex-col gap-5">
         <div class="relative w-full h-auto mx-auto bg-white rounded-lg">
@@ -51,7 +51,7 @@
               />
             </template>
             <img
-              v-else-if="prizeDetailData.rarity?.type === 'image'"
+              v-else-if="prizeDetailData.rarity?.type === 'image' && prizeDetailData.rarity?.show_rarity"
               :src="prizeDetailData.rarity?.image"
               alt="arrow"
               width="50"
@@ -62,7 +62,7 @@
             />
 
             <p
-              v-else
+              v-else-if="prizeDetailData.rarity?.type === 'color' && prizeDetailData.rarity?.show_rarity"
               class="font-bold text-exd-1824.52 text-white p-1 flex items-center justify-center rounded-full right-0 top-5 bg-no-repeat bg-cover bg-center w-12 h-12"
               :style="{ background: prizeBg }"
             >
@@ -209,8 +209,8 @@ const step2Data = computed(() => settings.value?.prize?.step_2?.swipe_exchange?.
 const prizeBg = computed(() => colorBg.value || '#000')
 const textColor = computed(() => step2Data.value.text_1_color)
 const step2Texts = computed(() => [
-  step2Data.value.text_1,
-  step2Data.value.text_2
+  prizeDetailData.value.name,
+  // step2Data.value.text_2
 ])
 
 const handleDialog = () => {
@@ -275,6 +275,10 @@ const fetchingPrizeData = async () => {
   try {
     const { data } = await useFetchApi('GET', 'prize-list/' + id)
     prizeDetailData.value = data
+
+    if (data) {
+      localStorage.setItem('prize_name', data.name)
+    }
   } catch (error) {
     console.log(error)
   } finally {
