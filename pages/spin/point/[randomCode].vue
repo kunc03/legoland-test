@@ -2,7 +2,14 @@
   <div
     v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_screen"
     class="relative flex flex-col items-center justify-center !bg-no-repeat !bg-cover !bg-center grow"
-    :style="{ background: settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.type === 'image' ? `url(${settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value})` : settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value }"
+    :style="{
+      background:
+        settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background
+          ?.type === 'image'
+          ? `url(${settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value})`
+          : settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen
+              ?.background?.value,
+    }"
     @touchmove="(e) => e.preventDefault()"
   >
     <SparkleStart className="top-3 z-30" />
@@ -40,12 +47,20 @@
     <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
     <div class="w-full absolute bottom-0 z-[1100]">
       <SolidButton
-        :label="settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen.button_text"
+        :label="
+          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen.button_text
+        "
         :on-click="() => handleButton()"
         has-bottom
         :disabled="disabledButton"
-        :bgColor="settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen.button_and_text_color?.background"
-        :textColor="settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen.button_and_text_color?.color"
+        :bgColor="
+          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen
+            .button_and_text_color?.background
+        "
+        :textColor="
+          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen
+            .button_and_text_color?.color
+        "
       />
     </div>
 
@@ -66,7 +81,7 @@
     v-if="playVideo"
     :src="settings.gacha.spin_gacha_2_screen.gacha_2_video"
     @ended="handleGoToCharacter"
-    />
+  />
 </template>
 
 <script setup>
@@ -119,7 +134,7 @@ const fetchImageFromApi = async () => {
     const storedData = useCookie('VALID_PASSWORD')
 
     if (!storedData.value) {
-      console.error('No verified data found in localStorage')
+      console.error('[ERROR] No verified data found in localStorage')
       return
     }
 
@@ -127,7 +142,7 @@ const fetchImageFromApi = async () => {
     try {
       parsedData = decryptData(storedData.value)
     } catch (e) {
-      console.error('Error parsing stored data:', e)
+      console.error('[ERROR] Failed decryptData:', e)
       return
     }
 
@@ -140,6 +155,7 @@ const fetchImageFromApi = async () => {
       const { data, status } = await useFetchApi('POST', 'gacha/spin', {
         body: { ...payload },
       })
+
       const spinType = useState('spin_type')
 
       sessionStorage.setItem('IS_ALREADY_SPIN', data.is_already_spin)
@@ -150,21 +166,22 @@ const fetchImageFromApi = async () => {
       )
 
       const storage = {
-        location_id: data.userPoint.location.id,
-        point_id: data.userPoint.point?.id,
-        point_image: data.userPoint.point?.image,
-        point_name: data.userPoint.point?.name,
+        location_id: data.userPoint?.location.id,
+        point_id: data.userPoint?.point?.id,
+        point_image: data.userPoint?.point?.image,
+        point_name: data.userPoint?.point?.name,
         character_id: data.userCollection?.gacha_character.id,
         character_image: data.userCollection?.gacha_character.image,
         character_name: data.userCollection?.gacha_character.name,
         character_category: data.userCollection?.gacha_character.category,
         character_description: data.userCollection?.gacha_character.description,
-        character_rarity: data.userCollection?.gacha_character.rarity_image_during_gacha,
+        character_rarity:
+          data.userCollection?.gacha_character.rarity_image_during_gacha,
         character_star1: data.userCollection?.gacha_character.star1,
         character_star2: data.userCollection?.gacha_character.star2,
         character_star3: data.userCollection?.gacha_character.star3,
         character_star_name1: data.userCollection?.gacha_character.star_name1,
-        character_star_name2: data.userCollection?.gacha_character.star_name2,  
+        character_star_name2: data.userCollection?.gacha_character.star_name2,
         character_star_name3: data.userCollection?.gacha_character.star_name3,
         // gift_id: data.userPoint.gift.point_id,
         // gift_image: data.userPoint.gift.image,
@@ -176,8 +193,12 @@ const fetchImageFromApi = async () => {
         popup_image: data.userPoint?.point?.point_category_image,
         popup_description: data.popup_description,
         redirect_link: data.redirect_link,
-        hide_character: !settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen,
-        hide_character_info: !settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_details,
+        hide_character:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.show_character_screen,
+        hide_character_info:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.show_character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))
@@ -283,54 +304,66 @@ const fetchImageFromApi = async () => {
       })
 
       const storage = {
-        location_id: data.location?.id,
-        point_id: data.point?.id,
-        point_image: data.point?.image,
-        point_name: data.point?.name,
-        character_id: data.character?.id,
-        character_image: data.character?.image,
-        character_name: data.character?.name,
-        character_description: data.character?.description,
-        character_category: data.character?.category,
-        character_rarity: data.character?.rarity_image_during_gacha,
-        character_star1: data.character?.star1,
-        character_star2: data.character?.star2,
-        character_star3: data.character?.star3,
-        character_star_name1: data.character?.star_name1,
-        character_star_name2: data.character?.star_name2,
-        character_star_name3: data.character?.star_name3,
-        log_id: data.log_id,
+        location_id: data.location?.id ?? null,
+
+        point_id: data.point?.id ?? null,
+        point_image: data.point?.image ?? null,
+        point_name: data.point?.name ?? null,
+        popup_image: data.point?.point_category_image ?? null,
+        popup_description: data.point?.point_category_description ?? null,
+        redirect_link: data.point?.point_category_link ?? null,
+        point_category_is_fail: !!data.point?.point_category_is_fail,
+
+        character_id: data.character?.id ?? null,
+        character_image: data.character?.image ?? null,
+        character_name: data.character?.name ?? null,
+        character_description: data.character?.description ?? null,
+        character_category: data.character?.category ?? null,
+        character_rarity: data.character?.rarity_image_during_gacha ?? null,
+        character_star1: data.character?.star1 ?? null,
+        character_star2: data.character?.star2 ?? null,
+        character_star3: data.character?.star3 ?? null,
+        character_star_name1: data.character?.star_name1 ?? null,
+        character_star_name2: data.character?.star_name2 ?? null,
+        character_star_name3: data.character?.star_name3 ?? null,
+        log_id: data.log_id ?? null,
+
         // gift_id: data.gift.point_id,
         // gift_image: data.gift.image,
         // voucher_name: data.gift.name,
         // gift_type: data.gift.type,
         // gift_type_image: data.gift.typeImage,
-        spin_interval: spinInterval?.value,
+
+        spin_interval: spinInterval?.value ?? null,
         spin_date_interval: spinInterval?.value
           ? futureDateFromMinutes(spinInterval.value)
           : null,
         is_redirect: true,
         button_name: data.button_name,
-        popup_image: data.point.point_category_image,
-        popup_description: data.point.point_category_description,
-        redirect_link: data.point.point_category_link,
-        point_category_is_fail: !!data.point.point_category_is_fail,
+        popup_image: data.point?.point_category_image,
+        popup_description: data.point?.point_category_description,
+        redirect_link: data.point?.point_category_link,
+        point_category_is_fail: !!data.point?.point_category_is_fail,
         spin_date: new Date().toLocaleString(),
-        hide_character: !settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen,
-        hide_character_info: !settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_details,
+        hide_character:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.show_character_screen,
+        hide_character_info:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.show_character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))
 
-      pointImageUrl.value = storage.point_image
-      categoryImageUrl.value = storage.popup_image
-      pointName.value = storage.point_name
-      hideCharacter.value = storage.hide_character
-      isRedirect.value = storage.is_redirect
-      popupLink.value = storage.redirect_link
-      popupDescription.value = storage.popup_description
-      popupImage.value = storage.popup_image
-      pointCategoryIsFail.value = storage.point_category_is_fail
+      pointImageUrl.value = storage?.point_image
+      categoryImageUrl.value = storage?.popup_image
+      pointName.value = storage?.point_name
+      hideCharacter.value = storage?.hide_character
+      isRedirect.value = storage?.is_redirect
+      popupLink.value = storage?.redirect_link
+      popupDescription.value = storage?.popup_description
+      popupImage.value = storage?.popup_image
+      pointCategoryIsFail.value = storage?.point_category_is_fail
 
       if (storage.point_category_is_fail) {
         popupButton.value = t('playAgain')
@@ -351,6 +384,7 @@ const fetchImageFromApi = async () => {
     }
   }
 }
+
 const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
   try {
     const response = await useFetchApi('POST', 'gacha/report', {
@@ -362,8 +396,9 @@ const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
 }
 
 const handleButton = async () => {
-  const showVideo = settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
-  
+  const showVideo =
+    settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
+
   if (showVideo) {
     playVideo.value = true
     return
@@ -377,15 +412,19 @@ const handleButton = async () => {
   await handleGoToCharacter()
 }
 
-
 const handleGoToCharacter = async () => {
   if (!hideCharacter.value) {
+    if (
+      !settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen
+    ) {
+      await fetchImageFromApi()
+    }
+
     await navigateTo(`/spin/character/${route.params.randomCode}`)
   } else {
     navigateTo('/dashboard')
   }
 }
-
 
 const futureDateFromMinutes = (minutes) => {
   const now = new Date()
@@ -420,7 +459,6 @@ onMounted(() => {
 
   disabledButton.value = !(showTapScreen || showCharScreen)
 })
-
 </script>
 
 <style scoped>

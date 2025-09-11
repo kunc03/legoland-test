@@ -16,7 +16,7 @@
         class="w-full h-[150px] flex flex-col justify-end pb-[8%] items-center gap-3"
       >
         <p
-          class="font-semibold text-center text-white underline cursor-pointer sm:text-exd-1320 text-exd-1218"
+          class="font-semibold text-center underline cursor-pointer text-exd-gray-scorpion sm:text-exd-1320 text-exd-1218"
           @click.stop="openBookmarkLink"
         >
           {{ settings?.gacha?.user_tap_splash_screen?.url?.url_text }}

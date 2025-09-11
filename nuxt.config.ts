@@ -99,5 +99,11 @@ export default defineNuxtConfig({
     exposeConfig: false,
   },
 
+  vite: {
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    },
+  },
+
   compatibilityDate: '2024-07-29',
 })
