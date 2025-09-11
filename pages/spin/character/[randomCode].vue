@@ -323,6 +323,12 @@ const handleBtnIntroduce = () => {
   opIntro.value = !opIntro.value
 }
 
+watchEffect(() => {
+  if (!settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon && !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text) {
+    isHiding.value = true
+  }
+})
+
 onMounted(() => {
   fetchImage()
 
