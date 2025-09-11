@@ -9,7 +9,7 @@ let firstCount = 1
 const emit = defineEmits(['finish'])
 
 // Init service worker
-if (process.client && 'serviceWorker' in navigator) {
+if (import.meta.client && 'serviceWorker' in navigator) {
   isSupportSerWroker.value = true
   navigator.serviceWorker.getRegistration().then((registration) => {
     if (registration) {

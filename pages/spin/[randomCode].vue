@@ -705,6 +705,12 @@ const continueToSpin = async (url) => {
   }
 }
 
+const futureDateFromMinutes = (minutes) => {
+  const now = new Date()
+  const date = new Date(now.getTime() + minutes * 60 * 1000)
+  return date.toLocaleString()
+}
+
 watch(isNotAllowed, (newValue) => {
   if (newValue) {
     document.body.classList.add('modal-open')
