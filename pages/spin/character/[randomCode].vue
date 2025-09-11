@@ -22,7 +22,7 @@
     <SparkleStart className="top-3 z-30" />
 
     <div :class="{ notif: true, hide: isHiding }" class="flex items-center justify-center">
-      <img :src="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon" alt="icon gift" class="w-8 h-8" />
+      <img v-if="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon" :src="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon" alt="icon gift" class="w-8 h-8" />
       <p
         class="font-bold text-[12px] text-white"
         style="-webkit-text-fill-color: #ffffff"
