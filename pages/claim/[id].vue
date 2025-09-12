@@ -209,8 +209,8 @@ const step2Data = computed(() => settings.value?.prize?.step_2?.swipe_exchange?.
 const prizeBg = computed(() => colorBg.value || '#000')
 const textColor = computed(() => step2Data.value.text_1_color)
 const step2Texts = computed(() => [
-  prizeDetailData.value.name,
-  // step2Data.value.text_2
+  step2Data.value?.option_text_1 === 'prize_name' ? prizeDetailData.value.name : step2Data.value?.text_1,
+  step2Data.value?.text_2
 ])
 
 const handleDialog = () => {
