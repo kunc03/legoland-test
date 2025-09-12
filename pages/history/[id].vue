@@ -100,16 +100,8 @@
 
         <HeadingSection
           :is-fetching="isFetching"
-          :title="
-            historyDetailData.character != null
-              ? historyDetailData.character.store_name
-              : ''
-          "
-          :body="
-            historyDetailData.character != null
-              ? historyDetailData.character.store_description
-              : ''
-          "
+          :title="historyDetailData?.character?.store_name ?? ''"
+          :body="historyDetailData?.character?.store_description ?? ''"
         />
 
         <div
@@ -412,67 +404,71 @@ const share = (type) => {
 }
 
 const generateUrlToShare = () => {
-
-  let objectToShare = {
-    url: `${url}?t=${Date.now()}`,
-    quote: quote + ` ${url}`,
-  }
-
   try {
-    objectToShare.url =
+    const shareUrl =
       url +
       '/share/' +
       historyDetailData.value.character_id +
       '/' +
-      historyDetailData.value.location_id
-    objectToShare.quote =
-      quote +
-      '/share/' +
-      historyDetailData.value.character_id +
-      '/' +
-      historyDetailData.value.location_id + `?t=${Date.now()}`
+      historyDetailData.value.location_id +
+      `?t=${Date.now()}`
+    
+    return {
+      url: shareUrl,
+      quote: quote,
+    }
   } catch (error) {
     console.log(error)
+    return {
+      url: '',
+      quote: quote,
+    }
   }
-
-  return objectToShare
 }
 
 const shareToFacebook = () => {
-  let objectToShare = generateUrlToShare()
   try {
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        objectToShare.url
-      )}`
-    )
+    const { url } = generateUrlToShare()
+    if (!url) return console.warn("No URL to share")
+
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    window.open(shareUrl, "_blank")
   } catch (error) {
-    console.log(error)
+    console.error("Error sharing to Facebook:", error)
   }
 }
 
 const shareToX = () => {
-  let objectToShare = generateUrlToShare()
-
   try {
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        objectToShare.quote
-      )}`
-    )
+    const { quote, url } = generateUrlToShare()
+    const message = `${quote}\n${url}`
+
+    if (!message.trim()) return console.warn("No message to share")
+
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`
+    window.open(shareUrl, "_blank")
   } catch (error) {
-    console.log(error)
+    console.error("Error sharing to X:", error)
   }
 }
 
 const shareToLine = () => {
-  let objectToShare = generateUrlToShare()
   try {
-    window.open(
-      `https://line.me/R/msg/text/?${encodeURIComponent(objectToShare.quote)}`
-    )
+    const objectToShare = generateUrlToShare()
+    const message = objectToShare?.quote ?? ''
+    const url = objectToShare?.url ?? ''
+
+    if (!message && !url) {
+      console.warn('No message or URL to share')
+      return
+    }
+
+    const combinedText = `${message}\n${url}`
+
+    const shareUrl = `https://line.me/R/msg/text?${encodeURIComponent(combinedText)}`
+    window.open(shareUrl, '_blank')
   } catch (error) {
-    console.log(error)
+    console.error('Error sharing to LINE:', error)
   }
 }
 

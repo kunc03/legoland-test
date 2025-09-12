@@ -14,8 +14,8 @@
     <div
       class="flex flex-col mx-auto my-10 font-bold text-center text-exd-gray-scorpion"
     >
-      <p class="text-[20px]">{{ $t('completed') }}</p>
-      <p class="text-exd-1424">
+      <p class="text-[20px]">{{ settings?.prize?.step_2?.swipe_exchange?.data?.page_title }}</p>
+      <p class="text-exd-1624">
         {{ settings?.prize?.step_2?.swipe_exchange?.data?.page_sub_title_2 }}
       </p>
     </div>
@@ -28,7 +28,7 @@
             settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
         }"
       >
-        {{ $t('replaced') }}
+        {{ settings?.prize?.step_2?.swipe_exchange?.data?.text_3 }}
       </p>
       <div
         class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[25px] min-h-12"
@@ -38,7 +38,7 @@
             settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
         }"
       >
-        {{ prizeName || '' }}
+        {{ settings?.prize?.step_2?.swipe_exchange?.data?.option_text_4 === "prize_name" ? prizeName : settings?.prize?.step_2?.swipe_exchange?.data?.text_4 }}
       </div>
     </div>
   </div>
