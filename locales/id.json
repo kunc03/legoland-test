@@ -328,7 +328,7 @@
     "category": "Kategori",
     "gacha": "Gacha",
     "eligibilityMessageType1": "Gacha telah dimainkan lebih dari satu kali dalam sehari. Poin hanya dapat diperoleh satu kali per hari di lokasi yang sama.",
-    "eligibilityMessageType3": "Anda hanya dapat melakukan gacha satu kali di lokasi ini",
+    "eligibilityMessageType3": "Anda telah bermain lebih dari dua kali. Di tempat yang sama, setiap orang hanya dapat memperoleh poin satu kali.",
     "eligibilityMessageType4": "Silakan tunggu {minutes} menit {seconds} detik untuk bermain gacha lagi",
     "eligibilityMessageMaxQuota": "Kuota poin telah mencapai batas maksimum pengguna, silakan mainkan kembali untuk mendapatkan hadiah yang berbeda",
     "formHere": "Formulir ada di sini",

@@ -40,6 +40,7 @@
           :is-fetching="isFetching"
           :showTitle="settings?.prize?.step_1?.to_be_redeemed?.show_prize_title"
           :showPeriod="settings?.prize?.step_1?.to_be_redeemed?.show_application_period"
+          :bgColor="settings?.prize?.step_1?.to_be_redeemed?.image_background_color"
         />
       </template>
     </div>

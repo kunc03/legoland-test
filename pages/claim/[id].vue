@@ -161,7 +161,7 @@
             :style="{ color: settings?.global?.icon_color?.background }"
           />
           <p
-            class="font-bold text-exd-1424"
+            class="font-bold text-center text-exd-1424"
             :style="{
               color: settings?.global?.modal?.text_color,
             }"
