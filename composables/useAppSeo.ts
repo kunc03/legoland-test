@@ -3,6 +3,8 @@ export function useAppSeo(settings: any, url: string) {
   const description =
     stripHtml(settings?.global?.ogp?.description) || process.env.META_DESCRIPTION
   const image = settings?.global?.ogp?.image || process.env.META_IMAGE
+  const favicon =
+    settings?.global?.ogp?.favicon || '/favicon.ico'
 
   useSeoMeta({
     title,
@@ -16,6 +18,12 @@ export function useAppSeo(settings: any, url: string) {
     twitterTitle: title,
     twitterDescription: description,
     twitterImage: image,
+  })
+
+  useHead({
+    link: [
+      { rel: 'icon', type: 'image/png', href: favicon }
+    ]
   })
 }
 

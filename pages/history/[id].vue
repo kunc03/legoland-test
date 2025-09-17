@@ -225,12 +225,9 @@ definePageMeta({
 const route = useRoute()
 const config = useRuntimeConfig()
 const id = route.params.id
-const title = config.public.META_TITLE
-const description = config.public.META_DESCRIPTION
-const image = config.public.META_IMAGE
 const requestURL = useRequestURL()
 const url = requestURL.origin
-const quote = config.public.META_QUOTE
+const quote = computed(() => settings.value?.global?.ogp?.sns)
 const historyDetailData = ref({})
 const props = defineProps(['id'])
 const isFetching = ref(true)
@@ -357,6 +354,10 @@ const initializeMap = async (lat, long) => {
   })
 }
 
+function stripHtml(html = '') {
+  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
+}
+
 const updateMetaHead = () => {
   const title = settings.value?.global?.ogp?.title || process.env.META_TITLE
   const description =
@@ -377,10 +378,6 @@ const updateMetaHead = () => {
     twitterDescription: description,
     twitterImage: image,
   })
-}
-
-function stripHtml(html = '') {
-  return html?.replace(/<\/?[^>]+(>|$)/g, '').trim()
 }
 
 const share = (type) => {
@@ -404,24 +401,24 @@ const share = (type) => {
 }
 
 const generateUrlToShare = () => {
+  const formatQuote = stripHtml(quote.value)
+
   try {
-    const shareUrl =
-      url +
-      '/share/' +
-      historyDetailData.value.character_id +
-      '/' +
-      historyDetailData.value.location_id +
-      `?t=${Date.now()}`
-    
+    const characterId = historyDetailData.value?.character_id || 'unknown'
+    const locationId = historyDetailData.value?.location_id || 'unknown'
+    const baseUrl = url || window.location.origin
+
+    const shareUrl = `${baseUrl}/share/${characterId}/${locationId}?t=${Date.now()}`
+
     return {
       url: shareUrl,
-      quote: quote,
+      quote: formatQuote,
     }
   } catch (error) {
-    console.log(error)
+    console.error('[generateUrlToShare] Failed:', error)
     return {
       url: '',
-      quote: quote,
+      quote: formatQuote,
     }
   }
 }
