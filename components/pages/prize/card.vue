@@ -15,6 +15,7 @@
         :image-card="item.image"
         :is-fetching="isFetching"
         :isDisabled="item.disabled"
+        :bgColor="bgColor"
       >      
         <template v-slot:text>
           <div class="inline-flex justify-between pr-4 w-100" :class="item.disabled ? 'opacity-50' : ''">
@@ -78,6 +79,9 @@ const props = defineProps({
   showPeriod: {
     type: Boolean,
     default: true
+  },
+  bgColor: {
+    type: String
   }
 })
 
