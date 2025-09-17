@@ -328,7 +328,7 @@
     "category": "類別",
     "gacha": "轉蛋",
     "eligibilityMessageType1": "當日已進行過轉蛋。每個地點每日僅可獲得一次點數。",
-    "eligibilityMessageType3": "每個地點僅限進行一次轉蛋。",
+    "eligibilityMessageType3": "您已經遊玩超過兩次。在同一個地點，每人只能獲得一次積分。",
     "eligibilityMessageType4": "請等待 {minutes} 分 {seconds} 秒後再進行轉蛋。",
     "eligibilityMessageMaxQuota": "點數配額已達上限，請重新轉蛋以獲得其他獎品。",
     "formHere": "表單在此",

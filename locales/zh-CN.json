@@ -328,7 +328,7 @@
     "category": "类别",
     "gacha": "扭蛋",
     "eligibilityMessageType1": "当天已多次玩扭蛋。每个地点每天只能获得一次积分。",
-    "eligibilityMessageType3": "此地点每天只能扭蛋一次",
+    "eligibilityMessageType3": "您已经玩了两次以上。在同一个地点，每人只能获得一次积分。",
     "eligibilityMessageType4": "请等待 {minutes} 分钟 {seconds} 秒后再次扭蛋",
     "eligibilityMessageMaxQuota": "当前奖品名额已满，请再试一次以获取其他奖品",
     "formHere": "表格在这里",

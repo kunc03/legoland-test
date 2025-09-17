@@ -328,7 +328,7 @@
   "category": "Category",
   "gacha": "Gacha",
   "eligibilityMessageType1": "Gacha was played more than once in a day. Points can only be earned once per day at the same spot.",
-  "eligibilityMessageType3": "You can only gacha at this location for 1 time only",
+  "eligibilityMessageType3": "You have played more than twice. At the same spot, each person can only earn points once.",
   "eligibilityMessageType4": "Please wait after {minutes} minutes {seconds} seconds to play gacha again",
   "eligibilityMessageMaxQuota": "The point quota has reached maximum user , please play again to receive different prize",
   "formHere": "The Form Is Here",
