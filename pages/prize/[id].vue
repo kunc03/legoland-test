@@ -17,7 +17,7 @@
         <CharacterCard
           v-else
           :image="prizeDetailData.image"
-          variant="without-background"
+          :bgColor="settings?.prize?.step_1?.prize_description?.image_background_color"
         />
       </div>
       <div class="flex flex-col justify-between w-full p-5">

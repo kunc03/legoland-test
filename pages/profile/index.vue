@@ -128,19 +128,6 @@
               :autocomplete="getAutocomplete(item)"
             />
 
-            <p
-              v-if="item.name === 'postal_code'"
-              class="mt-2 font-normal text-exd-1320 text-exd-gray-scorpion"
-            >
-              {{ t('postalCodeInformation') }}
-            </p>
-            <p
-              v-if="item.name === 'phone_number'"
-              class="mt-2 font-normal text-exd-1320 text-exd-gray-scorpion"
-            >
-              {{ t('phoneInfo') }}
-            </p>
-
             <GenderSelection
               v-if="item.type === 'select_button'"
               v-model="form[item.name]"
@@ -342,6 +329,13 @@
                   ?.button_text_and_color?.color
               "
             />
+
+            <p
+              v-if="item.additional_notes"
+              class="mt-2 font-normal text-exd-1320 text-exd-gray-scorpion"
+            >
+              {{ item.additional_notes }}
+            </p>
           </div>
 
           <template

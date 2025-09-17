@@ -30,9 +30,13 @@
       class="relative inline-flex flex-col items-center justify-center gap-5 mb-5"
     >
       <div
-        v-if="settings?.flow?.screens?.user_dashboard_screen?.show_prize_collection"
+        v-if="
+          settings?.flow?.screens?.user_dashboard_screen?.show_prize_collection
+        "
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
-        :class="[`bg-${settings?.user_dashboard?.prize_collections?.background.value}`]"
+        :class="[
+          `bg-${settings?.user_dashboard?.prize_collections?.background.value}`,
+        ]"
         :style="{
           boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
           background:
@@ -57,7 +61,9 @@
       </div>
 
       <div
-        v-if="settings?.flow?.screens?.user_dashboard_screen?.show_gacha_collections"
+        v-if="
+          settings?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
+        "
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :style="{
           boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
@@ -105,7 +111,10 @@
       </div>
     </div>
 
-    <div v-if="settings?.flow?.screens?.show_banner" class="relative inline-flex flex-col w-full mx-auto mt-5">
+    <div
+      v-if="settings?.flow?.screens?.show_banner"
+      class="relative inline-flex flex-col w-full mx-auto mt-5"
+    >
       <Swiper
         :spaceBetween="30"
         :centeredSlides="true"
