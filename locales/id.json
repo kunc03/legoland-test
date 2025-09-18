@@ -350,6 +350,7 @@
     "textOnlyAllowed": "Hanya teks yang diizinkan",
     "notRegistered": "Anda belum terdaftar. Anda perlu mendaftar sebagai anggota baru dengan memilih tombol ‘Daftar’.",
     "notVerified": "Anda sudah mendaftar tetapi belum memverifikasi pendaftaran Anda. Silakan verifikasi pendaftaran melalui email Anda.",
-    "phoneInfo": "Nomor telepon ini hanya akan digunakan sebagai ID untuk login dan tidak akan digunakan untuk tujuan lain."
+    "phoneInfo": "Nomor telepon ini hanya akan digunakan sebagai ID untuk login dan tidak akan digunakan untuk tujuan lain.",
+  "phoneNumberInUse": "Nomor telepon ini sudah digunakan."
   }
   
