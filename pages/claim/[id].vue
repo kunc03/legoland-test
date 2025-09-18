@@ -19,7 +19,8 @@
     </p>
 
     <div
-      class="flex flex-col justify-between gap-5 py-8 bg-exd-banana grow px-7"
+      class="flex flex-col justify-between gap-5 py-8 grow px-7"
+      :style="{ background: step2Data?.image_background_color }"
     >
       <div class="flex flex-col gap-5">
         <div class="relative w-full h-auto mx-auto bg-white rounded-lg">
