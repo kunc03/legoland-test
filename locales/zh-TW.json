@@ -350,6 +350,7 @@
     "textOnlyAllowed": "僅允許文字",
     "notRegistered": "您尚未註冊。您需要點選『註冊』按鈕以新會員身份進行註冊。",
     "notVerified": "您已註冊，但尚未驗證您的註冊。請透過電子郵件驗證您的註冊。",
-    "phoneInfo": "此電話號碼僅作為登入 ID 使用，不會用於其他用途。"
+    "phoneInfo": "此電話號碼僅作為登入 ID 使用，不會用於其他用途。",
+    "phoneNumberInUse": "这个电话号码已被使用。"
   }
   

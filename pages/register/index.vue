@@ -690,7 +690,7 @@ const handleApiError = (error) => {
   errorAgeMessage.value = Array.isArray(response?.age) ? response.age[0] : ''
 
   errorPhoneNumber.value = Array.isArray(response?.phone_number)
-    ? response.phone_number[0]
+    ? t('phoneNumberInUse')
     : ''
 
   if (response.email) {
