@@ -99,7 +99,10 @@
   <Dialog
     v-model:visible="isRedeemDialogVisible"
     modal
-    class="!bg-white !w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    class="!w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
   >
     <template #container>
       <img
@@ -167,8 +170,20 @@
               color: settings?.global?.modal?.text_color,
             }"
           >
-            {{ errorMessage }}
+            {{ $t('cannotClaim') }}
           </p>
+
+          <SolidButton
+            :on-click="handleDialog"
+            :has-loading="isLoading"
+            :label="$t('returnToPrizeList')"
+            :bgColor="
+              step2Data?.button_and_text_color?.background
+            "
+            :textColor="
+              step2Data?.button_and_text_color?.color
+            "
+          />
         </div>
       </div>
     </template>
