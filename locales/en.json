@@ -351,5 +351,7 @@
   "notRegistered": "You are not yet registered. You will need to register as a new member by selecting the ‘Register’ button.",
   "notVerified": "You have registered but you have not verified your registration yet. Please verify your registration through your email.",
   "phoneInfo": "This phone number will only be used as a login ID and will not be used for any other purposes.",
-  "phoneNumberInUse": "This phone number is already in use."
+  "phoneNumberInUse": "This phone number is already in use.",
+  "cannotClaim": "The selected prize has already been redeemed. There was only 1 item left in stock, but it was claimed by another user. Please select a different prize.",
+  "returnToPrizeList": "Return to prize selection"
 }

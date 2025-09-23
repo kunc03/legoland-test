@@ -99,7 +99,10 @@
   <Dialog
     v-model:visible="isRedeemDialogVisible"
     modal
-    class="!bg-white !w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    class="!w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
   >
     <template #container>
       <img
@@ -138,7 +141,7 @@
   <Dialog
     v-model:visible="insufficientDialogVisible"
     modal
-    class="!w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    class="!max-w-sm border border-exd-gray-44 rounded-xl"
     :style="{
       background: settings?.global?.modal?.background_color,
     }"
@@ -167,8 +170,21 @@
               color: settings?.global?.modal?.text_color,
             }"
           >
-            {{ errorMessage }}
+            {{ $t('cannotClaim') }}
           </p>
+
+          <SolidButton
+            :on-click="() => navigateTo('/prize')"
+            :has-loading="isLoading"
+            :label="$t('returnToPrizeList')"
+            :bgColor="
+              step2Data?.button_and_text_color?.background
+            "
+            :textColor="
+              step2Data?.button_and_text_color?.color
+            "
+            class="w-full"
+          />
         </div>
       </div>
     </template>
@@ -274,7 +290,7 @@ const id = route.params.id
 const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
-    const { data } = await useFetchApi('GET', 'prize-list/' + id)
+    const { data } = await useFetchApi('GET', 'prizes/' + id)
     prizeDetailData.value = data
 
     if (data) {
