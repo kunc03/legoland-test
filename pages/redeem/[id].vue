@@ -402,9 +402,12 @@
   </div>
 
   <Dialog
-    v-model:visible="hasModal"
+    v-model:visible="insufficientDialogVisible"
     modal
-    class="!bg-white w-11/12 md:!w-5/12 !max-w-sm border border-exd-gray-44"
+    class="!max-w-sm border border-exd-gray-44 rounded-xl"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
   >
     <template #container>
       <img
@@ -414,34 +417,38 @@
         height="30"
         preload
         class="absolute z-50 cursor-pointer right-1 top-1"
-        @click="handleToggleModal"
+        @click="handleClose"
       />
       <div
-        class="flex flex-col items-center justify-center w-full gap-1 px-5 py-8 my-2"
+        class="flex flex-col items-center justify-center w-full h-full gap-4 p-5"
       >
-        <p
-          class="text-exd-gray-scorpion font-bold text-center text-1416 small:w-[105%] w-[93%] max-w-w-[93%]"
-          style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
-        >
-          {{ $t('thePrizeWillBeAwarded') }}
-        </p>
-        <p class="text-center text-exd-gray-scorpion text-1416">
-          {{ $t('winnerWillBeNotifed') }}
-        </p>
-      </div>
+        <div class="flex flex-col items-center justify-center w-full gap-8">
+          <IconsWarning
+            class="w-10 h-10"
+            :style="{ color: settings?.global?.icon_color?.background }"
+          />
+          <p
+            class="font-bold text-center text-exd-1424"
+            :style="{
+              color: settings?.global?.modal?.text_color,
+            }"
+          >
+            {{ $t('cannotClaim') }}
+          </p>
 
-      <div class="py-3">
-        <SolidButton
-          :label="$t('applyNow')"
-          :on-click="handleGoToClaim"
-          has-bottom
-          :bgColor="
-            settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
-          "
-          :textColor="
-            settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
-          "
-        />
+          <SolidButton
+            :on-click="() => navigateTo('/prize')"
+            :has-loading="isLoading"
+            :label="$t('returnToPrizeList')"
+            :bgColor="
+              redeemData?.button_and_text_color?.background
+            "
+            :textColor="
+              redeemData?.button_and_text_color?.color
+            "
+            class="w-full"
+          />
+        </div>
       </div>
     </template>
   </Dialog>
@@ -471,7 +478,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
-const hasModal = ref(false)
+const hasModal = ref(true)
 const errorScroll = ref([])
 const isLoading = ref(true)
 const isFetching = ref(false)
@@ -481,12 +488,15 @@ const disableRedeem = ref(false)
 const LOCALE = useCookie('LOCALE')
 const validateOnSubmit = ref(false)
 const isLoadingPostalCode = ref(false)
+const insufficientDialogVisible = ref(false)
 const settings = useState('settings')
 
 const handleToggleModal = () => {
   if (disableRedeem.value) return
   hasModal.value = !hasModal.value
 }
+const handleClose = () => (insufficientDialogVisible.value = false)
+
 const handleGoToClaim = () => router.push(`/claim/${route.params.id}`)
 const errorKeyPostCode = ref('')
 const errorPostCodeMessage = computed(() => t(errorKeyPostCode.value))
@@ -715,7 +725,7 @@ const validateInput = (field, value) => {
 const handleApiError = (error) => {
   errorScroll.value = []
 
-  const response = error._data?.errors
+  const response = error._data?.message || {}
 
   if (response) {
     const message = Object.keys(response).map((item) => {
@@ -726,7 +736,7 @@ const handleApiError = (error) => {
 
     errorScroll.value = message
     errorMessages.value.push(response)
-    console.log('errorMessages', errorMessages.value)
+    insufficientDialogVisible.value = true
   }
 }
 
