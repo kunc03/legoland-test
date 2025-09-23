@@ -141,7 +141,7 @@
   <Dialog
     v-model:visible="insufficientDialogVisible"
     modal
-    class="!w-exd-300 h-exd-200 !max-w-sm border border-exd-gray-44 rounded-xl"
+    class="!max-w-sm border border-exd-gray-44 rounded-xl"
     :style="{
       background: settings?.global?.modal?.background_color,
     }"
@@ -174,7 +174,7 @@
           </p>
 
           <SolidButton
-            :on-click="handleDialog"
+            :on-click="() => navigateTo('/prize')"
             :has-loading="isLoading"
             :label="$t('returnToPrizeList')"
             :bgColor="
@@ -183,6 +183,7 @@
             :textColor="
               step2Data?.button_and_text_color?.color
             "
+            class="w-full"
           />
         </div>
       </div>
@@ -289,7 +290,7 @@ const id = route.params.id
 const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
-    const { data } = await useFetchApi('GET', 'prize-list/' + id)
+    const { data } = await useFetchApi('GET', 'prizes/' + id)
     prizeDetailData.value = data
 
     if (data) {
