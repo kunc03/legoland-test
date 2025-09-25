@@ -80,6 +80,7 @@
   <AutoplayVideo
     v-if="playVideo"
     :src="settings.gacha.spin_gacha_2_screen.gacha_2_video"
+    :muted="isInstagram"
     @ended="handleGoToCharacter"
   />
 </template>
@@ -119,6 +120,7 @@ const modalLogin = ref(false)
 const showPointOnly = ref(false)
 
 const settings = useState('settings')
+const isInstagram = ref(false)
 
 const { t } = useI18n()
 
@@ -458,6 +460,12 @@ onMounted(() => {
   fetchImageFromApi()
 
   disabledButton.value = !(showTapScreen || showCharScreen)
+})
+
+onMounted(() => {
+  if (import.meta.client) {
+    isInstagram.value = /Instagram/i.test(navigator.userAgent || '')
+  }
 })
 </script>
 
