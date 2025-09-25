@@ -3,6 +3,7 @@
     <video
       autoplay
       playsinline
+      :muted="muted"
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
       @ended="$emit('ended')"
       @play="startButtonDelay"
@@ -21,7 +22,17 @@
 </template>
 
 <script setup>
-const props = defineProps(['src'])
+const props = defineProps({
+  src: {
+    type: String,
+    required: true,
+  },
+  muted: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const emit = defineEmits(['ended'])
 
 const showButton = ref(false)

@@ -1,12 +1,29 @@
 <template>
-  <SplashScreen v-if="settings?.flow?.screens?.show_loading_screen" @finish="isSplashComplete = true" />
+  <SplashScreen
+    v-if="settings?.flow?.screens?.show_loading_screen"
+    @finish="isSplashComplete = true"
+  />
 
-  <div v-show="!settings?.flow?.screens?.show_loading_screen || settings?.flow?.screens?.show_before_gacha_screen || isSplashComplete" class="flex flex-col grow">
+  <div
+    v-show="
+      !settings?.flow?.screens?.show_loading_screen ||
+      settings?.flow?.screens?.show_before_gacha_screen ||
+      isSplashComplete
+    "
+    class="flex flex-col grow"
+  >
     <HeaderBar withLogo />
 
     <div
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
-      :style="{ background: settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.type === 'image' ? `url(${settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})` : settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value }"
+      :style="{
+        background:
+          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.background?.type === 'image'
+            ? `url(${settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
+            : settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+                ?.background?.value,
+      }"
     >
       <div
         class="grow w-full flex flex-col items-center justify-center relative mb-4 mt-[15%]"
@@ -17,17 +34,39 @@
           class="absolute left-1/2 top-[57%] sm:top-[53%] transform -translate-x-1/2 -translate-y-[47%] w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
           preload
         />
-
       </div>
-      
-      <div v-if="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'" class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8">
-        <p class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218" @click="handleAboutSpin">{{ settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text }}</p>
+
+      <div
+        v-if="
+          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+            ?.popup_needed === '1'
+        "
+        class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
+      >
+        <p
+          class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218"
+          @click="handleAboutSpin"
+        >
+          {{
+            settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+              ?.popup_text
+          }}
+        </p>
       </div>
 
       <SolidButton
-        :label="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
-        :bgColor="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.background"
-        :textColor="settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.color"
+        :label="
+          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_text
+        "
+        :bgColor="
+          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.background
+        "
+        :textColor="
+          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.color
+        "
         :disabled="isLoading"
         :has-loading="isLoading"
         :on-click="() => nextToSpin()"
@@ -39,6 +78,7 @@
   <AutoplayVideo
     v-if="playVideo"
     :src="settings.gacha.spin_gacha_1_screen.gacha_1_video"
+    :muted="isInstagram"
     @ended="goToSpinPoint"
   />
 
@@ -49,12 +89,15 @@
   >
     <template v-slot:body>
       <div class="flex flex-col items-center justify-center w-full gap-4 py-6">
-        <IconsWarning class="w-10 h-10" :style="{ color: settings?.global?.icon_color?.background }" />
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
         <div v-if="errorLink || locationBlocked" class="w-10/12 text-center">
-          <p 
+          <p
             class="font-bold text-exd-1424"
             :style="{
-              color: settings?.global?.modal?.text_color
+              color: settings?.global?.modal?.text_color,
             }"
           >
             {{ errorMessages }}
@@ -64,7 +107,7 @@
           <p
             class="font-bold text-exd-1424 text-exd-gray-scorpion vhtml-desc"
             :style="{
-              color: settings?.global?.modal?.text_color
+              color: settings?.global?.modal?.text_color,
             }"
             v-html="checkRadiusMessage"
           ></p>
@@ -273,10 +316,7 @@
     </template>
   </Dialog>
 
-  <Modal
-    :is-open="showAboutSpin"
-    :on-close="() => closeShowAboutSpin()"
-  >
+  <Modal :is-open="showAboutSpin" :on-close="() => closeShowAboutSpin()">
     <template v-slot:body>
       <div
         class="relative max-h-[55vh] overflow-y-auto flex flex-col items-center justify-start w-full gap-5 px-4 py-6"
@@ -284,7 +324,8 @@
         <div class="w-full text-left">
           <p
             v-html="
-              settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
+              settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+                ?.popup_content
             "
             class="text-exd-gray-scorpion"
           ></p>
@@ -298,7 +339,7 @@
     modal
     class="!w-11/12 !max-w-sm border border-exd-gray-44"
     :style="{
-      background: settings?.global?.modal?.background_color
+      background: settings?.global?.modal?.background_color,
     }"
   >
     <template #container>
@@ -314,12 +355,15 @@
       <div
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
       >
-        <IconsWarning class="w-10 h-10" :style="{ color: settings?.global?.icon_color?.background }" />
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
         <div class="w-10/12 text-center">
-          <p 
+          <p
             class="font-bold text-exd-1424"
             :style="{
-              color: settings?.global?.modal?.text_color
+              color: settings?.global?.modal?.text_color,
             }"
           >
             {{ errorMessages }}
@@ -379,6 +423,8 @@ const locationBlocked = ref(false)
 const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
+
+const isInstagram = ref(false)
 
 const handleCloseModalSpinWarning = () => {
   modalSpinWarning.value = false
@@ -440,15 +486,14 @@ const nextToSpin = async () => {
   if (stepAllowLocation.value || isNotAllowed.value || modalSpinWarning.value) {
     return
   }
-      playVideo.value = true
 
-  // if (settings.value?.flow?.screens?.show_before_gacha_screen) { 
-  //   if (settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen && settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video) {
-  //     playVideo.value = true
-  //   } else {
-  //     await navigateTo(`/spin/point/${route.params.randomCode}`)
-  //   }
-  // }
+  if (settings.value?.flow?.screens?.show_before_gacha_screen) { 
+    if (settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen && settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video) {
+      playVideo.value = true
+    } else {
+      await navigateTo(`/spin/point/${route.params.randomCode}`)
+    }
+  }
 }
 
 const goToSpinPoint = async () => {
@@ -699,7 +744,9 @@ function countdown(targetDate) {
 }
 
 const continueToSpin = async (url) => {
-  if (settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video) {
+  if (
+    settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video
+  ) {
     playVideo.value = true
     return
   }
@@ -722,6 +769,10 @@ watch(isNotAllowed, (newValue) => {
 onMounted(() => {
   const location = route.params.randomCode
   getPassword(location)
+
+  if (import.meta.client) {
+    isInstagram.value = /Instagram/i.test(navigator.userAgent || '')
+  }
 })
 </script>
 

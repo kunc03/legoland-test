@@ -331,7 +331,7 @@
   "eligibilityMessageType1": "1日に2回以上ガチャがプレイされました。同じスポットでは1日に1回しかポイントが貯まりません。",
   "eligibilityMessageType3": "2回以上プレイされています。同じスポットでは、お一人様1回しかポイントを獲得できません。",
   "eligibilityMessageType4": "もう一度ガチャを回すには、あと{minutes}分{seconds}秒お待ちください",
-  "eligibilityMessageMaxQuota": "The point quota has reached maximum user , please play again to receive different prize",
+  "eligibilityMessageMaxQuota": "ポイント枠が上限に達しました。別の賞品を受け取るために、もう一度プレイしてください。",
   "formHere": "フォームはこちら",
   "playAgain": "ありがとうございました！",
   "enterSameEmail": "堀商店サイトと同じメールアドレスを入力ください。",
