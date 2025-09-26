@@ -78,7 +78,6 @@
   <AutoplayVideo
     v-if="playVideo"
     :src="settings.gacha.spin_gacha_1_screen.gacha_1_video"
-    :muted="isInstagram"
     @ended="goToSpinPoint"
   />
 

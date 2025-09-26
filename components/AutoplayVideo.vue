@@ -3,7 +3,7 @@
     <video
       autoplay
       playsinline
-      :muted="muted"
+      :muted="shouldMute"
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
       @ended="$emit('ended')"
       @play="startButtonDelay"
@@ -22,21 +22,16 @@
 </template>
 
 <script setup>
-const props = defineProps({
-  src: {
-    type: String,
-    required: true,
-  },
-  muted: {
-    type: Boolean,
-    default: false,
-  },
-})
-
+const props = defineProps(['src'])
 const emit = defineEmits(['ended'])
 
 const showButton = ref(false)
 let buttonDelayTimeout = null
+
+const isAndroid = /Android/i.test(navigator.userAgent)
+const isInstagram = /Instagram/i.test(navigator.userAgent)
+
+const shouldMute = isAndroid && isInstagram
 
 const startButtonDelay = () => {
   showButton.value = false
