@@ -140,7 +140,7 @@
             {{ charName }}
           </p>
         </div>
-        <div class="flex items-center gap-5 text-exd-1218">
+        <div v-if="charCategory" class="flex items-center gap-5 text-exd-1218">
           <p
             class="border-[1px] min-w-[68px] border-exd-green text-exd-green rounded-[5px] px-2"
           >

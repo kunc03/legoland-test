@@ -59,7 +59,7 @@
           />
           <Skeleton class="text-exd-gray-scorpion bg-exd-gray-scorpion" />
         </div>
-        <div v-else class="flex items-center gap-5 text-exd-1218">
+        <div v-else-if="!isFetching && historyDetailData.character_category" class="flex items-center gap-5 text-exd-1218">
           <p
             class="border-[1px] border-exd-green text-exd-green rounded-[5px] px-2"
           >
