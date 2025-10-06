@@ -323,6 +323,20 @@ const handleBtnIntroduce = () => {
   opIntro.value = !opIntro.value
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleButton()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watchEffect(() => {
   if (!settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon && !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text) {
     isHiding.value = true
