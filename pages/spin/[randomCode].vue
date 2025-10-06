@@ -757,6 +757,20 @@ const futureDateFromMinutes = (minutes) => {
   return date.toLocaleString()
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    nextToSpin()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(isNotAllowed, (newValue) => {
   if (newValue) {
     document.body.classList.add('modal-open')
