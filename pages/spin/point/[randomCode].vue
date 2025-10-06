@@ -433,6 +433,19 @@ const futureDateFromMinutes = (minutes) => {
   const date = new Date(now.getTime() + minutes * 60 * 1000)
   return date.toLocaleString()
 }
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleButton()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 onMounted(() => {
   const screens = settings.value?.flow?.screens || {}
