@@ -37,9 +37,9 @@
       />
       <div
         v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title"
-        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[17%] px-4 py-3 h-auto rounded-lg w-[30vw] sm:w-[150px]"
+        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[20%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
       >
-        <p class="text-[3.3vw] sm:text-[17px] max-w-[278px] text-center">
+        <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
           {{ pointName }}
         </p>
       </div>
