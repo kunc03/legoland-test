@@ -758,7 +758,14 @@ const futureDateFromMinutes = (minutes) => {
 }
 
 const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
+  if (event.key !== 'Enter') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (modalSpinWarning.value) {
+    continueToSpin(redirectLink.value)
+  } else{
     nextToSpin()
   }
 }

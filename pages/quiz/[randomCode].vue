@@ -215,6 +215,20 @@ const getQuestions = async () => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleQuiz()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(answer, (newVal) => {
   localStorage.setItem('answer-quiz', newVal)
 }, { deep: true })

@@ -666,6 +666,27 @@ const getBrowserInfo = computed(() => {
   }
 })
 
+const handleKeydown = (event) => {
+  if (event.key !== 'Enter') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (showModal.value) {
+    handleNextButton()
+  } else {
+    goToScan()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(value, (newVal) => {
   localStorage.setItem('answer-password', newVal)
 }, { deep: true })

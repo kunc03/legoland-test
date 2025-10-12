@@ -85,6 +85,20 @@ const goTo = (type) => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    goTo('top')
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   if (import.meta.client) {
     prizeName.value = localStorage.getItem('prize_name')
