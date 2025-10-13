@@ -115,6 +115,20 @@ const handleEmailVerify = async (token) => {
   navigateTo('/#registration-complete')
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    hasModal.value = true
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(async () => {
   const { verified, token } = route.query
   const hash = window.location.hash

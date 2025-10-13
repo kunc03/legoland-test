@@ -50,4 +50,18 @@ const resetButton = () => {
 const handleButtonClick = () => {
   resetButton()
 }
+
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleButtonClick()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>

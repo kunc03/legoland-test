@@ -436,7 +436,7 @@ const handleKeydown = (event) => {
   event.preventDefault()
   event.stopPropagation()
 
-  if (props.modelValue === true) {
+  if (props.modelValue === true && isValidInput.value && !isLoading.value && !isErrorMessage.value) {
     handleSubmit()
   }
 }

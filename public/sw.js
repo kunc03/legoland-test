@@ -1,5 +1,5 @@
 // Tentukan nama cache dan file yang ingin di-cache
-const CACHE_NAME = `gacharary-aichi-gurutto-v2 - ${self.location.origin}`
+const CACHE_NAME = `gacharary-v2 - ${self.location.origin}`
 const FOLLBACK_IMAGE = '/images/gacha-aichi.png'
 const urlsToCache = [
   '/images/sparkling.png',
