@@ -85,11 +85,12 @@ const checkCaches = () => {
 
   caches
     .open(`gacharary-v2 - ${window.location.origin}`)
-    .then(function (cache) {
-      return cache.keys()
-    })
-    .then(function (keys) {
+    .then((cache) => cache.keys())
+    .then((keys) => {
+      const cachesUrl = keys.map((i) => i.url)
+
       const filteredUrls = urlsToCache.filter(Boolean)
+
       const isCacheAlready = filteredUrls.every((i) =>
         cachesUrl.some((a) => a.includes(i))
       )
@@ -98,7 +99,7 @@ const checkCaches = () => {
         clearInterval(checkCachesInterval)
         completeLoading()
       }
-    })
+  })
 }
 
 onUnmounted(() => clearInterval(checkCachesInterval))
