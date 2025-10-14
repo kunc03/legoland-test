@@ -329,6 +329,20 @@ watchEffect(() => {
   }
 })
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleButton()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   fetchImage()
 

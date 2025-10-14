@@ -871,6 +871,23 @@ const checkPostalCode = async (code) => {
   }
 }
 
+
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value && !hasModal.value && !disableRedeem.value) {
+      handleSubmit()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(async () => {
   await store.fetchingDashboardData()
   await fetchingPrizeData()

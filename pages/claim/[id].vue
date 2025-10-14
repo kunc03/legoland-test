@@ -311,6 +311,22 @@ const handleRankColor = () => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (isRedeemDialogVisible.value && !isLoading.value) {
+      handleDialog()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(async () => {
   await fetchingPrizeData()
   handleRankColor()
