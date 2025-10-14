@@ -960,6 +960,22 @@ watch(
   { deep: true }
 )
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (isButtonEnabled.value && form.checked && !isErrorMessage.value) {
+      handleSubmit()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   getTerms()
 })

@@ -670,6 +670,24 @@ watch(value, (newVal) => {
   localStorage.setItem('answer-password', newVal)
 }, { deep: true })
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isNotAllowed.value && !isLoading.value && !stepAllowLocation.value && !showModal.value) {
+      goToScan()
+    } else if (showModal.value) {
+      handleNextButton()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(async () => {
   const location = route.params.randomCode
   const savedAnswer = localStorage.getItem('answer-password')

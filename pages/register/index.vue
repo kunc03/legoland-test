@@ -836,6 +836,22 @@ const getAutocomplete = (item) => {
   return 'off'
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value && form.value.checked && !isErrorMessage.value) {
+      handleSubmit()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   if (import.meta.client) {
     const savedForm = localStorage.getItem('registerForm')

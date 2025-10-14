@@ -91,6 +91,22 @@ const goTo = (type) => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value) {
+      goTo('top')
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   saveSpin()
 })

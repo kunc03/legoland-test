@@ -434,8 +434,12 @@ const futureDateFromMinutes = (minutes) => {
   return date.toLocaleString()
 }
 const handleKeydown = (event) => {
+  const prevPlayVideo = playVideo.value;
   if (event.key === 'Enter') {
     handleButton()
+    if (playVideo.value && prevPlayVideo) {
+      handleGoToCharacter()
+    }
   }
 }
 

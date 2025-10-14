@@ -759,9 +759,13 @@ const futureDateFromMinutes = (minutes) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    nextToSpin()
+    nextToSpin();
+    if (playVideo.value) {
+      goToSpinPoint();
+    }
   }
 }
+
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)

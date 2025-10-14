@@ -349,6 +349,22 @@ const fetchingShareData = async () => {
 
 fetchingShareData()
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (shareDetailData.value == null && isValidPath.value) {
+      backToTop()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onBeforeMount(async () => {
   await loadGoogleMaps()
   let lat = shareDetailData.value?.lat

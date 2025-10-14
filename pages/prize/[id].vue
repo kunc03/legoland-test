@@ -325,6 +325,24 @@ const openGoogleMaps = () => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!disableRedeem.value && !isFetching.value && !hasModal.value) {
+      handleToggleModal()
+    } else if (hasModal.value) {
+      handleGoToRedeem()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(async () => {
   await loadGoogleMaps()
   await fetchingPrizeData()

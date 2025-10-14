@@ -722,7 +722,7 @@ const validateInput = (field, value) => {
   }
 }
 
-const handleApiError = (error) => {
+const handleApiError = async (error) => {
   errorScroll.value = []
 
   const response = error._data?.message || {}
@@ -736,7 +736,10 @@ const handleApiError = (error) => {
 
     errorScroll.value = message
     errorMessages.value.push(response)
-    insufficientDialogVisible.value = true
+    if (errorScroll.value.length === 0) {
+      await nextTick()
+      insufficientDialogVisible.value = true
+    }
   }
 }
 
@@ -870,6 +873,22 @@ const checkPostalCode = async (code) => {
     isLoadingPostalCode.value = false
   }
 }
+
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value && !insufficientDialogVisible.value && !disableRedeem.value) {
+      handleSubmit()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 onMounted(async () => {
   await store.fetchingDashboardData()
