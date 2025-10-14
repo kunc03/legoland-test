@@ -154,6 +154,20 @@ const getNotes = async () => {
   }
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleSubmit()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watchEffect(() => {
   if (route.query.email_sent) {
     steps.value = 'step_2'

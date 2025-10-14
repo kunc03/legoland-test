@@ -451,6 +451,25 @@ const calculateStar = (characterStar) => {
 const openLink = (url) => {
   window.open(url, '_blank')
 }
+
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    navigateTo(url, {
+      external: true,
+      open: {
+        target: '_blank',
+      },
+    })
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style scoped>

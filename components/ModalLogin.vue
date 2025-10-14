@@ -430,6 +430,25 @@ const initForm = () => {
   isFormReady.value = true
 }
 
+const handleKeydown = (event) => {
+  if (event.key !== 'Enter') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (props.modelValue === true && isValidInput.value && !isLoading.value && !isErrorMessage.value) {
+    handleSubmit()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(
   () => settings.value?.register_login?.registration_login_pop_up?.login_fields,
   (fields) => {

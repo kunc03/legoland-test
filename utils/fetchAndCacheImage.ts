@@ -1,6 +1,6 @@
 export const fetchAndCacheImage = async (url: string) => {
   
-    const CACHE_NAME = `gacharary-aichi-gurutto-v2 - ${self.location.origin}`;
+    const CACHE_NAME = `gacharary-v2 - ${self.location.origin}`;
   
     try {
       const cache = await caches.open(CACHE_NAME);

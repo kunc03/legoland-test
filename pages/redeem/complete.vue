@@ -100,6 +100,20 @@ const handleClick = async () => {
   goTo('top')
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleClick()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   saveSpin()
   type.value = sessionStorage.getItem('type')

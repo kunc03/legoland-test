@@ -193,6 +193,20 @@ const validateInput = (field, value) => {
   // console.log(`Validated ${field}:`, value)
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleSubmit()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   fetchingEmailData()
 })
