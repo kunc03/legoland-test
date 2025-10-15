@@ -435,6 +435,7 @@ const futureDateFromMinutes = (minutes) => {
 }
 
 const handleKeydown = (event) => {
+  if (hasModal.value) return
   if (event.key === 'Enter') {
     handleButton()
   }

@@ -335,7 +335,7 @@ const handleImageAfterGacha = (data) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    if (afterGacha?.option === '2') { 
+    if (props.visible && afterGacha?.option === '2') { 
       handleToRedirect()
     }
   }
