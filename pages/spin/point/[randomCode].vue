@@ -434,6 +434,7 @@ const futureDateFromMinutes = (minutes) => {
   return date.toLocaleString()
 }
 const handleKeydown = (event) => {
+  if(hasModal.value) return
   const prevPlayVideo = playVideo.value;
   if (event.key === 'Enter') {
     handleButton()
