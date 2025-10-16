@@ -32,62 +32,65 @@
           </p>
         </div>
 
-        <div
-          v-for="(item, index) in visibleLoginFields"
-          :key="index"
-          class="!w-full p-0 mb-2"
-        >
-          <InputText
-            v-if="item.type !== 'date'"
-            :onlyNumeric="
-              item.text_type === 'number' || item.text_type === 'tel'
-                ? true
-                : false
-            "
-            :type="item.text_type"
-            :model="form[item.name]"
-            :placeholder="item.placeholder"
-            @update:model="updateModel(item.name, item.type, $event)"
-            @validate="validateInput(item.name, $event)"
-            :error="
-              handleError(
-                item.name,
-                item.required,
-                item?.min,
-                item?.max,
-                item.text_type
-              )
-            "
-          />
+        <div v-if="!isSocialMedia" class="w-full p-0 mb-2">
+          <div
+            v-for="(item, index) in visibleLoginFields"
+            :key="index"
+            class="!w-full"
+          >
+            <InputText
+              v-if="item.type !== 'date'"
+              :onlyNumeric="
+                item.text_type === 'number' || item.text_type === 'tel'
+                  ? true
+                  : false
+              "
+              :type="item.text_type"
+              :model="form[item.name]"
+              :placeholder="item.placeholder"
+              @update:model="updateModel(item.name, item.type, $event)"
+              @validate="validateInput(item.name, $event)"
+              :error="
+                handleError(
+                  item.name,
+                  item.required,
+                  item?.min,
+                  item?.max,
+                  item.text_type
+                )
+              "
+            />
 
-          <InputDate
-            v-if="item.type === 'date'"
-            :placeholder="item.placeholder"
-            v-model:model="form[item.name]"
-            :error="
-              handleError(
-                item.name,
-                item.required,
-                item?.min,
-                item?.max,
-                item.text_type
-              )
-            "
-            @update:model="updateModel(item.name, item.type, $event)"
-            :manualInput="false"
-            :class="{
-              'input-error': handleError(
-                item.name,
-                item.required,
-                item?.min,
-                item?.max,
-                item.text_type
-              ),
-            }"
-          />
+            <InputDate
+              v-if="item.type === 'date'"
+              :placeholder="item.placeholder"
+              v-model:model="form[item.name]"
+              :error="
+                handleError(
+                  item.name,
+                  item.required,
+                  item?.min,
+                  item?.max,
+                  item.text_type
+                )
+              "
+              @update:model="updateModel(item.name, item.type, $event)"
+              :manualInput="false"
+              :class="{
+                'input-error': handleError(
+                  item.name,
+                  item.required,
+                  item?.min,
+                  item?.max,
+                  item.text_type
+                ),
+              }"
+            />
+          </div>
         </div>
 
         <a
+          v-if="!isSocialMedia"
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
             color: settings?.global?.modal?.text_color,
@@ -102,34 +105,18 @@
         </a>
 
         <SolidButton
-          :label="
-            settings?.register_login?.registration_login_pop_up?.button_1_text
-          "
+          v-for="(btnSet, index) in filteredLoginBtn"
+          :key="index"
+          :label="btnSet.setting_button_text"
           :bgColor="
-            settings?.register_login?.registration_login_pop_up
-              ?.button_text_color_1.background
+            btnSet.bgColor || btnSet?.setting_button_text_color?.background
           "
           :textColor="
-            settings?.register_login?.registration_login_pop_up
-              ?.button_text_color_1.color
+            btnSet.textColor || btnSet?.setting_button_text_color?.color
           "
-          :onClick="handleSubmit"
-          :disabled="!isValidInput || isLoading"
+          :onClick="() => handleAction(btnSet.setting_button_list)"
+          :disabled="btnSet.setting_button_list === 'login_button' && !isValidInput || isLoading"
           :has-loading="isLoading"
-        />
-        <SolidButton
-          :label="
-            settings?.register_login?.registration_login_pop_up?.button_2_text
-          "
-          :bgColor="
-            settings?.register_login?.registration_login_pop_up
-              ?.button_text_color_2.background
-          "
-          :textColor="
-            settings?.register_login?.registration_login_pop_up
-              ?.button_text_color_2.color
-          "
-          :onClick="handleToRegister"
         />
       </div>
     </template>
@@ -211,6 +198,8 @@ import useRegister from '~/composables/useRegister'
 const register = useRegister()
 const { isSpin } = storeToRefs(register)
 const settings = useState('settings')
+const loginType =
+  settings.value?.register_login?.registration_login_pop_up?.login_options
 
 const { t } = useI18n()
 
@@ -342,13 +331,57 @@ const handleSubmit = async () => {
     await saveSpin()
 
     await navigateTo('/dashboard', { replace: true })
-
   } catch (error) {
     errorStatus.value = error._data?.data?.type
 
     errorMessages.value = [
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
-      t('loginFailed'),
+        t('loginFailed'),
+    ]
+
+    isErrorMessage.value = true
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleLoginLine = async () => {
+    const response = await useFetchApi('GET', 'login/line/redirect')
+
+    console.log('response', response)
+
+    if (response?.authorization_url) { 
+      const loginUrl = response?.authorization_url
+      window.location.href = loginUrl
+    }
+    
+
+}
+
+const processLoginLine = async () => {
+  try {
+    const response = await useFetchApi('POST', 'login/line/token', {
+      body: { 
+        code: route.query.code
+       },
+    })
+
+    const TOKEN = useCookie('TOKEN', { maxAge: 60 * 60 * 24 * 7 })
+    const USER = useCookie('USER', { maxAge: 60 * 60 * 24 * 7 })
+    TOKEN.value = response.data.code
+    USER.value = response.data.user
+
+    await nextTick()
+
+    await saveSpin()
+
+    await navigateTo('/dashboard', { replace: true })
+  } catch (error) {
+    errorStatus.value = error._data?.data?.type
+
+    errorMessages.value = [
+      settings.value?.register_login?.registration_login_pop_up?.warning_text ||
+        t('loginFailed'),
     ]
 
     isErrorMessage.value = true
@@ -389,7 +422,6 @@ const saveSpin = async () => {
     sessionStorage.setItem('IS_QUOTA_AVAILABLE', data?.is_quota_available)
     sessionStorage.setItem('LOCATION_SLUG', data?.location_slug)
   } catch (error) {
-
     throw error
   }
 }
@@ -405,7 +437,11 @@ const toVisibleLoginFields = (fields = []) =>
 
 const safeDecrypt = (cipher) => {
   if (!cipher) return ''
-  try { return decryptData(cipher) } catch { return '' }
+  try {
+    return decryptData(cipher)
+  } catch {
+    return ''
+  }
 }
 
 const initForm = () => {
@@ -418,7 +454,9 @@ const initForm = () => {
     if (f.name === 'email') {
       newForm.email = savedForm.email || emailSession || ''
     } else if (f.name === 'password') {
-      const fromLocal = savedForm.password ? safeDecrypt(savedForm.password) : ''
+      const fromLocal = savedForm.password
+        ? safeDecrypt(savedForm.password)
+        : ''
       const fromSession = safeDecrypt(passwordCipher)
       newForm.password = fromLocal || fromSession || ''
     } else {
@@ -430,23 +468,64 @@ const initForm = () => {
   isFormReady.value = true
 }
 
+const filteredLoginBtn = ref([])
+const popup = settings.value?.register_login?.registration_login_pop_up
+
+const { login_options = [], setting_buttons = [] } = popup
+const isSocialMedia = login_options.includes('social_media')
+
+const handleLoginBtn = () => {
+  if (!popup) return
+
+  filteredLoginBtn.value = setting_buttons.filter((btn) => {
+    const isLine = btn.setting_button_list?.includes('line')
+    return isSocialMedia ? isLine : !isLine
+  })
+}
+
+const handleAction = (action) => {
+  switch (action) {
+    case 'login_button':
+      handleSubmit()
+      break
+    case 'register_button':
+      handleToRegister()
+      break
+    case 'login_line_button':
+      handleLoginLine()
+      break
+  }
+}
+
 const handleKeydown = (event) => {
   if (event.key !== 'Enter') return
 
   event.preventDefault()
   event.stopPropagation()
 
-  if (props.modelValue === true && isValidInput.value && !isLoading.value && !isErrorMessage.value) {
+  if (
+    props.modelValue === true &&
+    isValidInput.value &&
+    !isLoading.value &&
+    !isErrorMessage.value
+  ) {
     handleSubmit()
   }
 }
 
 onMounted(() => {
+  handleLoginBtn()
   window.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+})
+
+watchEffect(() => {
+  if (route.query?.code) {
+    processLoginLine()
+  }
 })
 
 watch(
@@ -455,7 +534,11 @@ watch(
     loginFields.value = fields || []
     visibleLoginFields.value = toVisibleLoginFields(loginFields.value)
 
-    if (import.meta.client && visibleLoginFields.value.length && !isFormReady.value) {
+    if (
+      import.meta.client &&
+      visibleLoginFields.value.length &&
+      !isFormReady.value
+    ) {
       initForm()
     }
   },
@@ -467,7 +550,7 @@ watch(
   (newVal) => {
     if (!import.meta.client || !isFormReady.value) return
 
-    const allEmpty = Object.values(newVal).every(v => !v)
+    const allEmpty = Object.values(newVal).every((v) => !v)
     if (allEmpty) return
 
     const current = JSON.parse(localStorage.getItem('loginForm') || '{}')
