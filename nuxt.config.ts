@@ -1,5 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-
 import Aura from '@primevue/themes/aura'
 
 export default defineNuxtConfig({
@@ -100,8 +98,24 @@ export default defineNuxtConfig({
 
   vite: {
     esbuild: {
-      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      drop:
+        process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     },
+    // Fix Node 22 (alias modul bawaan)
+    resolve: {
+      alias: {
+        stream: 'node:stream',
+      },
+    },
+  },
+
+  // Build lebih kompatibel untuk Node 22
+  nitro: {
+    preset: 'node',
+  },
+
+  build: {
+    transpile: ['@primeuix/utils', '@primevue/core'],
   },
 
   compatibilityDate: '2024-07-29',
