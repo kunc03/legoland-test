@@ -66,7 +66,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  loading: Boolean,
   validateOnSubmit: Boolean,
 })
 
