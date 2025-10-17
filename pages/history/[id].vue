@@ -32,7 +32,10 @@
           />
           <p
             v-else
-            class="w-full font-bold text-exd-1424 text-exd-gray-scorpion"
+            class="max-w-full font-bold text-exd-1424 line-clamp-2 text-exd-gray-scorpion"
+            :class="{
+              'max-w-[220px] line-clamp-3': !historyDetailData.show_character_rarity,
+            }"
           >
             {{ historyDetailData.character_name }}
           </p>

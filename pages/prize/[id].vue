@@ -28,7 +28,11 @@
             <Skeleton v-if="isFetching" class="!h-3" width="15rem"></Skeleton>
             <p
               v-else
-              class="font-bold text-exd-1424 max-w-[220px] line-clamp-2 text-exd-gray-scorpion"
+              class="max-w-full font-bold text-exd-1424 text-exd-gray-scorpion"
+              :class="{
+                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'color',
+                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'image',
+              }"
             >
               {{ prizeDetailData.name }}
             </p>
