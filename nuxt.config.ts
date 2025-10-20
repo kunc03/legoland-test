@@ -115,7 +115,7 @@ export default defineNuxtConfig({
   },
 
   build: {
-    transpile: ['@primeuix/utils', '@primevue/core'],
+    transpile: ['@primeuix/utils', 'primevue'],
   },
 
   compatibilityDate: '2024-07-29',
