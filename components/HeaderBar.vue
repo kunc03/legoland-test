@@ -25,7 +25,7 @@
         :src="settings.global.logo"
         alt="intl"
         preload
-        class="absolute w-auto h-[90%] transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+        class="absolute w-[60%] h-auto transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
       />
     </div>
     <div class="pr-5 shrink-0">

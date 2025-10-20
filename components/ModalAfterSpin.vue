@@ -97,7 +97,7 @@
       </div>
     </template>
 
-    <template v-else #container>
+    <template v-else-if="afterGacha?.option === '1'" #container>
       <img
         src="/images/close.svg"
         alt="close"

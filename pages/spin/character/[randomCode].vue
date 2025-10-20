@@ -78,6 +78,7 @@
 
   <!-- :is-redirect="isRedirect" -->
   <ModalAfterSpin
+    v-if="settings?.gacha?.after_gacha_screen?.option !== '3'"
     v-model:visible="hasModal"
     :is-redirect="false"
     :popup-button="popupButton"
@@ -230,6 +231,7 @@ const popupLink = ref('')
 const popupDescription = ref('')
 const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
+const hasClicked = ref(false)
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
@@ -240,6 +242,17 @@ const { t } = useI18n()
 const handleCloseModalLogin = () => (modalLogin.value = false)
 
 const handleButton = async () => {
+  const afterGacha = settings.value?.gacha?.after_gacha_screen
+  
+  if (!hasClicked.value) {
+    handleBtnIntroduce()
+    return
+  }
+
+  if (afterGacha?.option === '3') {
+    modalLogin.value = true
+  }
+
   if (!TOKEN.value && !USER.value) {
     handleShowDialog()
   } else {
@@ -320,6 +333,7 @@ const goTo = async (url) => {
 }
 
 const handleBtnIntroduce = () => {
+  hasClicked.value = true
   opIntro.value = !opIntro.value
 }
 

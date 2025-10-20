@@ -72,12 +72,14 @@ const checkCaches = () => {
     '/images/text-char.png',
     '/icons/icon-gift.svg',
     settings.value?.global?.logo,
+    settings.value?.global?.gacha_machine_image,
     getImageValue(gacha?.loading_screen?.background),
     gacha?.loading_screen?.gif || "",
     spin1?.gacha_1_video || "",
     getImageValue(spin1?.before_gacha_1_screen?.background),
     getImageValue(spin1?.after_gacha_1_screen?.background),
     spin2?.gacha_2_video || "",
+    getImageValue(spin2?.after_gacha_2_screen?.popup_icon),
     getImageValue(spin2?.after_gacha_2_screen?.background)
   ]
   caches
@@ -103,9 +105,14 @@ const checkCaches = () => {
   <div
     v-if="loading"
     class="w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
-    :style="{ backgroundImage: `url(${settings.gacha.loading_screen.background.value})` }"
-  >
-    <div
+    :style="{
+      background:
+        settings.gacha.loading_screen.background.type === 'image'
+          ? `url(${settings.gacha.loading_screen.background.value})`
+          : settings.gacha.loading_screen.background.value,
+    }"
+  > 
+  <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
       <img
