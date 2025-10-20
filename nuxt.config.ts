@@ -107,7 +107,7 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks: {
-            'primevue': ['@primevue/core', '@primevue/themes', '@primeuix/utils'],
+            'primevue': ['primevue', '@primevue/themes', '@primeuix/utils'],
             'vendor': ['vue', 'pinia', 'vue-router'],
           },
         },
