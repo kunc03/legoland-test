@@ -348,8 +348,8 @@ const handleSubmit = async () => {
 const handleLoginLine = async () => {
     const response = await useFetchApi('GET', 'login/line/redirect?env=develop')
 
-    if (response?.authorization_url) { 
-      const loginUrl = response?.authorization_url
+    if (response?.data?.authorization_url) { 
+      const loginUrl = response?.data?.authorization_url
       window.location.href = loginUrl
     }
     
@@ -361,6 +361,7 @@ const processLoginLine = async () => {
     const response = await useFetchApi('POST', 'login/line/token', {
       body: { 
         code: route.query.code,
+        state: route.query.state,
         env: 'develop'
        },
     })
@@ -377,10 +378,11 @@ const processLoginLine = async () => {
     await navigateTo('/dashboard', { replace: true })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
+    console.log('error', error)
 
-    errorMessages.value = [
+    errorMessages.value = [ error?._data?.message ||
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
-        t('loginFailed'),
+        "Can't login",
     ]
 
     isErrorMessage.value = true
