@@ -32,7 +32,7 @@
           </p>
         </div>
 
-        <div v-if="!isSocialMedia" class="w-full p-0 mb-2">
+        <div v-if="login_options.includes('other_sign_in_options')" class="w-full p-0 mb-2">
           <div
             v-for="(item, index) in visibleLoginFields"
             :key="index"
@@ -90,7 +90,7 @@
         </div>
 
         <a
-          v-if="!isSocialMedia"
+          v-if="login_options.includes('other_sign_in_options')"
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
             color: settings?.global?.modal?.text_color,
