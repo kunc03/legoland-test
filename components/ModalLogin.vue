@@ -346,7 +346,7 @@ const handleSubmit = async () => {
 }
 
 const handleLoginLine = async () => {
-    const response = await useFetchApi('GET', 'login/line/redirect?env=develop')
+    const response = await useFetchApi('GET', `login/line/redirect?env=${config.public.NODE_ENV}`)
 
     if (response?.data?.authorization_url) { 
       const loginUrl = response?.data?.authorization_url
@@ -362,7 +362,7 @@ const processLoginLine = async () => {
       body: { 
         code: route.query.code,
         state: route.query.state,
-        env: 'develop'
+        env: config.public.NODE_ENV
        },
     })
 
