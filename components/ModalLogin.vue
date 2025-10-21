@@ -32,7 +32,7 @@
           </p>
         </div>
 
-        <div v-if="!isSocialMedia" class="w-full p-0 mb-2">
+        <div v-if="login_options.includes('other_sign_in_options')" class="w-full p-0 mb-2">
           <div
             v-for="(item, index) in visibleLoginFields"
             :key="index"
@@ -90,7 +90,7 @@
         </div>
 
         <a
-          v-if="!isSocialMedia"
+          v-if="login_options.includes('other_sign_in_options')"
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
             color: settings?.global?.modal?.text_color,
@@ -346,10 +346,10 @@ const handleSubmit = async () => {
 }
 
 const handleLoginLine = async () => {
-    const response = await useFetchApi('GET', 'login/line/redirect?env=develop')
+    const response = await useFetchApi('GET', `login/line/redirect?env=${config.public.NODE_ENV}`)
 
-    if (response?.authorization_url) { 
-      const loginUrl = response?.authorization_url
+    if (response?.data?.authorization_url) { 
+      const loginUrl = response?.data?.authorization_url
       window.location.href = loginUrl
     }
     
@@ -361,7 +361,8 @@ const processLoginLine = async () => {
     const response = await useFetchApi('POST', 'login/line/token', {
       body: { 
         code: route.query.code,
-        env: 'develop'
+        state: route.query.state,
+        env: config.public.NODE_ENV
        },
     })
 
@@ -377,10 +378,11 @@ const processLoginLine = async () => {
     await navigateTo('/dashboard', { replace: true })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
+    console.log('error', error)
 
-    errorMessages.value = [
+    errorMessages.value = [ error?._data?.message ||
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
-        t('loginFailed'),
+        "Can't login",
     ]
 
     isErrorMessage.value = true
