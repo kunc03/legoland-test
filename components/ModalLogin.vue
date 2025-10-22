@@ -32,7 +32,7 @@
           </p>
         </div>
 
-        <div v-if="login_options.includes('other_sign_in_options')" class="w-full p-0 mb-2">
+        <div v-if="login_options.includes('other_sign_in_options')" class="w-full p-0">
           <div
             v-for="(item, index) in visibleLoginFields"
             :key="index"
@@ -59,6 +59,7 @@
                   item.text_type
                 )
               "
+              class="mb-2"
             />
 
             <InputDate
