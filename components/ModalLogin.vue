@@ -369,7 +369,7 @@ const processLoginLine = async () => {
 
     const TOKEN = useCookie('TOKEN', { maxAge: 60 * 60 * 24 * 7 })
     const USER = useCookie('USER', { maxAge: 60 * 60 * 24 * 7 })
-    TOKEN.value = response.data.code
+    TOKEN.value = response.data.access_token
     USER.value = response.data.user
 
     await nextTick()
