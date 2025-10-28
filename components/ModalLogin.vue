@@ -32,7 +32,7 @@
           </p>
         </div>
 
-        <div v-if="!isSocialMedia" class="w-full p-0 mb-2">
+        <div v-if="login_options.includes('other_sign_in_options')" class="w-full p-0">
           <div
             v-for="(item, index) in visibleLoginFields"
             :key="index"
@@ -59,6 +59,7 @@
                   item.text_type
                 )
               "
+              class="mb-2"
             />
 
             <InputDate
@@ -90,7 +91,7 @@
         </div>
 
         <a
-          v-if="!isSocialMedia"
+          v-if="login_options.includes('other_sign_in_options')"
           class="font-medium underline cursor-pointer text-exd-1220"
           :style="{
             color: settings?.global?.modal?.text_color,
@@ -346,12 +347,10 @@ const handleSubmit = async () => {
 }
 
 const handleLoginLine = async () => {
-    const response = await useFetchApi('GET', 'login/line/redirect')
+    const response = await useFetchApi('GET', `login/line/redirect?env=${config.public.NODE_ENV}`)
 
-    console.log('response', response)
-
-    if (response?.authorization_url) { 
-      const loginUrl = response?.authorization_url
+    if (response?.data?.authorization_url) { 
+      const loginUrl = response?.data?.authorization_url
       window.location.href = loginUrl
     }
     
@@ -362,13 +361,15 @@ const processLoginLine = async () => {
   try {
     const response = await useFetchApi('POST', 'login/line/token', {
       body: { 
-        code: route.query.code
+        code: route.query.code,
+        state: route.query.state,
+        env: config.public.NODE_ENV
        },
     })
 
     const TOKEN = useCookie('TOKEN', { maxAge: 60 * 60 * 24 * 7 })
     const USER = useCookie('USER', { maxAge: 60 * 60 * 24 * 7 })
-    TOKEN.value = response.data.code
+    TOKEN.value = response.data.access_token
     USER.value = response.data.user
 
     await nextTick()
@@ -378,10 +379,11 @@ const processLoginLine = async () => {
     await navigateTo('/dashboard', { replace: true })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
+    console.log('error', error)
 
-    errorMessages.value = [
+    errorMessages.value = [ error?._data?.message ||
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
-        t('loginFailed'),
+        "Can't login",
     ]
 
     isErrorMessage.value = true
@@ -476,6 +478,11 @@ const isSocialMedia = login_options.includes('social_media')
 
 const handleLoginBtn = () => {
   if (!popup) return
+
+  if (login_options.length > 1) {
+    filteredLoginBtn.value = setting_buttons
+    return
+  }
 
   filteredLoginBtn.value = setting_buttons.filter((btn) => {
     const isLine = btn.setting_button_list?.includes('line')
