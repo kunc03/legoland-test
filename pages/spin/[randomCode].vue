@@ -44,8 +44,9 @@
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
         <p
-          class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218"
+          class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
           @click="handleAboutSpin"
+          :style="{ color: settings?.global?.text_colors?.tertiary }"
         >
           {{
             settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
