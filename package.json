@@ -36,7 +36,8 @@
     "primevue": "^4.4.1",
     "swiper": "^11.1.14",
     "vue-meta": "^2.4.0",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@nuxt/postcss8": "^1.1.3",

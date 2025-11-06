@@ -83,6 +83,9 @@ importers:
       swiper:
         specifier: ^11.1.14
         version: 11.2.10
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.23
       vue-meta:
         specifier: ^2.4.0
         version: 2.4.0
