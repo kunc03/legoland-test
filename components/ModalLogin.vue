@@ -531,7 +531,10 @@ onBeforeUnmount(() => {
 
 watchEffect(() => {
   if (route.query?.code) {
-    processLoginLine()
+    // Debounce so processLoginLine is not called multiple times
+    setTimeout(() => {
+      processLoginLine()
+    }, 500)
   }
 })
 
