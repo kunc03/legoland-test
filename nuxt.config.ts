@@ -1,5 +1,6 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+
 import Aura from '@primevue/themes/aura'
-import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineNuxtConfig({
   app: {
@@ -9,7 +10,7 @@ export default defineNuxtConfig({
       link: [
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:ital,wght@0,100..900;1,100..900&display=swap',
         },
       ],
       meta: [
@@ -21,9 +22,14 @@ export default defineNuxtConfig({
     },
   },
 
-  image: { dir: 'assets/images' },
+  image: {
+    dir: 'assets/images',
+  },
 
-  typescript: { strict: false },
+  typescript: {
+    strict: false,
+  },
+
   devtools: { enabled: false },
 
   modules: [
@@ -40,7 +46,9 @@ export default defineNuxtConfig({
     enabled: process.env.NODE_ENV === 'production',
   },
 
-  pinia: { disableVuex: true },
+  pinia: {
+    disableVuex: true,
+  },
 
   primevue: {
     options: {
@@ -76,9 +84,13 @@ export default defineNuxtConfig({
     },
   },
 
-  experimental: { externalVue: false },
+  experimental: {
+    externalVue: false,
+  },
 
-  routeRules: { '/spin/**': { ssr: true } },
+  routeRules: {
+    '/spin/**': { ssr: true },
+  },
 
   tailwindcss: {
     cssPath: 'assets/css/tailwind.css',
@@ -88,38 +100,8 @@ export default defineNuxtConfig({
 
   vite: {
     esbuild: {
-      drop:
-        process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     },
-    plugins: [
-      visualizer({
-        filename: 'dist-stats.html',
-        open: false, // ubah ke true kalau mau buka otomatis
-        gzipSize: true,
-        brotliSize: true,
-      }),
-    ],
-    resolve: {
-      alias: { stream: 'node:stream' },
-    },
-    build: {
-      sourcemap: false,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'primevue': ['primevue', '@primevue/themes', '@primeuix/utils'],
-            'vendor': ['vue', 'pinia', 'vue-router'],
-          },
-        },
-      },
-      chunkSizeWarningLimit: 1000, // hilangkan warning 500kB
-    },
-  },
-
-  nitro: { preset: 'node' },
-
-  build: {
-    transpile: ['@primeuix/utils', 'primevue'],
   },
 
   compatibilityDate: '2024-07-29',
