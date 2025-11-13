@@ -170,7 +170,7 @@
 
   <Transition name="fade-slide" mode="out-in">
     <div
-      v-if="opIntro && (!hideCharacterDetails || !hideStoreDetails)"
+      v-if="opIntro"
       class="with-scroll fixed z-40 transform -translate-x-1/2 -translate-y-[78%] rounded-lg shadow w-[88.889vw] sm:w-[350px] bg-white/90 sm:bottom-[17%] bottom-[10%] left-1/2"
     >
       <div
