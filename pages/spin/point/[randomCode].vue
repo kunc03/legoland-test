@@ -187,7 +187,8 @@ const fetchImageFromApi = async () => {
         character_star_name2: data.userCollection?.gacha_character.star_name2,
         character_star_name3: data.userCollection?.gacha_character.star_name3,
         store_name: data.userCollection?.gacha_character.store_name,
-        store_description: data.userCollection?.gacha_character.store_description,
+        store_description:
+          data.userCollection?.gacha_character.store_description,
         // gift_id: data.userPoint.gift.point_id,
         // gift_image: data.userPoint.gift.image,
         // gift_type: data.userPoint.gift.type,
@@ -207,6 +208,9 @@ const fetchImageFromApi = async () => {
         hide_store_details:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
             ?.display_character_introduction?.store_details,
+        hide_character_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))
@@ -365,6 +369,9 @@ const fetchImageFromApi = async () => {
         hide_store_details:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
             ?.display_character_introduction?.store_details,
+        hide_character_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))

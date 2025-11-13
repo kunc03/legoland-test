@@ -170,18 +170,18 @@
 
   <Transition name="fade-slide" mode="out-in">
     <div
-      v-if="opIntro"
+      v-if="opIntro && (!hideCharacterDetails || !hideStoreDetails)"
       class="with-scroll fixed z-40 transform -translate-x-1/2 -translate-y-[78%] rounded-lg shadow w-[88.889vw] sm:w-[350px] bg-white/90 sm:bottom-[17%] bottom-[10%] left-1/2"
     >
       <div
         class="flex flex-col gap-2 p-5 max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-exd-gray-scorpion scrollbar-track-transparent"
       >
-        <div class="inline-flex justify-between w-full gap-5">
+        <div class="inline-flex justify-between w-full gap-5" v-if="!hideCharacterDetails">
           <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
             {{ charName }}
           </p>
         </div>
-        <div v-if="charCategory" class="flex items-center gap-5 text-exd-1218">
+        <div v-if="charCategory && !hideCharacterDetails" class="flex items-center gap-5 text-exd-1218">
           <p
             class="border-[1px] min-w-[68px] border-exd-green text-exd-green rounded-[5px] px-2"
           >
@@ -195,16 +195,12 @@
         <p
           class="font-medium text-exd-1424 text-exd-gray-scorpion text-word-wrap vhtml-desc"
           v-html="charDesc"
+          v-if="!hideCharacterDetails"
         ></p>
-
-        <div v-if="!hideStoreDetails" class="inline-flex justify-between w-full gap-5 mt-2">
-          <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
-            {{ storeName }}
-          </p>
-        </div>
 
         <div
           class="flex flex-col gap-2 py-4 text-exd-gray-scorpion text-exd-1424"
+          v-if="!hideCharacterDetails"
         >
           <div class="max-w-full">
             <p v-if="star1" class="flex flex-row justify-between w-full">
@@ -222,6 +218,9 @@
         </div>
 
         <div v-if="!hideStoreDetails">
+          <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
+            {{ storeName }}
+          </p>
           <p
             class="font-medium text-exd-1424 text-exd-gray-scorpion text-word-wrap vhtml-desc"
             v-html="storeDescription"
@@ -278,6 +277,7 @@ const star3Name = ref(null)
 const storeName = ref(null)
 const storeDescription = ref(null)
 const hideCharacterInfo = ref(true)
+const hideCharacterDetails = ref(true)
 const hideStoreDetails = ref(true)
 const disabledButton = ref(false)
 
@@ -377,6 +377,7 @@ const fetchImage = async () => {
 
     hideCharacterInfo.value = slugData?.hide_character_info
     hideStoreDetails.value = slugData?.hide_store_details
+    hideCharacterDetails.value = slugData?.hide_character_details
 
     if (slugData?.point_category_is_fail) {
       popupButton.value = t('playAgain')
