@@ -666,6 +666,14 @@ const getBrowserInfo = computed(() => {
   }
 })
 
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(value, (newVal) => {
   localStorage.setItem('answer-password', newVal)
 }, { deep: true })

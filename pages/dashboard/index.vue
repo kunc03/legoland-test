@@ -415,6 +415,25 @@ const bannerList = ref(
   settings.value?.user_dashboard?.my_account_settings?.banners
 )
 
+const handleKeydown = (event) => {
+  if (event.key !== 'Enter') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (isNotAllowed.value) {
+    goToSpin(redirectLink.value)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onMounted(() => {
   checkSpinEligibility()
   hidePoint.value = !settings.value?.flow?.screens?.show_current_point

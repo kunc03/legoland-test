@@ -215,6 +215,14 @@ const getQuestions = async () => {
   }
 }
 
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(answer, (newVal) => {
   localStorage.setItem('answer-quiz', newVal)
 }, { deep: true })

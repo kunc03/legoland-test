@@ -81,4 +81,23 @@ const handleClick = (event) => {
     props.onClickButton(event)
   }
 }
+
+const handleKeydown = (event) => {
+  if (event.key !== 'Enter') return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (props.isOpen) {
+    handleClick()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>

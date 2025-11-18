@@ -95,12 +95,6 @@ const goTo = () => {
   localStorage.removeItem('REGISTER_SUBMITTED')
 }
 
-const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
-    goTo();
-  }
-}
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })

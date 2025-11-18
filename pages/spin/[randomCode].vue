@@ -487,8 +487,12 @@ const nextToSpin = async () => {
     return
   }
 
-  if (settings.value?.flow?.screens?.show_before_gacha_screen) { 
-    if (settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen && settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video) {
+  if (settings.value?.flow?.screens?.show_before_gacha_screen) {
+    if (
+      settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen &&
+      settings.value?.flow?.screens?.spin_gacha_1_screen
+        ?.show_spin_gacha_1_video
+    ) {
       playVideo.value = true
     } else {
       await navigateTo(`/spin/point/${route.params.randomCode}`)
@@ -760,13 +764,16 @@ const futureDateFromMinutes = (minutes) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    nextToSpin();
-    if (playVideo.value) {
-      goToSpinPoint();
+    if (modalSpinWarning.value) {
+      continueToSpin(redirectLink.value)
+    } else {
+      nextToSpin()
+      if (playVideo.value) {
+        goToSpinPoint()
+      }
     }
   }
 }
-
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)

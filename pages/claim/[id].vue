@@ -315,6 +315,8 @@ const handleKeydown = (event) => {
   if (event.key === 'Enter') {
     if (isRedeemDialogVisible.value && !isLoading.value) {
       handleDialog()
+    } else if (insufficientDialogVisible.value && !isLoading.value) {
+      navigateTo('/prize')
     }
   }
 }

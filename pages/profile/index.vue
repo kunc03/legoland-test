@@ -952,6 +952,14 @@ const checkPostalCode = async (code) => {
   }
 }
 
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 watch(
   () => form,
   (newValue, oldValue) => {
