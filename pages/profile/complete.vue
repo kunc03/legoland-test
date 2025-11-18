@@ -93,7 +93,9 @@ const goTo = (type) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    goTo('top')
+    if (!isLoading.value) {
+      goTo('top')
+    }
   }
 }
 

@@ -154,12 +154,6 @@ const getNotes = async () => {
   }
 }
 
-const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
-    handleSubmit()
-  }
-}
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })
@@ -173,6 +167,21 @@ watchEffect(() => {
     steps.value = 'step_2'
     isSuccessSendLinkResetPassword.value = true
   }
+})
+
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    handleSubmit()
+  }
+}
+
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 onMounted(() => {

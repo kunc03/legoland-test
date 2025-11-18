@@ -838,7 +838,9 @@ const getAutocomplete = (item) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    handleSubmit()
+    if (!isLoading.value && form.value.checked && !isErrorMessage.value) {
+      handleSubmit()
+    }
   }
 }
 

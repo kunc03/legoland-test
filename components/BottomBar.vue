@@ -92,7 +92,7 @@ const handleItems = () => {
 
       const normalizedKey = key.toLowerCase()
 
-      if (normalizedKey.includes('character', 'point')) {
+      if (normalizedKey.includes('character', 'point') || normalizedKey.includes('collection')) {
         router.push('/history')
       } else if (normalizedKey.includes('prize')) {
         router.push('/prize')

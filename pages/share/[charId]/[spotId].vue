@@ -349,6 +349,22 @@ const fetchingShareData = async () => {
 
 fetchingShareData()
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (shareDetailData.value == null && isValidPath.value) {
+      backToTop()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 onBeforeMount(async () => {
   await loadGoogleMaps()
   let lat = shareDetailData.value?.lat
@@ -450,17 +466,6 @@ const calculateStar = (characterStar) => {
 
 const openLink = (url) => {
   window.open(url, '_blank')
-}
-
-const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
-    navigateTo(url, {
-      external: true,
-      open: {
-        target: '_blank',
-      },
-    })
-  }
 }
 
 onMounted(() => {

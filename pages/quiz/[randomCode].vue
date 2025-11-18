@@ -215,12 +215,6 @@ const getQuestions = async () => {
   }
 }
 
-const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
-    handleQuiz()
-  }
-}
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })
@@ -233,6 +227,21 @@ watch(answer, (newVal) => {
   localStorage.setItem('answer-quiz', newVal)
 }, { deep: true })
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value && !showModal.value) {
+      handleQuiz()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 onMounted(() => {
   const savedAnswer = localStorage.getItem('answer-quiz')

@@ -102,7 +102,9 @@ const handleClick = async () => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    handleClick()
+    if (!isLoading.value) {
+      handleClick()
+    }
   }
 }
 

@@ -44,8 +44,9 @@
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
         <p
-          class="text-white underline cursor-pointer sm:text-exd-1424 text-exd-1218"
+          class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
           @click="handleAboutSpin"
+          :style="{ color: settings?.global?.text_colors?.tertiary }"
         >
           {{
             settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
@@ -486,8 +487,12 @@ const nextToSpin = async () => {
     return
   }
 
-  if (settings.value?.flow?.screens?.show_before_gacha_screen) { 
-    if (settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen && settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video) {
+  if (settings.value?.flow?.screens?.show_before_gacha_screen) {
+    if (
+      settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen &&
+      settings.value?.flow?.screens?.spin_gacha_1_screen
+        ?.show_spin_gacha_1_video
+    ) {
       playVideo.value = true
     } else {
       await navigateTo(`/spin/point/${route.params.randomCode}`)
@@ -758,15 +763,15 @@ const futureDateFromMinutes = (minutes) => {
 }
 
 const handleKeydown = (event) => {
-  if (event.key !== 'Enter') return
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  if (modalSpinWarning.value) {
-    continueToSpin(redirectLink.value)
-  } else{
-    nextToSpin()
+  if (event.key === 'Enter') {
+    if (modalSpinWarning.value) {
+      continueToSpin(redirectLink.value)
+    } else {
+      nextToSpin()
+      if (playVideo.value) {
+        goToSpinPoint()
+      }
+    }
   }
 }
 

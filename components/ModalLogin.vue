@@ -393,12 +393,12 @@ const processLoginLine = async () => {
 }
 
 const saveSpin = async () => {
-  if (!isSpin.value) return
   const storedData = useCookie('VALID_PASSWORD')
   const parseData = decryptData(storedData.value)
   const slug = parseData?.slug?.toUpperCase()
   const slugStorageName = `${slug}_GACHA`
   const slugStorage = decryptData(localStorage.getItem(slugStorageName))
+  if (!slugStorage) return
 
   try {
     const { data } = await useFetchApi('POST', 'gacha/save', {
@@ -531,7 +531,10 @@ onBeforeUnmount(() => {
 
 watchEffect(() => {
   if (route.query?.code) {
-    processLoginLine()
+    // Debounce so processLoginLine is not called multiple times
+    setTimeout(() => {
+      processLoginLine()
+    }, 500)
   }
 })
 

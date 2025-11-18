@@ -28,7 +28,11 @@
             <Skeleton v-if="isFetching" class="!h-3" width="15rem"></Skeleton>
             <p
               v-else
-              class="font-bold text-exd-1424 max-w-[220px] line-clamp-2 text-exd-gray-scorpion"
+              class="max-w-full font-bold text-exd-1424 text-exd-gray-scorpion"
+              :class="{
+                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'color',
+                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'image',
+              }"
             >
               {{ prizeDetailData.name }}
             </p>
@@ -326,15 +330,12 @@ const openGoogleMaps = () => {
 }
 
 const handleKeydown = (event) => {
-  if (event.key !== 'Enter') return
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  if (hasModal.value) {
-    handleGoToRedeem()
-  } else{
-    handleToggleModal()
+  if (event.key === 'Enter') {
+    if (!disableRedeem.value && !isFetching.value && !hasModal.value) {
+      handleToggleModal()
+    } else if (hasModal.value) {
+      handleGoToRedeem()
+    }
   }
 }
 

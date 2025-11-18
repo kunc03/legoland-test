@@ -312,15 +312,12 @@ const handleRankColor = () => {
 }
 
 const handleKeydown = (event) => {
-  if (event.key !== 'Enter') return
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  if (isRedeemDialogVisible.value) {
-    handleDialog()
-  } else if (insufficientDialogVisible.value) {
-    navigateTo('/prize')
+  if (event.key === 'Enter') {
+    if (isRedeemDialogVisible.value && !isLoading.value) {
+      handleDialog()
+    } else if (insufficientDialogVisible.value && !isLoading.value) {
+      navigateTo('/prize')
+    }
   }
 }
 

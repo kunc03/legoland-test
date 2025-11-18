@@ -109,9 +109,14 @@ onUnmounted(() => clearInterval(checkCachesInterval))
   <div
     v-if="loading"
     class="w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
-    :style="{ backgroundImage: `url(${settings?.gacha?.loading_screen?.background?.value || ''})` }"
-  >
-    <div
+    :style="{
+      background:
+        settings.gacha.loading_screen.background.type === 'image'
+          ? `url(${settings.gacha.loading_screen.background.value})`
+          : settings.gacha.loading_screen.background.value,
+    }"
+  > 
+  <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
       <img

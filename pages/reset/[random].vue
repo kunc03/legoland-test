@@ -195,7 +195,9 @@ const validateInput = (field, value) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    handleSubmit()
+    if (!isLoading.value && !isErrorMessage.value) {
+      handleSubmit()
+    }
   }
 }
 

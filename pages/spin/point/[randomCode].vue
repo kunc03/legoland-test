@@ -105,6 +105,7 @@ const giftType = ref(null)
 const spinInterval = useState('spin_interval')
 
 const hideCharacter = ref(false)
+const hideStoreDetail = ref(false)
 const disabledButton = ref(false)
 const hasModal = ref(false)
 const handleShowDialog = () => (hasModal.value = true)
@@ -185,6 +186,9 @@ const fetchImageFromApi = async () => {
         character_star_name1: data.userCollection?.gacha_character.star_name1,
         character_star_name2: data.userCollection?.gacha_character.star_name2,
         character_star_name3: data.userCollection?.gacha_character.star_name3,
+        store_name: data.userCollection?.gacha_character.store_name,
+        store_description:
+          data.userCollection?.gacha_character.store_description,
         // gift_id: data.userPoint.gift.point_id,
         // gift_image: data.userPoint.gift.image,
         // gift_type: data.userPoint.gift.type,
@@ -201,6 +205,12 @@ const fetchImageFromApi = async () => {
         hide_character_info:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
             ?.show_character_details,
+        hide_store_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.store_details,
+        hide_character_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))
@@ -209,6 +219,7 @@ const fetchImageFromApi = async () => {
       categoryImageUrl.value = storage.popup_image
       pointName.value = storage.point_name
       hideCharacter.value = storage.hide_character
+      hideStoreDetail.value = storage.hide_store_details
       isRedirect.value = storage.is_redirect
       popupLink.value = storage.redirect_link
       popupDescription.value = storage.popup_description
@@ -328,6 +339,8 @@ const fetchImageFromApi = async () => {
         character_star_name1: data.character?.star_name1 ?? null,
         character_star_name2: data.character?.star_name2 ?? null,
         character_star_name3: data.character?.star_name3 ?? null,
+        store_name: data.character?.store_name ?? null,
+        store_description: data.character?.store_description ?? null,
         log_id: data.log_id ?? null,
 
         // gift_id: data.gift.point_id,
@@ -353,6 +366,12 @@ const fetchImageFromApi = async () => {
         hide_character_info:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
             ?.show_character_details,
+        hide_store_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.store_details,
+        hide_character_details:
+          !settings.value?.flow?.screens?.spin_gacha_2_screen
+            ?.display_character_introduction?.character_details,
       }
 
       localStorage.setItem(slugStorageName, encryptData(storage))
@@ -433,13 +452,24 @@ const futureDateFromMinutes = (minutes) => {
   const date = new Date(now.getTime() + minutes * 60 * 1000)
   return date.toLocaleString()
 }
-
 const handleKeydown = (event) => {
   if (hasModal.value) return
+  const prevPlayVideo = playVideo.value
   if (event.key === 'Enter') {
     handleButton()
+    if (playVideo.value && prevPlayVideo) {
+      handleGoToCharacter()
+    }
   }
 }
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)

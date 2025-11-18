@@ -117,7 +117,13 @@ const handleEmailVerify = async (token) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    hasModal.value = true
+    if (isComplete.value || isFailed.value) {
+      handleDialog()
+    } else {
+      if (!hasModal.value) {
+        handleShowModal()
+      }
+    }
   }
 }
 

@@ -1,8 +1,14 @@
 <template>
   <div
     class="relative flex flex-col items-center !bg-no-repeat justify-center !bg-center !bg-cover grow"
-    :style="{ background: settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.type === 'image' ? `url(${settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value})`
-    : settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value }"
+    :style="{
+      background:
+        settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background
+          ?.type === 'image'
+          ? `url(${settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value})`
+          : settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
+              ?.background?.value,
+    }"
     @touchmove="(e) => e.preventDefault()"
   >
     <Button
@@ -21,13 +27,27 @@
 
     <SparkleStart className="top-3 z-30" />
 
-    <div :class="{ notif: true, hide: isHiding }" class="flex items-center justify-center">
-      <img v-if="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon" :src="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon" alt="icon gift" class="w-8 h-8" />
+    <div
+      :class="{ notif: true, hide: isHiding }"
+      class="flex items-center justify-center"
+    >
+      <img
+        v-if="
+          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon
+        "
+        :src="
+          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon
+        "
+        alt="icon gift"
+        class="w-8 h-8"
+      />
       <p
         class="font-bold text-[12px] text-white"
         style="-webkit-text-fill-color: #ffffff"
       >
-        {{ settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text }}
+        {{
+          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text
+        }}
       </p>
     </div>
 
@@ -50,15 +70,24 @@
         :imageSrc="characterImageUrl"
         :raritySrc="raritySrc"
         :hideCharacterInfo="hideCharacterInfo"
-        :charTitleImage="settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.get_character_title_image"
+        :charTitleImage="
+          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
+            ?.get_character_title_image
+        "
         width="100%"
         height="100%"
       />
 
       <div
-        v-if="settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title"
+        v-if="
+          settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title
+        "
         class="absolute flex justify-center h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
-        :class="hideCharacterInfo ? 'sm:bottom-[15%] bottom-[14.5%]' : 'sm:bottom-[23%] bottom-[22%]'"
+        :class="
+          hideCharacterInfo
+            ? 'sm:bottom-[15%] bottom-[14.5%]'
+            : 'sm:bottom-[23%] bottom-[22%]'
+        "
       >
         <p class="text-[15px] max-w-[300px] text-center">{{ charName }}</p>
       </div>
@@ -67,9 +96,17 @@
     <div class="absolute bottom-0 w-full">
       <SolidButton
         :on-click="handleButton"
-        :label="settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen.button_text"
-        :bgColor="settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen.button_and_text_color?.background"
-        :textColor="settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen.button_and_text_color?.color"
+        :label="
+          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen.button_text
+        "
+        :bgColor="
+          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen
+            .button_and_text_color?.background
+        "
+        :textColor="
+          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen
+            .button_and_text_color?.color
+        "
         :disabled="disabledButton"
         has-bottom
       />
@@ -78,6 +115,7 @@
 
   <!-- :is-redirect="isRedirect" -->
   <ModalAfterSpin
+    v-if="settings?.gacha?.after_gacha_screen?.option !== '3'"
     v-model:visible="hasModal"
     :is-redirect="false"
     :popup-button="popupButton"
@@ -95,7 +133,7 @@
     modal
     class="!bg-white !w-11/12 !max-w-sm border border-exd-gray-44"
     :style="{
-      background: settings?.global?.modal?.background_color
+      background: settings?.global?.modal?.background_color,
     }"
   >
     <template #container>
@@ -111,12 +149,15 @@
       <div
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
       >
-        <IconsWarning class="w-10 h-10" :style="{ color: settings?.global?.icon_color?.background }" />
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
         <div class="w-10/12 text-center">
-          <p 
+          <p
             class="font-bold text-exd-1424"
             :style="{
-              color: settings?.global?.modal?.text_color
+              color: settings?.global?.modal?.text_color,
             }"
           >
             {{ errorMessages }}
@@ -135,12 +176,12 @@
       <div
         class="flex flex-col gap-2 p-5 max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-exd-gray-scorpion scrollbar-track-transparent"
       >
-        <div class="inline-flex justify-between w-full gap-5">
+        <div class="inline-flex justify-between w-full gap-5" v-if="!hideCharacterDetails">
           <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
             {{ charName }}
           </p>
         </div>
-        <div v-if="charCategory" class="flex items-center gap-5 text-exd-1218">
+        <div v-if="charCategory && !hideCharacterDetails" class="flex items-center gap-5 text-exd-1218">
           <p
             class="border-[1px] min-w-[68px] border-exd-green text-exd-green rounded-[5px] px-2"
           >
@@ -154,10 +195,12 @@
         <p
           class="font-medium text-exd-1424 text-exd-gray-scorpion text-word-wrap vhtml-desc"
           v-html="charDesc"
+          v-if="!hideCharacterDetails"
         ></p>
 
         <div
           class="flex flex-col gap-2 py-4 text-exd-gray-scorpion text-exd-1424"
+          v-if="!hideCharacterDetails"
         >
           <div class="max-w-full">
             <p v-if="star1" class="flex flex-row justify-between w-full">
@@ -172,6 +215,16 @@
               <StarRating :value="star3" :show-value="false" />
             </p>
           </div>
+        </div>
+
+        <div v-if="!hideStoreDetails">
+          <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
+            {{ storeName }}
+          </p>
+          <p
+            class="font-medium text-exd-1424 text-exd-gray-scorpion text-word-wrap vhtml-desc"
+            v-html="storeDescription"
+          ></p>
         </div>
       </div>
       <div
@@ -221,7 +274,11 @@ const star2 = ref(null)
 const star2Name = ref(null)
 const star3 = ref(null)
 const star3Name = ref(null)
+const storeName = ref(null)
+const storeDescription = ref(null)
 const hideCharacterInfo = ref(true)
+const hideCharacterDetails = ref(true)
+const hideStoreDetails = ref(true)
 const disabledButton = ref(false)
 
 const isRedirect = ref(false)
@@ -230,6 +287,7 @@ const popupLink = ref('')
 const popupDescription = ref('')
 const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
+const hasClicked = ref(false)
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
@@ -240,6 +298,17 @@ const { t } = useI18n()
 const handleCloseModalLogin = () => (modalLogin.value = false)
 
 const handleButton = async () => {
+  const afterGacha = settings.value?.gacha?.after_gacha_screen
+
+  if (!hasClicked.value) {
+    handleBtnIntroduce()
+    return
+  }
+
+  if (afterGacha?.option === '3') {
+    modalLogin.value = true
+  }
+
   if (!TOKEN.value && !USER.value) {
     handleShowDialog()
   } else {
@@ -302,8 +371,12 @@ const fetchImage = async () => {
     star2Name.value = slugData?.character_star_name2
     star3.value = calculateStar(slugData?.character_star3)
     star3Name.value = slugData?.character_star_name3
+    storeName.value = slugData?.store_name
+    storeDescription.value = slugData?.store_description
 
     hideCharacterInfo.value = slugData?.hide_character_info
+    hideStoreDetails.value = slugData?.hide_store_details
+    hideCharacterDetails.value = slugData?.hide_character_details
 
     if (slugData?.point_category_is_fail) {
       popupButton.value = t('playAgain')
@@ -320,22 +393,25 @@ const goTo = async (url) => {
 }
 
 const handleBtnIntroduce = () => {
+  hasClicked.value = true
   opIntro.value = !opIntro.value
 }
 
 watchEffect(() => {
-  if (!settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon && !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text) {
+  if (
+    !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
+      ?.popup_icon &&
+    !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
+      ?.popup_text
+  ) {
     isHiding.value = true
   }
 })
 
 const handleKeydown = (event) => {
-  if (event.key !== 'Enter') return
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  handleButton()
+  if (event.key === 'Enter') {
+    handleButton()
+  }
 }
 
 onMounted(() => {
