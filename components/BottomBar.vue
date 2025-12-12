@@ -22,11 +22,11 @@
               settings.user_dashboard?.footers?.point_background_color?.color,
           }"
         >
-          {{ $t('currentPoints') }}
+          {{ settings.user_dashboard?.footers?.point_title ?? $t('currentPoints') }}
         </p>
         <div class="absolute -ml-3 bottom-2">
           <div
-            v-if="!store.point"
+            v-if="!store.footer_point"
             class="!w-20 !h-7 bg-white mb-[6px] rounded-md"
           />
           <p
@@ -37,7 +37,7 @@
                 settings.user_dashboard?.footers?.point_background_color?.color,
             }"
           >
-            {{ store.point }}<span class="text-exd-1020">pt</span>
+            {{ store.footer_point }}<span class="text-exd-1020">{{ settings.user_dashboard?.footers?.point_suffix }}</span>
           </p>
         </div>
       </div>
