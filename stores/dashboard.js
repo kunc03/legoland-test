@@ -19,6 +19,8 @@ export const store = reactive({
         footer_point = data.point ?? 0
       } else if (pointType === POINT_TYPE.POINT_COUNT) {
         footer_point = data.point_count ?? 0
+      } else {
+        footer_point = data.point ?? 0
       }
       this.footer_point = String(footer_point).padStart(4, '0')
       this.point = String(data.point).padStart(4, '0')
