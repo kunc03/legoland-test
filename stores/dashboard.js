@@ -1,5 +1,4 @@
 import { reactive } from 'vue'
-const settings = useState('settings')
 const POINT_TYPE = {
   TOTAL_POINT: 'total_point',
   POINT_COUNT: 'point_count',
@@ -7,6 +6,7 @@ const POINT_TYPE = {
 export const store = reactive({
   async fetchingDashboardData() {
     try {
+      const settings = useState('settings')
       const { data } = await useFetchApi('GET', 'dashboard')
 
       const sumTotal = Object.values(data).reduce(
