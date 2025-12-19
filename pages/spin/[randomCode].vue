@@ -324,8 +324,7 @@
         <div class="w-full text-left">
           <p
             v-html="
-              settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-                ?.popup_content
+              popUpContent
             "
             class="text-exd-gray-scorpion"
           ></p>
@@ -389,6 +388,12 @@ import moment from 'moment'
 import close from '~/assets/images/close.svg'
 
 const settings = useState('settings')
+const popUpContent = computed(() => {
+  const data = settings.value?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content;
+  // data is string, need to parse it to object
+  const dataObject = JSON.parse(data);
+  return dataObject?.[locale.value]
+})
 
 const router = useRouter()
 const route = useRoute()
