@@ -176,16 +176,22 @@
       <div
         class="flex flex-col gap-2 p-5 max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-exd-gray-scorpion scrollbar-track-transparent"
       >
-        <div class="inline-flex justify-between w-full gap-5" v-if="!hideCharacterDetails">
+        <div
+          class="inline-flex justify-between w-full gap-5"
+          v-if="!hideCharacterDetails"
+        >
           <p class="w-full font-bold text-exd-1424 text-exd-gray-scorpion">
             {{ charName }}
           </p>
         </div>
-        <div v-if="charCategory && !hideCharacterDetails" class="flex items-center gap-5 text-exd-1218">
+        <div
+          v-if="charCategory && !hideCharacterDetails"
+          class="flex items-center gap-5 text-exd-1218"
+        >
           <p
             class="border-[1px] min-w-[68px] border-exd-green text-exd-green rounded-[5px] px-2"
           >
-            カテゴリ
+            {{ $t('category') }}
           </p>
           <p class="text-exd-gray-scorpion">
             {{ charCategory }}

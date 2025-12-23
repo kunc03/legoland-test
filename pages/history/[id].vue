@@ -34,7 +34,8 @@
             v-else
             class="max-w-full font-bold text-exd-1424 line-clamp-2 text-exd-gray-scorpion"
             :class="{
-              'max-w-[220px] line-clamp-3': !historyDetailData.show_character_rarity,
+              'max-w-[220px] line-clamp-3':
+                !historyDetailData.show_character_rarity,
             }"
           >
             {{ historyDetailData.character_name }}
@@ -62,11 +63,14 @@
           />
           <Skeleton class="text-exd-gray-scorpion bg-exd-gray-scorpion" />
         </div>
-        <div v-else-if="!isFetching && historyDetailData.character_category" class="flex items-center gap-5 text-exd-1218">
+        <div
+          v-else-if="!isFetching && historyDetailData.character_category"
+          class="flex items-center gap-5 text-exd-1218"
+        >
           <p
             class="border-[1px] border-exd-green text-exd-green rounded-[5px] px-2"
           >
-            カテゴリ
+            {{ $t('category') }}
           </p>
           <p class="text-exd-gray-scorpion">
             {{ historyDetailData.character_category }}
@@ -103,8 +107,8 @@
 
         <HeadingSection
           :is-fetching="isFetching"
-          :title="historyDetailData?.character?.store_name ?? ''"
-          :body="historyDetailData?.character?.store_description ?? ''"
+          :title="historyDetailData?.store_name ?? ''"
+          :body="historyDetailData?.store_description ?? ''"
         />
 
         <div
@@ -429,12 +433,14 @@ const generateUrlToShare = () => {
 const shareToFacebook = () => {
   try {
     const { url } = generateUrlToShare()
-    if (!url) return console.warn("No URL to share")
+    if (!url) return console.warn('No URL to share')
 
-    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
-    window.open(shareUrl, "_blank")
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      url
+    )}`
+    window.open(shareUrl, '_blank')
   } catch (error) {
-    console.error("Error sharing to Facebook:", error)
+    console.error('Error sharing to Facebook:', error)
   }
 }
 
@@ -443,12 +449,14 @@ const shareToX = () => {
     const { quote, url } = generateUrlToShare()
     const message = `${quote}\n${url}`
 
-    if (!message.trim()) return console.warn("No message to share")
+    if (!message.trim()) return console.warn('No message to share')
 
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`
-    window.open(shareUrl, "_blank")
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      message
+    )}`
+    window.open(shareUrl, '_blank')
   } catch (error) {
-    console.error("Error sharing to X:", error)
+    console.error('Error sharing to X:', error)
   }
 }
 
@@ -465,7 +473,9 @@ const shareToLine = () => {
 
     const combinedText = `${message}\n${url}`
 
-    const shareUrl = `https://line.me/R/msg/text?${encodeURIComponent(combinedText)}`
+    const shareUrl = `https://line.me/R/msg/text?${encodeURIComponent(
+      combinedText
+    )}`
     window.open(shareUrl, '_blank')
   } catch (error) {
     console.error('Error sharing to LINE:', error)
