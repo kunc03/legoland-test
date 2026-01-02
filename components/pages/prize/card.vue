@@ -1,10 +1,18 @@
 <template>
-  <div
-    class="max-w-sm overflow-hidden rounded-xl"
-    v-if="body.length > 0"
-  >
-    <div v-if="headColor && keyBody"
-    :style="{ backgroundColor: headColor }" :class="`flex justify-between w-full px-2 py-1 min-h-6`">
+  <div class="max-w-sm overflow-hidden rounded-xl" v-if="body.length > 0">
+    <div
+      v-if="(headColor || headImage) && keyBody"
+      :style="
+        headImage
+          ? {
+              backgroundImage: `url(${headImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }
+          : { backgroundColor: headColor }
+      "
+      :class="`flex justify-between w-full px-2 py-1 min-h-6`"
+    >
       <p class="font-bold text-white text-exd-1624">{{ keyBody }}</p>
     </div>
     <template v-if="!isFetching">
@@ -16,9 +24,12 @@
         :is-fetching="isFetching"
         :isDisabled="item.disabled"
         :bgColor="bgColor"
-      >      
+      >
         <template v-slot:text>
-          <div class="inline-flex justify-between pr-4 w-100" :class="item.disabled ? 'opacity-50' : ''">
+          <div
+            class="inline-flex justify-between pr-4 w-100"
+            :class="item.disabled ? 'opacity-50' : ''"
+          >
             <div class="flex flex-col justify-center gap-1">
               <p
                 v-if="showTitle"
@@ -30,7 +41,7 @@
                 v-if="showPeriod"
                 class="text-[10px] sm:text-[12px] font-medium"
                 :style="{
-                  color: settings?.global?.text_colors?.secondary
+                  color: settings?.global?.text_colors?.secondary,
                 }"
               >
                 {{ $t('applicationPeriod') }}：{{ item.started_at }}〜{{
@@ -42,7 +53,6 @@
         </template>
       </ImageTextCard>
     </template>
-    
   </div>
 </template>
 
@@ -68,21 +78,24 @@ const props = defineProps({
   headColor: {
     type: String,
   },
+  headImage: {
+    type: String,
+  },
   currentPoint: {
     type: [Number, String],
     default: 0,
   },
   showTitle: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showPeriod: {
     type: Boolean,
-    default: true
+    default: true,
   },
   bgColor: {
-    type: String
-  }
+    type: String,
+  },
 })
 
 const totalGift = ref(null)
