@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-sm overflow-hidden rounded-xl" v-if="body.length > 0">
     <div
-      v-if="(headColor || headImage) && keyBody"
+      v-if="(headColor || headImage)"
       :style="
         headImage
           ? {
