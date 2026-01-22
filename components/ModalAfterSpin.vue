@@ -8,7 +8,7 @@
       background: settings?.global?.modal?.background_color,
     }"
   >
-    <template v-if="afterGacha?.option === '2'" #container>
+    <template v-if="afterGacha?.option == '2'" #container>
       <div>
         <img
           src="/images/close.svg"
@@ -97,7 +97,7 @@
       </div>
     </template>
 
-    <template v-else-if="afterGacha?.option === '1'" #container>
+    <template v-else-if="afterGacha?.option == '1'" #container>
       <img
         src="/images/close.svg"
         alt="close"
