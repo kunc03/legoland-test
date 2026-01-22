@@ -29,12 +29,13 @@
       />
     </div>
     <div class="pr-5 shrink-0">
-      <div class="relative flex">
+      <div class="relative flex" v-if="Object.keys(settings.languages).length > 1">
         <button type="button" aria-haspopup="true" @click="langPanelToggle">
           <IconsLang :style="{ color: settings.global?.icon_color?.background }" />
         </button>
         <LanguangePanel v-model:visible="langPanel" />
       </div>
+      <div v-else class="py-5"></div>
     </div>
   </header>
 </template>
