@@ -52,11 +52,11 @@
 <script setup>
 import useRegister from '~/composables/useRegister'
 
-const router = useRouter()
 const register = useRegister()
 const { isSpin } = storeToRefs(register)
 const { decryptData } = useEncryption()
 const settings = useState('settings')
+const isLoading = ref(false)
 
 const registerComplete = settings.value?.register_login?.membership_registration_page_2 || {}
 
@@ -69,7 +69,7 @@ const saveSpin = async () => {
   const slugStorageName = `${slug}_GACHA`
   const slugStorage = decryptData(localStorage.getItem(slugStorageName))
   try {
-    const response = await useFetchApi('POST', 'gacha/save/temp', {
+    await useFetchApi('POST', 'gacha/save/temp', {
       body: {
         point_id: slugStorage?.point_id,
         location_id: slugStorage?.location_id,
@@ -95,16 +95,20 @@ const goTo = () => {
   localStorage.removeItem('REGISTER_SUBMITTED')
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Enter') {
+    if (!isLoading.value) {
+      goTo()
+    }
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  saveSpin()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
-})
-
-
-onMounted(() => {
-  saveSpin()
 })
 </script>

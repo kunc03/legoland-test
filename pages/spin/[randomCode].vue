@@ -18,11 +18,9 @@
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
       :style="{
         background:
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.background?.type === 'image'
-            ? `url(${settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
-            : settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-                ?.background?.value,
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.type === 'image'
+            ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
+            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value,
       }"
     >
       <div
@@ -38,8 +36,7 @@
 
       <div
         v-if="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-            ?.popup_needed === '1'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'
         "
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
@@ -49,24 +46,19 @@
           :style="{ color: settings?.global?.text_colors?.tertiary }"
         >
           {{
-            settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-              ?.popup_text
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
           }}
         </p>
       </div>
 
       <SolidButton
-        :label="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_text
-        "
+        :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
         :bgColor="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.background
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color
+            ?.background
         "
         :textColor="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.color
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.color
         "
         :disabled="isLoading"
         :has-loading="isLoading"
@@ -78,7 +70,7 @@
 
   <AutoplayVideo
     v-if="playVideo"
-    :src="settings.gacha.spin_gacha_1_screen.gacha_1_video"
+    :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
     @ended="goToSpinPoint"
   />
 
@@ -387,11 +379,17 @@ import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
 
+const gachaType = ref('external')
 const settings = useState('settings')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
 const popUpContent = computed(() => {
-  const data = settings.value?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content;
+  const data =
+    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
   // data is string, need to parse it to object
-  const dataObject = JSON.parse(data);
+  const dataObject = JSON.parse(data)
   return dataObject?.[locale.value]
 })
 
