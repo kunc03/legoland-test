@@ -30,7 +30,7 @@
     </div>
     <div class="pr-5 shrink-0">
       <div class="relative flex" :class="hasMultipleLanguages ? '' : 'opacity-0'">
-        <button type="button" :class="hasMultipleLanguages ? '' : 'cursor-default'" aria-haspopup="true" @click="hasMultipleLanguages ? langPanelToggle : () => {}">
+        <button type="button" :class="hasMultipleLanguages ? '' : 'cursor-default'" aria-haspopup="true" @click="() => { if (hasMultipleLanguages) { langPanelToggle() } }">
           <IconsLang :style="{ color: settings.global?.icon_color?.background }" />
         </button>
         <LanguangePanel v-model:visible="langPanel" />
