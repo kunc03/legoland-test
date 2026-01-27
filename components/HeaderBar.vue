@@ -29,13 +29,12 @@
       />
     </div>
     <div class="pr-5 shrink-0">
-      <div class="relative flex" v-if="Object.keys(settings.languages).length > 1">
-        <button type="button" aria-haspopup="true" @click="langPanelToggle">
+      <div class="relative flex" :class="hasMultipleLanguages ? '' : 'opacity-0'">
+        <button type="button" :class="hasMultipleLanguages ? '' : 'cursor-default'" aria-haspopup="true" @click="hasMultipleLanguages ? langPanelToggle : () => {}">
           <IconsLang :style="{ color: settings.global?.icon_color?.background }" />
         </button>
         <LanguangePanel v-model:visible="langPanel" />
       </div>
-      <div v-else class="py-5"></div>
     </div>
   </header>
 </template>
@@ -45,6 +44,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const settings = useState('settings')
+const hasMultipleLanguages = Object.keys(settings.value.languages).length > 1
 
 defineProps({
   hasBack: {
