@@ -218,6 +218,8 @@ const handleGoToRedeem = () => {
 
   if (popupType.value === 'swipe_exchange') {
     router.push(`/claim/${id}`)
+  } else if (popupType.value === 'external_prize' && prizeDetailData.value?.external_gacha_slug) {
+    router.push(`/spin/${prizeDetailData.value?.external_gacha_slug}`)
   } else {
     router.push(`/redeem/${id}`)
   }
