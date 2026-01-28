@@ -121,4 +121,11 @@ onMounted(() => {
 :global(.p-multiselect-filter-container input) {
   @apply h-10 bg-white border;
 }
+:global(.p-checkbox .p-checkbox-icon) {
+  @apply !text-[var(--bg-color)];
+}
+
+:global(.p-inputicon) {
+  top: inherit !important;
+}
 </style>
