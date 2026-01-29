@@ -5,11 +5,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   LOCALE.value ??= 'ja'
   
   try {
-    const settings = useState('settings', () => null)
+    const settings = useState<any>('settings', () => null)
     if (!settings.value) {
-      const res = await useFetchApi('GET', 'settings')
-      if (!res || !res.data) return navigateTo('/not-found')
-      settings.value = res.data
+      const { data } = await useFetchApi('GET', 'settings')
+      if (!data) return navigateTo('/not-found')
+      settings.value = data
     }
 
     console.log('settings', settings.value)

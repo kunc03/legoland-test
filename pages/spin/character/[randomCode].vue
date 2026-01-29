@@ -3,11 +3,9 @@
     class="relative flex flex-col items-center !bg-no-repeat justify-center !bg-center !bg-cover grow"
     :style="{
       background:
-        settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background
-          ?.type === 'image'
-          ? `url(${settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value})`
-          : settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
-              ?.background?.value,
+        gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.type === 'image'
+          ? `url(${gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value})`
+          : gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.background?.value,
     }"
     @touchmove="(e) => e.preventDefault()"
   >
@@ -32,12 +30,8 @@
       class="flex items-center justify-center"
     >
       <img
-        v-if="
-          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon
-        "
-        :src="
-          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon
-        "
+        v-if="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon"
+        :src="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon"
         alt="icon gift"
         class="w-8 h-8"
       />
@@ -46,7 +40,7 @@
         style="-webkit-text-fill-color: #ffffff"
       >
         {{
-          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text
+          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text
         }}
       </p>
     </div>
@@ -71,8 +65,7 @@
         :raritySrc="raritySrc"
         :hideCharacterInfo="hideCharacterInfo"
         :charTitleImage="
-          settings?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
-            ?.get_character_title_image
+          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.get_character_title_image
         "
         width="100%"
         height="100%"
@@ -96,16 +89,13 @@
     <div class="absolute bottom-0 w-full">
       <SolidButton
         :on-click="handleButton"
-        :label="
-          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen.button_text
-        "
+        :label="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_text"
         :bgColor="
-          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen
-            .button_and_text_color?.background
+          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color
+            ?.background
         "
         :textColor="
-          settings.gacha.spin_gacha_2_screen?.after_gacha_2_screen
-            .button_and_text_color?.color
+          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color?.color
         "
         :disabled="disabledButton"
         has-bottom
@@ -115,7 +105,7 @@
 
   <!-- :is-redirect="isRedirect" -->
   <ModalAfterSpin
-    v-if="settings?.gacha?.after_gacha_screen?.option !== '3'"
+    v-if="gacha?.after_gacha_screen?.option !== '3'"
     v-model:visible="hasModal"
     :is-redirect="false"
     :popup-button="popupButton"
@@ -253,7 +243,12 @@ definePageMeta({
   layout: 'gacha-machine',
 })
 
+const gachaType = ref('external')
 const settings = useState('settings')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
 
 const { setSourceFrom } = useRegister()
 
@@ -304,7 +299,7 @@ const { t } = useI18n()
 const handleCloseModalLogin = () => (modalLogin.value = false)
 
 const handleButton = async () => {
-  const afterGacha = settings.value?.gacha?.after_gacha_screen
+  const afterGacha = gacha.value?.after_gacha_screen
 
   if (!hasClicked.value) {
     handleBtnIntroduce()
@@ -405,10 +400,8 @@ const handleBtnIntroduce = () => {
 
 watchEffect(() => {
   if (
-    !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
-      ?.popup_icon &&
-    !settings.value?.gacha?.spin_gacha_2_screen?.after_gacha_2_screen
-      ?.popup_text
+    !gacha.value?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon &&
+    !gacha.value?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_text
   ) {
     isHiding.value = true
   }

@@ -18,11 +18,9 @@
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
       :style="{
         background:
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.background?.type === 'image'
-            ? `url(${settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
-            : settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-                ?.background?.value,
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.type === 'image'
+            ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
+            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value,
       }"
     >
       <div
@@ -38,8 +36,7 @@
 
       <div
         v-if="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-            ?.popup_needed === '1'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'
         "
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
@@ -49,24 +46,19 @@
           :style="{ color: settings?.global?.text_colors?.tertiary }"
         >
           {{
-            settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-              ?.popup_text
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
           }}
         </p>
       </div>
 
       <SolidButton
-        :label="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_text
-        "
+        :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
         :bgColor="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.background
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color
+            ?.background
         "
         :textColor="
-          settings?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.color
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.color
         "
         :disabled="isLoading"
         :has-loading="isLoading"
@@ -78,7 +70,7 @@
 
   <AutoplayVideo
     v-if="playVideo"
-    :src="settings.gacha.spin_gacha_1_screen.gacha_1_video"
+    :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
     @ended="goToSpinPoint"
   />
 
@@ -387,16 +379,24 @@ import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
 
+const gachaType = ref('external')
 const settings = useState('settings')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
 const popUpContent = computed(() => {
-  const data = settings.value?.gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content;
+  const data =
+    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
   // data is string, need to parse it to object
-  const dataObject = JSON.parse(data);
+  const dataObject = JSON.parse(data)
   return dataObject?.[locale.value]
 })
 
 const router = useRouter()
 const route = useRoute()
+const isPrizeSpinRoute = computed(() => route.path?.startsWith('/spin/prize/'))
+const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
 const errorMessages = ref('')
 const isNotAllowed = ref(false)
 const showAboutSpin = ref(false)
@@ -440,7 +440,14 @@ definePageMeta({
   middleware: async (to, from) => {
     const { decryptData } = useEncryption()
 
-    const location = to.params.randomCode
+    const location = to.params.randomCode || to.params.slug
+    if (to.path?.startsWith('/spin/prize/')) {
+      useState('before_spin_type', () => 0).value = 0
+      useState('not_required_radius', () => 1).value = 1
+      useState('not_required_pin', () => 1).value = 1
+      useState('spin_type', () => 0).value = 0
+      return
+    }
     const validPassword = useCookie('VALID_PASSWORD')
 
     const { data } = await useFetchApi('GET', '/location/password/' + location)
@@ -481,7 +488,7 @@ const nextToSpin = async () => {
 
   if (beforeSpinType.value) {
     const validPassword = useCookie('VALID_PASSWORD')
-    validPassword.value = encryptData({ slug: route.params.randomCode })
+    validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
   if (!notRequiredRadius.value) {
@@ -500,7 +507,7 @@ const nextToSpin = async () => {
     ) {
       playVideo.value = true
     } else {
-      await navigateTo(`/spin/point/${route.params.randomCode}`)
+      await navigateTo(`/spin/point/${spinSlug.value}`)
     }
   }
 }
@@ -511,7 +518,7 @@ const goToSpinPoint = async () => {
 
   if (notRequiredPin.value) {
     const validPassword = useCookie('VALID_PASSWORD')
-    validPassword.value = encryptData({ slug: route.params.randomCode })
+    validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
   if (!notRequiredRadius.value) {
@@ -521,7 +528,7 @@ const goToSpinPoint = async () => {
   if (stepAllowLocation.value || isNotAllowed.value) {
     return
   }
-  await navigateTo(`/spin/point/${route.params.randomCode}`)
+  await navigateTo(`/spin/point/${spinSlug.value}`)
 }
 
 const closeStepAllowLocation = () => {
@@ -534,6 +541,7 @@ const closeShowAboutSpin = () => {
 }
 
 const getPassword = async (id) => {
+  if (isPrizeSpinRoute.value) return
   try {
     isLoading.value = true
 
@@ -639,7 +647,7 @@ const checkingLocation = async () => {
 }
 
 const radiusCheck = async () => {
-  const location = route.params.randomCode
+  const location = spinSlug.value
   isLoading.value = true
   try {
     const { data } = await useFetchApi('POST', 'radius-check', {
@@ -690,7 +698,7 @@ const getBrowserInfo = computed(() => {
 const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 
-  const slug = route.params.randomCode.toLocaleUpperCase()
+  const slug = String(spinSlug.value).toLocaleUpperCase()
   const slugStorageName = `${slug}_GACHA`
   const slugData = localStorage.getItem(slugStorageName)
   const parse = slugData && decryptData(slugData)
@@ -797,8 +805,10 @@ watch(isNotAllowed, (newValue) => {
 })
 
 onMounted(() => {
-  const location = route.params.randomCode
-  getPassword(location)
+  const location = spinSlug.value
+  if (!isPrizeSpinRoute.value) {
+    getPassword(location)
+  }
 
   if (import.meta.client) {
     isInstagram.value = /Instagram/i.test(navigator.userAgent || '')

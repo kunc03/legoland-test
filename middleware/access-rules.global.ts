@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware((to) => {
-  const settings = useState('settings')
+  const settings = useState<any>('settings')
   const screens = settings.value?.flow?.screens
 
   if (!screens) return

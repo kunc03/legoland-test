@@ -216,7 +216,7 @@ const handleToggleModal = () => {
 const handleGoToRedeem = () => {
   if (disableRedeem.value) return
 
-  if (popupType.value === 'swipe_exchange') {
+  if (popupType.value === 'swipe_exchange' || popupType.value === 'external_prize') {
     router.push(`/claim/${id}`)
   } else {
     router.push(`/redeem/${id}`)

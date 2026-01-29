@@ -2,6 +2,13 @@
 const loading = ref(true)
 const isSupportSerWorker = ref(false)
 const settings = useState('settings')
+const gachaType = ref('external')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
+const spin1 = computed(() => gacha.value?.spin_gacha_1_screen)
+const spin2 = computed(() => gacha.value?.spin_gacha_2_screen)
 
 let checkCachesInterval
 let firstCount = 1
@@ -55,10 +62,6 @@ function completeLoading() {
   emit('finish')
 }
 
-const gacha = settings.value?.gacha
-const spin1 = gacha.spin_gacha_1_screen
-const spin2 = gacha.spin_gacha_2_screen
-
 const getImageValue = (obj) => {
   return obj && obj.type === 'image' ? obj.value : "";
 };
@@ -73,14 +76,14 @@ const checkCaches = () => {
     '/icons/icon-gift.svg',
     settings.value?.global?.logo,
     settings.value?.global?.gacha_machine_image,
-    getImageValue(gacha?.loading_screen?.background),
-    gacha?.loading_screen?.gif || "",
-    spin1?.gacha_1_video || "",
-    getImageValue(spin1?.before_gacha_1_screen?.background),
-    getImageValue(spin1?.after_gacha_1_screen?.background),
-    spin2?.gacha_2_video || "",
-    getImageValue(spin2?.after_gacha_2_screen?.popup_icon),
-    getImageValue(spin2?.after_gacha_2_screen?.background)
+    getImageValue(gacha.value?.loading_screen?.background),
+    gacha.value?.loading_screen?.gif || "",
+    spin1.value?.gacha_1_video || "",
+    getImageValue(spin1.value?.before_gacha_1_screen?.background),
+    getImageValue(spin1.value?.after_gacha_1_screen?.background),
+    spin2.value?.gacha_2_video || "",
+    getImageValue(spin2.value?.after_gacha_2_screen?.popup_icon),
+    getImageValue(spin2.value?.after_gacha_2_screen?.background)
   ]
 
   caches
@@ -111,19 +114,19 @@ onUnmounted(() => clearInterval(checkCachesInterval))
     class="w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
     :style="{
       background:
-        settings.gacha.loading_screen.background.type === 'image'
-          ? `url(${settings.gacha.loading_screen.background.value})`
-          : settings.gacha.loading_screen.background.value,
+        gacha.loading_screen.background.type === 'image'
+          ? `url(${gacha.loading_screen.background.value})`
+          : gacha.loading_screen.background.value,
     }"
   > 
   <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
       <img
-        :src="settings.gacha.loading_screen.gif || ''"
+        :src="gacha.loading_screen.gif || ''"
         class="w-[100px] h-[100px]"
       />
-      <h3 class="ml-5 text-xl font-bold" :style="{ color: settings.gacha.loading_screen.text_color }">LOADING...</h3>
+      <h3 class="ml-5 text-xl font-bold" :style="{ color: gacha.loading_screen.text_color }">LOADING...</h3>
       <!-- <img
         src="~/assets/images/loading.png"
         class="mt-6 ml-5 w-[126px] h-[24px]"

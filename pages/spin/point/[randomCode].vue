@@ -4,11 +4,9 @@
     class="relative flex flex-col items-center justify-center !bg-no-repeat !bg-cover !bg-center grow"
     :style="{
       background:
-        settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background
-          ?.type === 'image'
-          ? `url(${settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value})`
-          : settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen
-              ?.background?.value,
+        gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.type === 'image'
+          ? `url(${gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value})`
+          : gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.background?.value,
     }"
     @touchmove="(e) => e.preventDefault()"
   >
@@ -47,19 +45,16 @@
     <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
     <div class="w-full absolute bottom-0 z-[1100]">
       <SolidButton
-        :label="
-          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen.button_text
-        "
+        :label="gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_text"
         :on-click="() => handleButton()"
         has-bottom
         :disabled="disabledButton"
         :bgColor="
-          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen
-            .button_and_text_color?.background
+          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color
+            ?.background
         "
         :textColor="
-          settings.gacha.spin_gacha_1_screen?.after_gacha_1_screen
-            .button_and_text_color?.color
+          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color?.color
         "
       />
     </div>
@@ -79,7 +74,7 @@
 
   <AutoplayVideo
     v-if="playVideo"
-    :src="settings.gacha.spin_gacha_2_screen.gacha_2_video"
+    :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
     @ended="handleGoToCharacter"
   />
@@ -121,6 +116,11 @@ const modalLogin = ref(false)
 const showPointOnly = ref(false)
 
 const settings = useState('settings')
+const gachaType = ref('external')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
 const isInstagram = ref(false)
 
 const { t } = useI18n()
