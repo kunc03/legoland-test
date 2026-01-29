@@ -230,6 +230,8 @@ const step2Texts = computed(() => [
   step2Data.value?.text_2
 ])
 
+const externalGachaSlug = ref(null)
+
 const handleDialog = () => {
   const isSuccess = localStorage.getItem('CLAIM_SUCCESS')
   if (isSuccess) {
@@ -277,9 +279,11 @@ const handleSwipe = () => {
   if (isClicked.value) {
     if (
         prizeDetailData.value.type === 'external_prize' &&
-        prizeDetailData.value?.external_gacha_slug
+        externalGachaSlug.value
     ) {
-      router.push(`/spin/${prizeDetailData.value?.external_gacha_slug}`)
+      router.push({
+        path: `/spin/prize/${externalGachaSlug.value}`,
+      })
     } else {
       fetchRedeem()
     }
@@ -298,7 +302,10 @@ const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
     const { data } = await useFetchApi('GET', 'prizes/' + id)
+    const { data: externalGachaData } = await useFetchApi('GET', 'prize-list/' + id)
+
     prizeDetailData.value = data
+    externalGachaSlug.value = externalGachaData?.external_gacha_slug ?? null
 
     if (data) {
       localStorage.setItem('prize_name', data.name)

@@ -1,4 +1,4 @@
-const useFetchApi = async (method: any, url: string, opts = {}) => {
+const useFetchApi = async (method: any, url: string, opts = {}): Promise<any> => {
   const config = useRuntimeConfig()
 
   const TOKEN = useCookie('TOKEN')
@@ -11,7 +11,9 @@ const useFetchApi = async (method: any, url: string, opts = {}) => {
     baseURL: config.public.API_URL as string,
     async onRequest({ request, options }) {
       if (TOKEN.value && USER.value) {
-        options.headers = { Authorization: `Bearer ${TOKEN.value}` }
+        const headers = new Headers(options.headers)
+        headers.set('Authorization', `Bearer ${TOKEN.value}`)
+        options.headers = headers
       }
 
       options.query = { ...options?.params, lang: LOCALE.value }

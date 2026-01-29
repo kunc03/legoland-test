@@ -395,6 +395,8 @@ const popUpContent = computed(() => {
 
 const router = useRouter()
 const route = useRoute()
+const isPrizeSpinRoute = computed(() => route.path?.startsWith('/spin/prize/'))
+const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
 const errorMessages = ref('')
 const isNotAllowed = ref(false)
 const showAboutSpin = ref(false)
@@ -438,7 +440,14 @@ definePageMeta({
   middleware: async (to, from) => {
     const { decryptData } = useEncryption()
 
-    const location = to.params.randomCode
+    const location = to.params.randomCode || to.params.slug
+    if (to.path?.startsWith('/spin/prize/')) {
+      useState('before_spin_type', () => 0).value = 0
+      useState('not_required_radius', () => 1).value = 1
+      useState('not_required_pin', () => 1).value = 1
+      useState('spin_type', () => 0).value = 0
+      return
+    }
     const validPassword = useCookie('VALID_PASSWORD')
 
     const { data } = await useFetchApi('GET', '/location/password/' + location)
@@ -479,7 +488,7 @@ const nextToSpin = async () => {
 
   if (beforeSpinType.value) {
     const validPassword = useCookie('VALID_PASSWORD')
-    validPassword.value = encryptData({ slug: route.params.randomCode })
+    validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
   if (!notRequiredRadius.value) {
@@ -498,7 +507,7 @@ const nextToSpin = async () => {
     ) {
       playVideo.value = true
     } else {
-      await navigateTo(`/spin/point/${route.params.randomCode}`)
+      await navigateTo(`/spin/point/${spinSlug.value}`)
     }
   }
 }
@@ -509,7 +518,7 @@ const goToSpinPoint = async () => {
 
   if (notRequiredPin.value) {
     const validPassword = useCookie('VALID_PASSWORD')
-    validPassword.value = encryptData({ slug: route.params.randomCode })
+    validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
   if (!notRequiredRadius.value) {
@@ -519,7 +528,7 @@ const goToSpinPoint = async () => {
   if (stepAllowLocation.value || isNotAllowed.value) {
     return
   }
-  await navigateTo(`/spin/point/${route.params.randomCode}`)
+  await navigateTo(`/spin/point/${spinSlug.value}`)
 }
 
 const closeStepAllowLocation = () => {
@@ -532,6 +541,7 @@ const closeShowAboutSpin = () => {
 }
 
 const getPassword = async (id) => {
+  if (isPrizeSpinRoute.value) return
   try {
     isLoading.value = true
 
@@ -637,7 +647,7 @@ const checkingLocation = async () => {
 }
 
 const radiusCheck = async () => {
-  const location = route.params.randomCode
+  const location = spinSlug.value
   isLoading.value = true
   try {
     const { data } = await useFetchApi('POST', 'radius-check', {
@@ -688,7 +698,7 @@ const getBrowserInfo = computed(() => {
 const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 
-  const slug = route.params.randomCode.toLocaleUpperCase()
+  const slug = String(spinSlug.value).toLocaleUpperCase()
   const slugStorageName = `${slug}_GACHA`
   const slugData = localStorage.getItem(slugStorageName)
   const parse = slugData && decryptData(slugData)
@@ -795,8 +805,10 @@ watch(isNotAllowed, (newValue) => {
 })
 
 onMounted(() => {
-  const location = route.params.randomCode
-  getPassword(location)
+  const location = spinSlug.value
+  if (!isPrizeSpinRoute.value) {
+    getPassword(location)
+  }
 
   if (import.meta.client) {
     isInstagram.value = /Instagram/i.test(navigator.userAgent || '')

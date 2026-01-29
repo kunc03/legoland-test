@@ -20,7 +20,7 @@ export const useEncryption = () => {
     return encryptedData
   }
 
-  const decryptData = (encryptedData: string, secret: string) => {
+  const decryptData = (encryptedData: string, secret?: string) => {
     try {
       const bytes = CryptoJS.AES.decrypt(encryptedData, secret || secretKey.value)
       const decryptedData = bytes.toString(CryptoJS.enc.Utf8)
