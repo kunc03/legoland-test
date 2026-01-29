@@ -356,5 +356,6 @@
   "returnToPrizeList": "경품 선택으로 돌아가기",
   "redemptionLocationDescription": "교환 장소 설명",
   "otherGachaNotAccessible": "이 페이지는 아직 접근할 수 없습니다. 먼저 Gacha Sundra A에서 경품을 교환해 주세요",
-  "noPrizesAtOtherGacha": "Gacha Sundra B에는 이용 가능한 경품이 없습니다."
+  "noPrizesAtOtherGacha": "Gacha Sundra B에는 이용 가능한 경품이 없습니다.",
+  "redemptionDate": "교환 일자"
 }

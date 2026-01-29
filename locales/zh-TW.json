@@ -356,6 +356,7 @@
     "returnToPrizeList": "返回獎品選擇",
     "redemptionLocationDescription": "兌換地點說明",
     "otherGachaNotAccessible": "此頁面尚無法訪問。請先在 Gacha Sundra A 兌換您的獎品",
-    "noPrizesAtOtherGacha": "Gacha Sundra B 目前沒有提供的獎品。"
+    "noPrizesAtOtherGacha": "Gacha Sundra B 目前沒有提供的獎品。",
+    "redemptionDate": "兌換日期"
   }
   
