@@ -354,6 +354,8 @@
   "phoneNumberInUse": "Nomor telepon ini sudah digunakan.",
   "cannotClaim": "Hadiah yang Anda pilih sudah ditukarkan. Stoknya hanya tersisa 1, namun sudah diambil oleh pengguna lain. Silakan pilih hadiah lain.",
   "returnToPrizeList": "Kembali ke daftar hadiah",
-  "redemptionLocationDescription": "Deskripsi Lokasi Penukaran"
+  "redemptionLocationDescription": "Deskripsi Lokasi Penukaran",
+  "otherGachaNotAccessible": "Halaman ini belum dapat diakses. Silakan tukarkan hadiah Anda di Gacha Sundra A terlebih dahulu",
+  "noPrizesAtOtherGacha": "Tidak ada hadiah yang tersedia di Gacha Sundra B."
   }
   

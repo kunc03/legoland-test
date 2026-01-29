@@ -33,7 +33,11 @@
           <div class="inline-flex justify-between w-full gap-5">
             <div class="flex flex-col text-exd-gray-scorpion">
               <template v-for="(text, index) in step2Texts" :key="index">
-                <Skeleton v-if="isFetching" class="!h-5 mb-1 bg-exd-gray-scorpion" width="10rem" />
+                <Skeleton
+                  v-if="isFetching"
+                  class="!h-5 mb-1 bg-exd-gray-scorpion"
+                  width="10rem"
+                />
                 <p v-else class="font-bold text-exd-1424">
                   {{ text }}
                 </p>
@@ -43,16 +47,17 @@
               <Skeleton
                 class="!rounded-full"
                 :style="{
-                  background:
-                    step2Data.button_and_text_color
-                      ?.background,
+                  background: step2Data.button_and_text_color?.background,
                 }"
                 width="3rem"
                 height="3rem"
               />
             </template>
             <img
-              v-else-if="prizeDetailData.rarity?.type === 'image' && prizeDetailData.rarity?.show_rarity"
+              v-else-if="
+                prizeDetailData.rarity?.type === 'image' &&
+                prizeDetailData.rarity?.show_rarity
+              "
               :src="prizeDetailData.rarity?.image"
               alt="arrow"
               width="50"
@@ -63,7 +68,10 @@
             />
 
             <p
-              v-else-if="prizeDetailData.rarity?.type === 'color' && prizeDetailData.rarity?.show_rarity"
+              v-else-if="
+                prizeDetailData.rarity?.type === 'color' &&
+                prizeDetailData.rarity?.show_rarity
+              "
               class="font-bold text-exd-1824.52 text-white p-1 flex items-center justify-center rounded-full right-0 top-5 bg-no-repeat bg-cover bg-center w-12 h-12"
               :style="{ background: prizeBg }"
             >
@@ -89,9 +97,7 @@
         :success-text="$t('claimed')"
         name="slideunlock"
         @completed="handleSwipe()"
-        :bgColor="
-          step2Data?.button_and_text_color?.background
-        "
+        :bgColor="step2Data?.button_and_text_color?.background"
       />
     </div>
   </div>
@@ -126,12 +132,8 @@
             :on-click="handleDialog"
             :has-loading="isLoading"
             label="GO!"
-            :bgColor="
-              step2Data?.button_and_text_color?.background
-            "
-            :textColor="
-              step2Data?.button_and_text_color?.color
-            "
+            :bgColor="step2Data?.button_and_text_color?.background"
+            :textColor="step2Data?.button_and_text_color?.color"
           />
         </div>
       </div>
@@ -170,19 +172,15 @@
               color: settings?.global?.modal?.text_color,
             }"
           >
-            {{ $t('cannotClaim') }}
+            {{ showPrizeValidationMessage ? errorMessage : $t('cannotClaim') }}
           </p>
 
           <SolidButton
             :on-click="() => navigateTo('/prize')"
             :has-loading="isLoading"
             :label="$t('returnToPrizeList')"
-            :bgColor="
-              step2Data?.button_and_text_color?.background
-            "
-            :textColor="
-              step2Data?.button_and_text_color?.color
-            "
+            :bgColor="step2Data?.button_and_text_color?.background"
+            :textColor="step2Data?.button_and_text_color?.color"
             class="w-full"
           />
         </div>
@@ -221,13 +219,18 @@ const disableSwipe = ref(false)
 const vueslideunlock = ref(null)
 const prizeTypeText = ref(null)
 const colorBg = ref('')
+const showPrizeValidationMessage = ref(false)
 
-const step2Data = computed(() => settings.value?.prize?.step_2?.swipe_exchange?.data || {})
+const step2Data = computed(
+  () => settings.value?.prize?.step_2?.swipe_exchange?.data || {}
+)
 const prizeBg = computed(() => colorBg.value || '#000')
 const textColor = computed(() => step2Data.value.text_1_color)
 const step2Texts = computed(() => [
-  step2Data.value?.option_text_1 === 'prize_name' ? prizeDetailData.value.name : step2Data.value?.text_1,
-  step2Data.value?.text_2
+  step2Data.value?.option_text_1 === 'prize_name'
+    ? prizeDetailData.value.name
+    : step2Data.value?.text_1,
+  step2Data.value?.text_2,
 ])
 
 const externalGachaSlug = ref(null)
@@ -243,18 +246,14 @@ const fetchRedeem = async () => {
   try {
     errorMessage.value = null
     disableSwipe.value = true
-    const { message, status } = await useFetchApi(
-      'POST',
-      'prizes/redeem',
-      {
-        // params: {
-        //   user_point_id: prizeDetailData.value?.id,
-        // },
-        body: {
-          prize_id: id,
-        },
-      }
-    )
+    const { message, status } = await useFetchApi('POST', 'prizes/redeem', {
+      // params: {
+      //   user_point_id: prizeDetailData.value?.id,
+      // },
+      body: {
+        prize_id: id,
+      },
+    })
 
     if (status) {
       redeemMessage.value = t('giftExchangeComplete')
@@ -265,7 +264,6 @@ const fetchRedeem = async () => {
       insufficientDialogVisible.value = true
       vueslideunlock.value.reset()
     }
-
   } catch (error) {
     console.error(error)
     errorMessage.value = error._data.message
@@ -274,15 +272,32 @@ const fetchRedeem = async () => {
   }
 }
 
-const handleSwipe = () => {
+const handleSwipe = async () => {
   isClicked.value = true
   if (isClicked.value) {
     if (
-        prizeDetailData.value.type === 'external_prize' &&
-        externalGachaSlug.value
+      prizeDetailData.value.type === 'external_prize' &&
+      externalGachaSlug.value
     ) {
+      try {
+        await useFetchApi('POST', 'external-prize/validate', {
+          body: {
+            external_gacha_slug: externalGachaSlug.value,
+            prize_id: id,
+          },
+        })
+      } catch (error) {
+        showPrizeValidationMessage.value = true
+        errorMessage.value = error._data.message
+        insufficientDialogVisible.value = true
+        vueslideunlock.value.reset()
+        return
+      }
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
+        query: {
+          prize_id: id,
+        },
       })
     } else {
       fetchRedeem()
@@ -293,6 +308,7 @@ const handleSwipe = () => {
 const handleClose = () => {
   isRedeemDialogVisible.value = false
   insufficientDialogVisible.value = false
+  showPrizeValidationMessage.value = false
 }
 
 const prizeDetailData = ref({})
@@ -302,7 +318,10 @@ const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
     const { data } = await useFetchApi('GET', 'prizes/' + id)
-    const { data: externalGachaData } = await useFetchApi('GET', 'prize-list/' + id)
+    const { data: externalGachaData } = await useFetchApi(
+      'GET',
+      'prize-list/' + id
+    )
 
     prizeDetailData.value = data
     externalGachaSlug.value = externalGachaData?.external_gacha_slug ?? null
