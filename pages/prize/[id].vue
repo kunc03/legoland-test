@@ -216,10 +216,8 @@ const handleToggleModal = () => {
 const handleGoToRedeem = () => {
   if (disableRedeem.value) return
 
-  if (popupType.value === 'swipe_exchange') {
+  if (popupType.value === 'swipe_exchange' || popupType.value === 'external_prize') {
     router.push(`/claim/${id}`)
-  } else if (popupType.value === 'external_prize' && prizeDetailData.value?.external_gacha_slug) {
-    router.push(`/spin/${prizeDetailData.value?.external_gacha_slug}`)
   } else {
     router.push(`/redeem/${id}`)
   }

@@ -275,7 +275,14 @@ const fetchRedeem = async () => {
 const handleSwipe = () => {
   isClicked.value = true
   if (isClicked.value) {
-    fetchRedeem()
+    if (
+        prizeDetailData.value.type === 'external_prize' &&
+        prizeDetailData.value?.external_gacha_slug
+    ) {
+      router.push(`/spin/${prizeDetailData.value?.external_gacha_slug}`)
+    } else {
+      fetchRedeem()
+    }
   }
 }
 
