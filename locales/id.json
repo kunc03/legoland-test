@@ -353,6 +353,7 @@
     "phoneInfo": "Nomor telepon ini hanya akan digunakan sebagai ID untuk login dan tidak akan digunakan untuk tujuan lain.",
   "phoneNumberInUse": "Nomor telepon ini sudah digunakan.",
   "cannotClaim": "Hadiah yang Anda pilih sudah ditukarkan. Stoknya hanya tersisa 1, namun sudah diambil oleh pengguna lain. Silakan pilih hadiah lain.",
-  "returnToPrizeList": "Kembali ke daftar hadiah"
+  "returnToPrizeList": "Kembali ke daftar hadiah",
+  "redemptionLocationDescription": "Deskripsi Lokasi Penukaran"
   }
   

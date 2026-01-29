@@ -354,5 +354,6 @@
   "phoneInfo": "この電話番号はログイン用IDとしてのみ利用し、 他の用途には使用いたしません",
   "phoneNumberInUse": "この電話番号はすでに使用されています。",
   "cannotClaim": "選択した景品はすでに交換されました。在庫は残り1点でしたが、他のユーザーにより取得されました。別の景品を選択してください。",
-  "returnToPrizeList": "景品選択に戻る"
+  "returnToPrizeList": "景品選択に戻る",
+  "redemptionLocationDescription": "引き換え場所の説明"
 }

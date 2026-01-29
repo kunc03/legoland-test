@@ -17,7 +17,9 @@
         <CharacterCard
           v-else
           :image="prizeDetailData.image"
-          :bgColor="settings?.prize?.step_1?.prize_description?.image_background_color"
+          :bgColor="
+            settings?.prize?.step_1?.prize_description?.image_background_color
+          "
         />
       </div>
       <div class="flex flex-col justify-between w-full p-5">
@@ -30,8 +32,10 @@
               v-else
               class="max-w-full font-bold text-exd-1424 text-exd-gray-scorpion"
               :class="{
-                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'color',
-                'max-w-[220px] line-clamp-3': prizeDetailData.rarity?.type === 'image',
+                'max-w-[220px] line-clamp-3':
+                  prizeDetailData.rarity?.type === 'color',
+                'max-w-[220px] line-clamp-3':
+                  prizeDetailData.rarity?.type === 'image',
               }"
             >
               {{ prizeDetailData.name }}
@@ -64,8 +68,7 @@
 
           <HeadingSection
             v-if="
-              settings?.prize?.step_1?.prize_description
-                ?.show_how_to_get_prizes
+              settings?.prize?.step_1?.prize_description?.show_how_to_get_prizes
             "
             :is-fetching="isFetching"
             :title="$t('howToGetPrizes')"
@@ -73,13 +76,17 @@
           />
 
           <HeadingSection
-            v-if="
-              settings?.prize?.step_1?.prize_description
-                ?.show_terms_of_use
-            "
+            v-if="settings?.prize?.step_1?.prize_description?.show_terms_of_use"
             :is-fetching="isFetching"
             :title="$t('conditionsOfUse')"
             :body="prizeDetailData != null ? prizeDetailData?.terms_of_use : ''"
+          />
+
+          <HeadingSection
+            v-if="settings?.prize?.step_1?.prize_description?.show_redemption_location_description"
+            :is-fetching="isFetching"
+            :title="$t('redemptionLocationDescription')"
+            :body="prizeDetailData != null ? prizeDetailData?.location_description : ''"
           />
 
           <div
@@ -105,9 +112,7 @@
                   class="flex items-center text-sm border-b cursor-pointer text-exd-gray-scorpion border-b-exd-gray-scorpion"
                   @click="openGoogleMaps"
                   >{{ $t('openGoogleMaps') }}
-                  <IconsExport
-                    class="w-5 h-5 ml-[2px] cursor-pointer"
-                  />
+                  <IconsExport class="w-5 h-5 ml-[2px] cursor-pointer" />
                 </span>
               </div>
             </div>
@@ -216,7 +221,10 @@ const handleToggleModal = () => {
 const handleGoToRedeem = () => {
   if (disableRedeem.value) return
 
-  if (popupType.value === 'swipe_exchange' || popupType.value === 'external_prize') {
+  if (
+    popupType.value === 'swipe_exchange' ||
+    popupType.value === 'external_prize'
+  ) {
     router.push(`/claim/${id}`)
   } else {
     router.push(`/redeem/${id}`)
