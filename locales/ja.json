@@ -357,5 +357,6 @@
   "returnToPrizeList": "景品選択に戻る",
   "redemptionLocationDescription": "引き換え場所の説明",
   "otherGachaNotAccessible": "このページにはまだアクセスできません。先にGacha Sundra Aで景品を交換してください。",
-  "noPrizesAtOtherGacha": "ガチャSundra Bの景品は現在在庫切れです。"
+  "noPrizesAtOtherGacha": "ガチャSundra Bの景品は現在在庫切れです。",
+  "redemptionDate": "引換日"
 }

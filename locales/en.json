@@ -356,5 +356,6 @@
   "returnToPrizeList": "Return to prize selection",
   "redemptionLocationDescription": "Redemption Location Description",
   "otherGachaNotAccessible": "This page is not yet accessible. Please exchange your prizes at Gacha Sundra A first",
-  "noPrizesAtOtherGacha": "There are no prizes available in Gacha Sundra B."
+  "noPrizesAtOtherGacha": "There are no prizes available in Gacha Sundra B.",
+  "redemptionDate": "Redemption Date"
 }

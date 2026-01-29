@@ -1,9 +1,9 @@
 <template>
   <div v-if="!isFetching" class="bg-white">
     <ImageTextCard
-      :key="body.user_point_id"
+      :key="id"
       :history="true"
-      :image-card="body.image"
+      :image-card="image"
       :show-image="false"
       isDisabled
     >
@@ -50,7 +50,7 @@
               "
               class="font-semibold md:text-[15px] sm:text-[14px] text-[13px]"
             >
-              {{ body.name }}
+              {{ name }}
             </p>
 
             <p
@@ -63,8 +63,19 @@
                 color: settings?.global?.text_colors?.secondary,
               }"
             >
-              {{ $t('applicationPeriod') }}：{{ body.started_at }}〜{{
-                body.expired_at }}
+              {{ $t('applicationPeriod') }}：{{ startedAt }}〜{{ expiredAt }}
+            </p>
+            <p
+              v-if="
+                settings?.prize?.step_1?.has_been_redeemed
+                  ?.show_redemption_date
+              "
+              class="text-[10px] sm:text-[12px] font-medium"
+              :style="{
+                color: settings?.global?.text_colors?.secondary,
+              }"
+            >
+              {{ $t('redemptionDate') }}：{{ redemptionDate }}
             </p>
           </div>
         </div>
@@ -98,5 +109,23 @@ const color = ref('')
 const router = useRouter()
 const settings = useState('settings')
 
+const name = ref('')
+const image = ref('')
+const id = ref('')
+const startedAt = ref('')
+const expiredAt = ref('')
+const redemptionDate = ref('')
+
 const handleGoToDetailRedeem = (id) => router.push(`/prize/history/${id}`)
+
+onMounted(() => {
+  const data =
+    props.body.type == 'external_prize' ? props.body.external_prize : props.body
+  name.value = data.name
+  image.value = data.image
+  id.value = data.id
+  startedAt.value = props.body.started_at
+  expiredAt.value = props.body.expired_at
+  redemptionDate.value = props.body.redeemed_at
+})
 </script>
