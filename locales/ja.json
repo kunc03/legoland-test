@@ -355,5 +355,7 @@
   "phoneNumberInUse": "この電話番号はすでに使用されています。",
   "cannotClaim": "選択した景品はすでに交換されました。在庫は残り1点でしたが、他のユーザーにより取得されました。別の景品を選択してください。",
   "returnToPrizeList": "景品選択に戻る",
-  "redemptionLocationDescription": "引き換え場所の説明"
+  "redemptionLocationDescription": "引き換え場所の説明",
+  "otherGachaNotAccessible": "このページにはまだアクセスできません。先にGacha Sundra Aで景品を交換してください。",
+  "noPrizesAtOtherGacha": "ガチャSundra Bの景品は現在在庫切れです。"
 }
