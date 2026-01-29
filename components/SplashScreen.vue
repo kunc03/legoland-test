@@ -1,8 +1,11 @@
 <script setup>
+const route = useRoute()
 const loading = ref(true)
 const isSupportSerWorker = ref(false)
 const settings = useState('settings')
-const gachaType = ref('external')
+const gachaType = computed(() => {
+  return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
+})
 const gachaSettings = computed(() =>
   gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
 )

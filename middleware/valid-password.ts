@@ -1,4 +1,8 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
+  if (to.path.includes('/spin/prize')) {
+    return
+  }
+
   const validPassword = useCookie('VALID_PASSWORD')
   const { decryptData } = useEncryption()
 

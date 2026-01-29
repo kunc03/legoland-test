@@ -243,7 +243,10 @@ definePageMeta({
   layout: 'gacha-machine',
 })
 
-const gachaType = ref('external')
+const route = useRoute()
+const gachaType = computed(() => {
+  return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
+})
 const settings = useState('settings')
 const gachaSettings = computed(() =>
   gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha

@@ -379,7 +379,9 @@ import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
 
-const gachaType = ref('external')
+const gachaType = computed(() => {
+  return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
+})
 const settings = useState('settings')
 const gachaSettings = computed(() =>
   gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
@@ -513,6 +515,10 @@ const nextToSpin = async () => {
 }
 
 const goToSpinPoint = async () => {
+  if (gachaType.value === 'external') {
+    navigateTo(`/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`)
+  }
+
   const notRequiredPin = useState('not_required_pin')
   const notRequiredRadius = useState('not_required_radius')
 
@@ -647,6 +653,12 @@ const checkingLocation = async () => {
 }
 
 const radiusCheck = async () => {
+  if (
+    gachaType.value === 'external'
+  ) {
+    return;
+  }
+  
   const location = spinSlug.value
   isLoading.value = true
   try {

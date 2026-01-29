@@ -82,13 +82,13 @@
           <!-- Button -->
             <SolidButton
               v-if="afterGacha?.data?.button_and_social_media !== 'social_media'"
-              :label="settings?.gacha?.after_gacha_screen?.data?.button_text"
+              :label="gachaSettings?.after_gacha_screen?.data?.button_text"
               :bgColor="
-                settings?.gacha?.after_gacha_screen?.data?.button_and_text_color
+                gachaSettings?.after_gacha_screen?.data?.button_and_text_color
                   ?.background
               "
               :textColor="
-                settings?.gacha?.after_gacha_screen?.data?.button_and_text_color
+                gachaSettings?.after_gacha_screen?.data?.button_and_text_color
                   ?.color
               "
               @click="handleToRedirect"
@@ -117,29 +117,29 @@
             style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
             class="whitespace-pre-line"
           >
-            {{ settings?.gacha?.after_gacha_screen?.data?.popup_title }}
+            {{ gachaSettings?.after_gacha_screen?.data?.popup_title }}
           </p>
         </div>
         <SolidButton
-          :label="settings?.gacha?.after_gacha_screen?.data?.button_1_text"
+          :label="gachaSettings?.after_gacha_screen?.data?.button_1_text"
           :bgColor="
-            settings?.gacha?.after_gacha_screen?.data?.button_1_text_color
+            gachaSettings?.after_gacha_screen?.data?.button_1_text_color
               ?.background
           "
           :textColor="
-            settings?.gacha?.after_gacha_screen?.data?.button_1_text_color
+            gachaSettings?.after_gacha_screen?.data?.button_1_text_color
               ?.color
           "
           :on-click="handleToRegister"
         />
         <SolidButton
-          :label="settings?.gacha?.after_gacha_screen?.data?.button_2_text"
+          :label="gachaSettings?.after_gacha_screen?.data?.button_2_text"
           :bgColor="
-            settings?.gacha?.after_gacha_screen?.data?.button_2_text_color
+            gachaSettings?.after_gacha_screen?.data?.button_2_text_color
               ?.background
           "
           :textColor="
-            settings?.gacha?.after_gacha_screen?.data?.button_2_text_color
+            gachaSettings?.after_gacha_screen?.data?.button_2_text_color
               ?.color
           "
           :on-click="handleToLogin"
@@ -179,12 +179,22 @@ const { decryptData } = useEncryption()
 const { setSourceFrom } = useRegister()
 
 const settings = useState('settings')
-const afterGacha = settings.value?.gacha?.after_gacha_screen
+const gachaType = useState('GACHA_TYPE')
+const gachaSettings = computed(() =>
+  gachaType.value === 'external' || gachaType.value === 'external_prize'
+    ? settings.value?.external_gacha
+    : settings.value?.gacha
+)
+const afterGacha = computed(() => gachaSettings.value?.after_gacha_screen)
 
 const socialMediaLinks = ref([])
 
 const handleShowDialog = () => emit('update:visible', true)
 const handleCloseDialog = () => emit('update:visible', false)
+
+const handleToRedirectToDashboard = async () => {
+  await navigateTo('/dashboard')
+}
 
 const detailCharacter = ref({})
 
@@ -214,10 +224,19 @@ const handleToRedirect = async () => {
 
     await navigateTo(`/spin/${slug}`)
   } else {
-    const url = settings.value?.gacha?.after_gacha_screen?.data?.url_link
+    const url = gachaSettings.value?.after_gacha_screen?.data?.url_link
 
     if (url) {
-      window.open(url, '_blank')
+      let targetPath = ''
+      try {
+        targetPath = new URL(url, window.location.origin).pathname
+      } catch (e) {
+        targetPath = String(url).split('?')[0].split('#')[0]
+      }
+
+      const currentPath = route.path
+      const target = targetPath === currentPath ? '_self' : '_blank'
+      window.open(url, target)
     }
   }
 }
@@ -335,7 +354,7 @@ const handleImageAfterGacha = (data) => {
 
 const handleKeydown = (event) => {
   if (event.key === 'Enter') {
-    if (props.visible && afterGacha?.option === '2') { 
+    if (props.visible && afterGacha.value?.option === '2') { 
       handleToRedirect()
     }
   }
@@ -354,7 +373,7 @@ onMounted(() => {
   const parsedData = decryptData(storedData.value)
   const slug = parsedData.slug.toUpperCase()
   const slugData = decryptData(localStorage.getItem(`${slug}_GACHA`))
-  const gachaSocialMedia = afterGacha?.data?.data_share_social_media
+  const gachaSocialMedia = afterGacha.value?.data?.data_share_social_media
 
   detailCharacter.value = slugData
 

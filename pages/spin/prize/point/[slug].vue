@@ -38,7 +38,7 @@
         class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[20%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
       >
         <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
-          {{ pointName }}
+          {{ spinResultData?.name || pointName }}
         </p>
       </div>
     </div>
@@ -93,6 +93,7 @@ const TOKEN = useCookie('TOKEN')
 const playVideo = ref(false)
 const { encryptData, decryptData } = useEncryption()
 
+const spinResultData = ref(null)
 const pointImageUrl = ref(null)
 const categoryImageUrl = ref(null)
 const pointName = ref(null)
@@ -124,6 +125,8 @@ const gachaSettings = computed(() =>
 )
 const gacha = computed(() => gachaSettings.value)
 const isInstagram = ref(false)
+
+const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
 
 const { t } = useI18n()
 
@@ -157,50 +160,65 @@ const fetchImageFromApi = async () => {
     if (TOKEN.value && USER.value) {
       const payload = decryptData(storedData.value) || {}
 
-      const { data, status } = await useFetchApi('POST', 'gacha/spin', {
-        body: { ...payload },
-      })
+      let data = null
+      let status = null
+
+      if (gachaType.value === 'external') {
+        const { data: prizeData, status: prizeStatus } = await useFetchApi('POST', 'external-prize/spin', {
+          body: { external_gacha_slug: spinSlug.value, prize_id: route.query.prize_id },
+        })
+        data = prizeData?.external_prize
+        status = prizeStatus
+      } else {
+        const { data: spinData, status: spinStatus } = await useFetchApi('POST', 'gacha/spin', {
+          body: { ...payload },
+        })
+        data = spinData
+        status = spinStatus
+      }
+
+      spinResultData.value = data
 
       const spinType = useState('spin_type')
 
-      sessionStorage.setItem('IS_ALREADY_SPIN', data.is_already_spin)
+      sessionStorage.setItem('IS_ALREADY_SPIN', spinResultData.value.is_already_spin)
       sessionStorage.setItem('SPIN_TYPE', spinType.value)
       sessionStorage.setItem(
         'READY_SPIN_AFTER_DATE',
-        data?.ready_spin_after_date || ''
+        spinResultData.value?.ready_spin_after_date || ''
       )
 
       const storage = {
-        location_id: data.userPoint?.location.id,
-        point_id: data.userPoint?.point?.id,
-        point_image: data.userPoint?.point?.image,
-        point_name: data.userPoint?.point?.name,
-        character_id: data.userCollection?.gacha_character.id,
-        character_image: data.userCollection?.gacha_character.image,
-        character_name: data.userCollection?.gacha_character.name,
-        character_category: data.userCollection?.gacha_character.category,
-        character_description: data.userCollection?.gacha_character.description,
+        location_id: spinResultData.value.userPoint?.location.id,
+        point_id: spinResultData.value.external_prize?.id ?? spinResultData.value.userPoint?.point?.id,
+        point_image: spinResultData.value.external_prize?.image ?? spinResultData.value.userPoint?.point?.image,
+        point_name: spinResultData.value.external_prize?.name ?? spinResultData.value.userPoint?.point?.name,
+        character_id: spinResultData.value.userCollection?.gacha_character.id,
+        character_image: spinResultData.value.userCollection?.gacha_character.image,
+        character_name: spinResultData.value.userCollection?.gacha_character.name,
+        character_category: spinResultData.value.userCollection?.gacha_character.category,
+        character_description: spinResultData.value.userCollection?.gacha_character.description,
         character_rarity:
-          data.userCollection?.gacha_character.rarity_image_during_gacha,
-        character_star1: data.userCollection?.gacha_character.star1,
-        character_star2: data.userCollection?.gacha_character.star2,
-        character_star3: data.userCollection?.gacha_character.star3,
-        character_star_name1: data.userCollection?.gacha_character.star_name1,
-        character_star_name2: data.userCollection?.gacha_character.star_name2,
-        character_star_name3: data.userCollection?.gacha_character.star_name3,
-        store_name: data.userCollection?.gacha_character.store_name,
+          spinResultData.value.userCollection?.gacha_character.rarity_image_during_gacha,
+        character_star1: spinResultData.value.userCollection?.gacha_character.star1,
+        character_star2: spinResultData.value.userCollection?.gacha_character.star2,
+        character_star3: spinResultData.value.userCollection?.gacha_character.star3,
+        character_star_name1: spinResultData.value.userCollection?.gacha_character.star_name1,
+        character_star_name2: spinResultData.value.userCollection?.gacha_character.star_name2,
+        character_star_name3: spinResultData.value.userCollection?.gacha_character.star_name3,
+        store_name: spinResultData.value.userCollection?.gacha_character.store_name,
         store_description:
-          data.userCollection?.gacha_character.store_description,
-        // gift_id: data.userPoint.gift.point_id,
-        // gift_image: data.userPoint.gift.image,
-        // gift_type: data.userPoint.gift.type,
-        // voucher_name: data.userPoint.gift.name,
-        // gift_type_image: data.userPoint.gift.typeImage,
-        is_redirect: data.is_redirect,
-        button_name: data.button_name,
-        popup_image: data.userPoint?.point?.point_category_image,
-        popup_description: data.popup_description,
-        redirect_link: data.redirect_link,
+          spinResultData.value.userCollection?.gacha_character.store_description,
+        // gift_id: spinResultData.value.userPoint.gift.point_id,
+        // gift_image: spinResultData.value.userPoint.gift.image,
+        // gift_type: spinResultData.value.userPoint.gift.type,
+        // voucher_name: spinResultData.value.userPoint.gift.name,
+        // gift_type_image: spinResultData.value.userPoint.gift.typeImage,
+        is_redirect: spinResultData.value.is_redirect,
+        button_name: spinResultData.value.button_name,
+        popup_image: gachaType.value === 'external' ? spinResultData.value.external_prize?.category?.image : spinResultData.value.userPoint?.point?.point_category_image,
+        popup_description: spinResultData.value.popup_description,
+        redirect_link: spinResultData.value.redirect_link,
         hide_character:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
             ?.show_character_screen,
@@ -215,11 +233,13 @@ const fetchImageFromApi = async () => {
             ?.display_character_introduction?.character_details,
       }
 
+      console.log(storage)
+
       localStorage.setItem(slugStorageName, encryptData(storage))
 
-      pointImageUrl.value = storage.point_image
-      categoryImageUrl.value = storage.popup_image
-      pointName.value = storage.point_name
+      pointImageUrl.value = spinResultData.value?.image
+      categoryImageUrl.value = storage.popup_image || ''
+      pointName.value = storage.point_name || spinResultData.value.external_prize?.name || ''
       hideCharacter.value = storage.hide_character
       hideStoreDetail.value = storage.hide_store_details
       isRedirect.value = storage.is_redirect
@@ -445,6 +465,11 @@ const handleGoToCharacter = async () => {
 
     await navigateTo(`/spin/character/${route.params.randomCode}`)
   } else {
+    if (route.path.includes('/spin/prize/point')){
+      useState('GACHA_TYPE', () => 'external_prize')
+      handleShowDialog()
+      return
+    }
     navigateTo('/dashboard')
   }
 }
