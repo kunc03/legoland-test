@@ -353,5 +353,6 @@
   "phoneInfo": "This phone number will only be used as a login ID and will not be used for any other purposes.",
   "phoneNumberInUse": "This phone number is already in use.",
   "cannotClaim": "The selected prize has already been redeemed. There was only 1 item left in stock, but it was claimed by another user. Please select a different prize.",
-  "returnToPrizeList": "Return to prize selection"
+  "returnToPrizeList": "Return to prize selection",
+  "redemptionLocationDescription": "Redemption Location Description"
 }

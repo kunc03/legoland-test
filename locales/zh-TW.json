@@ -353,6 +353,7 @@
     "phoneInfo": "此電話號碼僅作為登入 ID 使用，不會用於其他用途。",
     "phoneNumberInUse": "这个电话号码已被使用。",
     "cannotClaim": "您選擇的獎品已經被兌換。庫存僅剩 1 件，但已被其他用戶取得。請選擇其他獎品。",
-    "returnToPrizeList": "返回獎品選擇"
+    "returnToPrizeList": "返回獎品選擇",
+    "redemptionLocationDescription": "兌換地點說明"
   }
   
