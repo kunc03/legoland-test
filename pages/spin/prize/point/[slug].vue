@@ -32,6 +32,7 @@
         width="100%"
         height="800"
         :showPointOnly="showPointOnly"
+        :is-external-gacha="true"
       />
       <div
         v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title"

@@ -3,6 +3,7 @@ const props = defineProps({
   imageSrc: { type: String, default: '' },
   categorySrc: { type: String, default: '' },
   showPointOnly: { type: Boolean, default: false },
+  isExternalGacha: { type: Boolean, default: false },
 })
 const settings = useState('settings')
 const giftType = reactive({
@@ -28,19 +29,17 @@ const circleBlur = reactive({
 
 const pointHref = ref('')
 const categoryHref = ref('')
+const gacha = ref({})
 
 const configuredCategoryHref = computed(
   () =>
-    settings.value?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image ||
-    ''
+    gacha.value?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image || ''
 )
 
 const selectedCategoryHref = computed(() => {
   const selectImage =
-    settings.value?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image
-      ?.select_image
-
-  if (selectImage === 'point_category') {
+    gacha?.value.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image
+  if (selectImage == 'point_category') {
     return props.categorySrc
   }
 
@@ -85,6 +84,10 @@ watchEffect(() => {
 })
 
 onMounted(() => {
+  gacha.value = settings.value?.gacha
+  if (props.isExternalGacha) {
+    gacha.value = settings.value?.external_gacha
+  }
   nextTick(() => {
     function getRandom(min, max) {
       return Math.random() * (max - min) + min
@@ -118,7 +121,6 @@ onMounted(() => {
     window.addEventListener('resize', logViewportHeight)
   })
 })
-
 </script>
 
 <template>
@@ -188,9 +190,11 @@ onMounted(() => {
     <g filter="url(#filter0_b_12_49)">
       <!-- <ellipse cx="200" cy="198" rx="200" ry="198" fill="white" /> -->
     </g>
-    
+
     <image
-      v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point && pointHref"
+      v-if="
+        settings?.flow?.screens?.spin_gacha_1_screen?.show_point && pointHref
+      "
       :x="pointType.x"
       :y="pointType.y"
       :width="pointType.width"
@@ -199,7 +203,12 @@ onMounted(() => {
     />
 
     <image
-      v-if="(settings?.flow?.screens?.spin_gacha_1_screen?.show_point_category || settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image !== 'none') && categoryHref"
+      v-if="
+        (settings?.flow?.screens?.spin_gacha_1_screen?.show_point_category ||
+          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image
+            ?.select_image !== 'none') &&
+        categoryHref
+      "
       :x="giftType.x"
       :y="giftType.y"
       :width="giftType.width"
