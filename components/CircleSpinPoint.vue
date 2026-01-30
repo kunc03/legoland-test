@@ -1,5 +1,10 @@
 <script setup>
-const props = defineProps(['imageSrc', 'categorySrc', 'showPointOnly'])
+const props = defineProps({
+  imageSrc: { type: String, default: '' },
+  categorySrc: { type: String, default: '' },
+  showPointOnly: { type: Boolean, default: false },
+  isExternalGacha: { type: Boolean, default: false },
+})
 const settings = useState('settings')
 const giftType = reactive({
   x: 50,
@@ -22,7 +27,67 @@ const circleBlur = reactive({
   height: 600,
 })
 
+const pointHref = ref('')
+const categoryHref = ref('')
+const gacha = ref({})
+
+const configuredCategoryHref = computed(
+  () =>
+    gacha.value?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image || ''
+)
+
+const selectedCategoryHref = computed(() => {
+  const selectImage =
+    gacha?.value.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image
+  if (selectImage == 'point_category') {
+    return props.categorySrc
+  }
+
+  return configuredCategoryHref.value
+})
+
+const resolveImageHref = (src) => {
+  return new Promise((resolve) => {
+    if (!import.meta.client) {
+      resolve('')
+      return
+    }
+
+    if (!src || typeof src !== 'string') {
+      resolve('')
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => resolve(src)
+    img.onerror = () => resolve('')
+    img.src = src
+  })
+}
+
+let pointSeq = 0
+watchEffect(() => {
+  const current = ++pointSeq
+  resolveImageHref(props.imageSrc).then((href) => {
+    if (current !== pointSeq) return
+    pointHref.value = href
+  })
+})
+
+let categorySeq = 0
+watchEffect(() => {
+  const current = ++categorySeq
+  resolveImageHref(selectedCategoryHref.value).then((href) => {
+    if (current !== categorySeq) return
+    categoryHref.value = href
+  })
+})
+
 onMounted(() => {
+  gacha.value = settings.value?.gacha
+  if (props.isExternalGacha) {
+    gacha.value = settings.value?.external_gacha
+  }
   nextTick(() => {
     function getRandom(min, max) {
       return Math.random() * (max - min) + min
@@ -56,7 +121,6 @@ onMounted(() => {
     window.addEventListener('resize', logViewportHeight)
   })
 })
-
 </script>
 
 <template>
@@ -126,16 +190,30 @@ onMounted(() => {
     <g filter="url(#filter0_b_12_49)">
       <!-- <ellipse cx="200" cy="198" rx="200" ry="198" fill="white" /> -->
     </g>
-    
-    <image v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point" :x="pointType.x" :y="pointType.y" :width="pointType.width" :height="pointType.height" :href="props.imageSrc" />
 
     <image
-      v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_category || settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image !== 'none'"
+      v-if="
+        settings?.flow?.screens?.spin_gacha_1_screen?.show_point && pointHref
+      "
+      :x="pointType.x"
+      :y="pointType.y"
+      :width="pointType.width"
+      :height="pointType.height"
+      :href="pointHref"
+    />
+
+    <image
+      v-if="
+        (settings?.flow?.screens?.spin_gacha_1_screen?.show_point_category ||
+          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image
+            ?.select_image !== 'none') &&
+        categoryHref
+      "
       :x="giftType.x"
       :y="giftType.y"
       :width="giftType.width"
       :height="giftType.height"
-      :href="settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image === 'point_category' ? props.categorySrc : settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image"
+      :href="categoryHref"
     />
 
     <defs>

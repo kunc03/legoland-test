@@ -215,20 +215,51 @@ const cleanDescription = stripHtml(description)
 
 const quote = cleanDescription + ' ' + url
 
+const getSlugFromValidPassword = () => {
+  const storedData = useCookie('VALID_PASSWORD')
+  if (!storedData.value) return null
+
+  try {
+    const parsedData = decryptData(storedData.value)
+    const slug = parsedData?.slug
+    return typeof slug === 'string' && slug ? slug : null
+  } catch (e) {
+    return null
+  }
+}
+
+const getSpinSlug = () => {
+  const cookieSlug = getSlugFromValidPassword()
+  if (cookieSlug) return cookieSlug
+
+  let paramSlug = route.params?.randomCode || route.params?.slug
+  if (Array.isArray(paramSlug)) paramSlug = paramSlug[0]
+  return typeof paramSlug === 'string' && paramSlug ? paramSlug : null
+}
+
+const isExternalContext = computed(() => {
+  return (
+    gachaType.value === 'external' ||
+    gachaType.value === 'external_prize' ||
+    route.query?.gachaType === 'external' ||
+    !!route.query?.prize_id
+  )
+})
+
 const handleToRedirect = async () => {
   if (props.pointCategoryIsFail) {
-    const storedData = useCookie('VALID_PASSWORD')
-    let parsedData = null
-    try {
-      parsedData = decryptData(storedData.value || '{}')
-    } catch {
-      parsedData = null
+    const slug = getSpinSlug()
+    if (!slug) {
+      await handleToRedirectToDashboard()
+      return
     }
 
-    const slug = parsedData?.slug ? String(parsedData.slug) : ''
-    if (!slug) return
-
-    await navigateTo(`/spin/${slug}`)
+    await navigateTo({
+      path: `/spin/${slug}`,
+      query: isExternalContext.value
+        ? { prize_id: route.query?.prize_id, gachaType: 'external' }
+        : undefined,
+    })
   } else {
     const url = gachaSettings.value?.after_gacha_screen?.data?.url_link
 
@@ -281,14 +312,7 @@ const share = (type) => {
 }
 
 const generateUrlToShare = () => {
-  const storedData = useCookie('VALID_PASSWORD')
-  let parsedData = null
-  try {
-    parsedData = decryptData(storedData.value || '{}')
-  } catch {
-    parsedData = null
-  }
-  const slug = parsedData?.slug ? String(parsedData.slug) : ''
+  const slug = getSpinSlug()
   
   let objectToShare = {
     url: url,
@@ -296,10 +320,13 @@ const generateUrlToShare = () => {
   }
 
   try {
-    if (slug) {
-      objectToShare.url = url + `/spin/${slug}`
-      objectToShare.quote = quote + `/spin/${slug}`
-    }
+    if (!slug) return objectToShare
+    const sharePath = `/spin/${slug}`
+    const shareQuery = isExternalContext.value
+      ? `?prize_id=${encodeURIComponent(String(route.query?.prize_id || ''))}&gachaType=external`
+      : ''
+    objectToShare.url = url + sharePath + shareQuery
+    objectToShare.quote = quote + sharePath + shareQuery
   } catch (error) {
     console.log(error)
   }
@@ -378,31 +405,26 @@ onBeforeUnmount(() => {
 })
 
 onMounted(() => {
-  const storedData = useCookie('VALID_PASSWORD')
-  let parsedData = null
-  try {
-    parsedData = decryptData(storedData.value || '{}')
-  } catch {
-    parsedData = null
+  const slug = getSpinSlug()
+  if (!slug) {
+    socialMediaLinks.value = []
+    return
   }
 
-  const slug = parsedData?.slug ? String(parsedData.slug).toUpperCase() : null
-
   let slugData = null
-  if (slug) {
-    const raw = localStorage.getItem(`${slug}_GACHA`)
-    if (raw) {
-      try {
-        slugData = decryptData(raw)
-      } catch {
-        slugData = null
-      }
-    }
+  try {
+    slugData =
+      decryptData(localStorage.getItem(`${slug.toUpperCase()}_GACHA`)) || null
+  } catch {
+    slugData = null
   }
   const gachaSocialMedia = afterGacha.value?.data?.data_share_social_media
 
-  detailCharacter.value =
-    slugData || { character_image: null, point_image: null }
+  detailCharacter.value = {
+    character_image: null,
+    point_image: null,
+    ...(slugData && typeof slugData === 'object' ? slugData : {}),
+  }
 
   if (!gachaSocialMedia) {
     socialMediaLinks.value = []

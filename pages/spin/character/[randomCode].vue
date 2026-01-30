@@ -248,7 +248,11 @@ definePageMeta({
 })
 
 const route = useRoute()
+const GACHA_TYPE = useState('GACHA_TYPE', () => null)
 const gachaType = computed(() => {
+  if (route.query?.gachaType === 'external' || GACHA_TYPE.value === 'external_prize') {
+    return 'external'
+  }
   return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
 })
 const settings = useState('settings')
@@ -346,20 +350,25 @@ const fetchImage = async () => {
   try {
     const storedData = useCookie('VALID_PASSWORD')
 
-    if (!storedData.value) {
-      console.error('No verified data found in localStorage')
-      return
+    let slugRaw = null
+    if (storedData.value) {
+      try {
+        const parsedData = decryptData(storedData.value)
+        slugRaw = parsedData?.slug
+      } catch (e) {
+        slugRaw = null
+      }
     }
 
-    let parsedData
-    try {
-      parsedData = decryptData(storedData.value)
-    } catch (e) {
-      console.error('Error parsing stored data:', e)
-      return
+    if (!slugRaw) {
+      slugRaw = route.params?.randomCode
     }
+    if (Array.isArray(slugRaw)) {
+      slugRaw = slugRaw[0]
+    }
+    if (!slugRaw) return
 
-    const slug = parsedData.slug.toUpperCase()
+    const slug = String(slugRaw).toUpperCase()
 
     const slugData = decryptData(localStorage.getItem(`${slug}_GACHA`))
     characterImageUrl.value = slugData?.character_image

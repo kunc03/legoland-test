@@ -28,28 +28,29 @@
             {{ settings?.pre_gacha?.quiz?.page_sub_title }}
           </p>
           <p
-            class="text-[3.4vw] xs:text-[18px] sm:text-[22px] text-[#341f15] text-center px-3 py-2 rounded-full font-bold"
+            ref="questionRef"
+            class="text-[3.4vw] text-[24px] xs:text-[18px] sm:text-[22px] text-[#341f15] text-center px-3 py-2 rounded-full font-bold"
             v-html="question"
           />
         </div>
 
         <div class="flex flex-col items-center justify-center w-[68%] gap-1">
           <p
-            class="text-[3.5vw] xs:text-[15px] sm:text-[16px] text-[#341f15] text-center px-3 py-2 rounded-full font-bold"
+            class="text-[3.5vw] xs:text-[15px] sm:text-[16px] text-[#341f15] text-center px-3 rounded-full font-bold"
           >
             {{ settings?.pre_gacha?.quiz?.answer_box_text }}
           </p>
           <Textarea
             v-model="answer"
-            rows="5"
+            rows="1"
             cols="30"
             style="resize: none"
-            class="w-full h-[25vw] sm:h-28 border bg-white text-exd-gray-scorpion border-[#341f15] rounded-md py-1 px-2 text-[3vw] xs:text-[14px] sm:text-[15px]"
+            class="w-full border bg-white text-exd-gray-scorpion border-[#341f15] rounded-md py-1 px-2 text-[3vw] xs:text-[14px] sm:text-[15px]"
           />
         </div>
 
         <div
-          class="flex items-center justify-center w-full gap-0 px-3 py-2 text-white"
+          class="flex items-center justify-center w-full gap-0 px-3 py-2 text-white mt-4"
           :style="{ background: settings?.pre_gacha?.quiz?.label_color }"
         >
           <a
@@ -71,12 +72,12 @@
           class="max-h-[28vh] sm:max-h-[31vh] md:max-h-[31vh] lg:max-h-[31vh] p-5 overflow-y-auto scrollable-content text-exd-gray-scorpion"
         >
           <h3
-            class="text-[2.5vw] xs:text-[12px] sm:text-[16px] font-bold text-[#341f15] mb-2"
+            class="text-[2.5vw] text-[16px] xs:text-[12px] sm:text-[14px] font-bold text-[#341f15] mb-1"
           >
             {{ settings?.pre_gacha?.quiz?.add_notes_title }}
           </h3>
           <p
-            class="flex flex-col gap-1 text-justify text-[3vw] xs:text-[14px] sm:text-[15px]"
+            class="flex flex-col gap-1 text-justify text-[3vw] text-[14px] xs:text-[12px] sm:text-[13px]"
             v-html="terms"
           />
         </div>
@@ -121,6 +122,11 @@ import { useI18n } from 'vue-i18n'
 
 definePageMeta({
   middleware: async (to, from) => {
+    const isExternal =
+      to.path?.includes('/spin/prize') ||
+      (to.query && Object.prototype.hasOwnProperty.call(to.query, 'prize_id'))
+    if (isExternal) return
+
     const location = to.params.randomCode
     const { data } = await useFetchApi('GET', '/location/password/' + location)
 
@@ -144,6 +150,58 @@ const terms = ref('')
 const answer = ref('')
 const question = ref('')
 const errorMessages = ref('')
+const questionRef = ref(null)
+
+const adjustFontSize = async () => {
+  await nextTick()
+  const element = questionRef.value
+  if (!element) return
+
+  element.style.fontSize = ''
+
+  const getMetrics = () => {
+    const style = window.getComputedStyle(element)
+    const fontSize = parseFloat(style.fontSize)
+    let lineHeight = parseFloat(style.lineHeight)
+    if (isNaN(lineHeight)) {
+      lineHeight = fontSize * 1.2
+    }
+    const paddingTop = parseFloat(style.paddingTop)
+    const paddingBottom = parseFloat(style.paddingBottom)
+    const contentHeight = element.scrollHeight - paddingTop - paddingBottom
+
+    return { fontSize, lineHeight, contentHeight }
+  }
+
+  let { fontSize, lineHeight, contentHeight } = getMetrics()
+
+  var maxLines = 6
+
+  if (window.innerHeight > 450) {
+    maxLines = 7
+  }
+
+  while (contentHeight > lineHeight * maxLines && fontSize > 12) {
+    fontSize -= 0.5
+    element.style.fontSize = `${fontSize}px`
+
+    const metrics = getMetrics()
+    lineHeight = metrics.lineHeight
+    contentHeight = metrics.contentHeight
+  }
+}
+
+watch(question, () => {
+  adjustFontSize()
+})
+
+onMounted(() => {
+  window.addEventListener('resize', adjustFontSize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', adjustFontSize)
+})
 
 const route = useRoute()
 

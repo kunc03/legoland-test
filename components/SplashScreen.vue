@@ -74,7 +74,7 @@ const checkCaches = () => {
     settings.value?.global?.logo,
     settings.value?.global?.gacha_machine_image,
     getImageValue(gacha.value?.loading_screen?.background),
-    gacha.value?.loading_screen?.gif || "",
+    gacha.value?.loading_screen?.gif || '',
   ]
 
   caches

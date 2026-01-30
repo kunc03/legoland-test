@@ -6,9 +6,10 @@
 
   <div
     v-show="
-      !settings?.flow?.screens?.show_loading_screen ||
-      settings?.flow?.screens?.show_before_gacha_screen ||
-      isSplashComplete
+      !playVideo &&
+      (!settings?.flow?.screens?.show_loading_screen ||
+        settings?.flow?.screens?.show_before_gacha_screen ||
+        isSplashComplete)
     "
     class="flex flex-col grow"
   >
@@ -18,9 +19,11 @@
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
       :style="{
         background:
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.type === 'image'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+            ?.type === 'image'
             ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
-            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value,
+            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+                ?.value,
       }"
     >
       <div
@@ -36,7 +39,10 @@
 
       <div
         v-if="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+            ?.popup_needed == '1' ||
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+            ?.popup_needed === true
         "
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
@@ -54,11 +60,12 @@
       <SolidButton
         :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
         :bgColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color
-            ?.background
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.background
         "
         :textColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.color
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.color
         "
         :disabled="isLoading"
         :has-loading="isLoading"
@@ -71,6 +78,7 @@
   <AutoplayVideo
     v-if="playVideo"
     :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
+    :is-external-gacha="gachaType == 'external'"
     @ended="goToSpinPoint"
   />
 
@@ -314,12 +322,7 @@
         class="relative max-h-[55vh] overflow-y-auto flex flex-col items-center justify-start w-full gap-5 px-4 py-6"
       >
         <div class="w-full text-left">
-          <p
-            v-html="
-              popUpContent
-            "
-            class="text-exd-gray-scorpion"
-          ></p>
+          <p v-html="popUpContent" class="text-exd-gray-scorpion"></p>
         </div>
       </div>
     </template>
@@ -361,9 +364,16 @@
           </p>
         </div>
         <SolidButton
-          v-if="redirectLink"
-          :label="$t('gacha')"
-          variant="red-coral"
+          v-if="redirectLink || route.path.includes('/spin/prize')"
+          :label="gachaSettings?.after_gacha_screen?.data?.button_text"
+          :bgColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.background
+          "
+          :textColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.color
+          "
           :on-click="() => continueToSpin(redirectLink)"
         />
       </div>
@@ -384,21 +394,49 @@ const gachaType = computed(() => {
 })
 const settings = useState('settings')
 const gachaSettings = computed(() =>
-  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+  gachaType.value === 'external'
+    ? settings.value?.external_gacha
+    : settings.value?.gacha
 )
 const gacha = computed(() => gachaSettings.value)
 const popUpContent = computed(() => {
   const data =
-    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
-  // data is string, need to parse it to object
-  const dataObject = JSON.parse(data)
-  return dataObject?.[locale.value]
+    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+      ?.popup_content
+  if (!data) return ''
+
+  const preferredLocale = locale.value
+
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      if (typeof parsed === 'string') return parsed
+      if (parsed && typeof parsed === 'object') {
+        return (
+          parsed?.[preferredLocale] ??
+          parsed?.ja ??
+          parsed?.en ??
+          parsed?.id ??
+          ''
+        )
+      }
+      return ''
+    } catch (e) {
+      return data
+    }
+  }
+
+  if (typeof data === 'object') {
+    return data?.[preferredLocale] ?? data?.ja ?? data?.en ?? data?.id ?? ''
+  }
+
+  return ''
 })
 
 const router = useRouter()
 const route = useRoute()
 const isPrizeSpinRoute = computed(() => route.path?.startsWith('/spin/prize/'))
-const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
+const spinSlug = computed(() => route.params.randomCode || route.params.slug)
 const errorMessages = ref('')
 const isNotAllowed = ref(false)
 const showAboutSpin = ref(false)
@@ -486,6 +524,23 @@ const nextToSpin = async () => {
   const beforeSpinType = useState('before_spin_type')
   const notRequiredRadius = useState('not_required_radius')
 
+  if (isPrizeSpinRoute.value) {
+    try {
+      await useFetchApi('POST', 'external-prize/spin', {
+        body: {
+          external_gacha_slug: spinSlug.value,
+          prize_id: route.query.prize_id,
+        },
+      })
+    } catch (error) {
+      if (error?.status === 400) {
+        errorMessages.value = error?._data?.message || t('no_available_data')
+        modalSpinWarning.value = true
+        return
+      }
+    }
+  }
+
   await checkSpinEligibility()
 
   if (beforeSpinType.value) {
@@ -493,7 +548,7 @@ const nextToSpin = async () => {
     validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
-  if (!notRequiredRadius.value) {
+  if (!notRequiredRadius.value && !isPrizeSpinRoute.value) {
     await checkingLocation()
   }
 
@@ -509,7 +564,13 @@ const nextToSpin = async () => {
     ) {
       playVideo.value = true
     } else {
-      await navigateTo(`/spin/point/${spinSlug.value}`)
+      if (gachaType.value == 'external') {
+        navigateTo(
+          `/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`
+        )
+      } else {
+        navigateTo(`/spin/point/${spinSlug.value}`)
+      }
     }
   }
 }
@@ -523,14 +584,13 @@ const goToSpinPoint = async () => {
     validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
-  if (!notRequiredRadius.value) {
+  if (!notRequiredRadius.value && !isPrizeSpinRoute.value) {
     await checkingLocation()
   }
 
   if (stepAllowLocation.value || isNotAllowed.value) {
     return
   }
-
   if (gachaType.value === 'external') {
     return await navigateTo({
       path: `/spin/prize/point/${spinSlug.value}`,
@@ -657,12 +717,10 @@ const checkingLocation = async () => {
 }
 
 const radiusCheck = async () => {
-  if (
-    gachaType.value === 'external'
-  ) {
-    return;
+  if (gachaType.value === 'external') {
+    return
   }
-  
+
   const location = spinSlug.value
   isLoading.value = true
   try {
@@ -777,6 +835,10 @@ function countdown(targetDate) {
 }
 
 const continueToSpin = async (url) => {
+  if (route.path.includes('/spin/prize')) {
+    navigateTo('/')
+    return
+  }
   if (
     settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video
   ) {
@@ -810,6 +872,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+  document.body.classList.remove('modal-open')
 })
 
 watch(isNotAllowed, (newValue) => {
@@ -822,6 +885,7 @@ watch(isNotAllowed, (newValue) => {
 
 onMounted(() => {
   const location = spinSlug.value
+
   if (!isPrizeSpinRoute.value) {
     getPassword(location)
   }
@@ -833,11 +897,7 @@ onMounted(() => {
 </script>
 
 <style>
-:global(body.modal-open) {
+:global(body.modal-open #__nuxt) {
   pointer-events: none;
-}
-
-:global(body.modal-open .p-dialog) {
-  pointer-events: auto;
 }
 </style>
