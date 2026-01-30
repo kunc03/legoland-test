@@ -58,7 +58,7 @@ const externalGachaSlug = computed(() => route.params.slug)
 
 onMounted(async () => {
   if (!prizeId.value) {
-    errorMessage.value = t('noPrizesAtOtherGacha')
+    errorMessage.value = t('otherGachaNotAccessible')
     insufficientDialogVisible.value = true
     return
   }
