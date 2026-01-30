@@ -121,6 +121,11 @@ import { useI18n } from 'vue-i18n'
 
 definePageMeta({
   middleware: async (to, from) => {
+    const isExternal =
+      to.path?.includes('/spin/prize') ||
+      (to.query && Object.prototype.hasOwnProperty.call(to.query, 'prize_id'))
+    if (isExternal) return
+
     const location = to.params.randomCode
     const { data } = await useFetchApi('GET', '/location/password/' + location)
 

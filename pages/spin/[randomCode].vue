@@ -36,7 +36,7 @@
 
       <div
         v-if="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === '1'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed == '1' || gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === true
         "
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
@@ -390,9 +390,34 @@ const gacha = computed(() => gachaSettings.value)
 const popUpContent = computed(() => {
   const data =
     gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
-  // data is string, need to parse it to object
-  const dataObject = JSON.parse(data)
-  return dataObject?.[locale.value]
+  if (!data) return ''
+
+  const preferredLocale = locale.value
+
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      if (typeof parsed === 'string') return parsed
+      if (parsed && typeof parsed === 'object') {
+        return (
+          parsed?.[preferredLocale] ??
+          parsed?.ja ??
+          parsed?.en ??
+          parsed?.id ??
+          ''
+        )
+      }
+      return ''
+    } catch (e) {
+      return data
+    }
+  }
+
+  if (typeof data === 'object') {
+    return data?.[preferredLocale] ?? data?.ja ?? data?.en ?? data?.id ?? ''
+  }
+
+  return ''
 })
 
 const router = useRouter()

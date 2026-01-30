@@ -3,10 +3,24 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return
   }
 
+  const gachaTypeFromQuery = to.query?.gachaType || from.query?.gachaType
+  const prizeIdFromQuery = to.query?.prize_id || from.query?.prize_id
+  const gachaTypeFromState = useState('GACHA_TYPE', () => null).value
+
+  if (
+    gachaTypeFromQuery === 'external' ||
+    gachaTypeFromState === 'external_prize' ||
+    prizeIdFromQuery ||
+    from.path?.includes('/spin/prize/')
+  ) {
+    return
+  }
+
   const validPassword = useCookie('VALID_PASSWORD')
   const { decryptData } = useEncryption()
 
   const randomCode = to.params?.randomCode || from.params?.randomCode
+  if (!randomCode) return
   const { data }: any = await useFetchApi(
     'GET',
     '/location/password/' + randomCode

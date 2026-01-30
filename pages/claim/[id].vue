@@ -274,6 +274,8 @@ const fetchRedeem = async () => {
 
 const handleSwipe = async () => {
   isClicked.value = true
+  console.log(prizeDetailData.value.type === 'external_prize' &&
+      externalGachaSlug.value)
   if (isClicked.value) {
     if (
       prizeDetailData.value.type === 'external_prize' &&

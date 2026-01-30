@@ -1,5 +1,11 @@
 <script setup>
-const props = defineProps(['imageSrc', 'categorySrc', 'showPointOnly'])
+import noImage from '~/assets/images/no-image.svg'
+
+const props = defineProps({
+  imageSrc: { type: String, default: '' },
+  categorySrc: { type: String, default: '' },
+  showPointOnly: { type: Boolean, default: false },
+})
 const settings = useState('settings')
 const giftType = reactive({
   x: 50,
@@ -20,6 +26,75 @@ const circleBlur = reactive({
   y: -170,
   width: 550,
   height: 600,
+})
+
+const pointHref = ref(noImage)
+const categoryHref = ref(noImage)
+
+const isPointFallback = computed(() => pointHref.value === noImage)
+
+const pointCircle = computed(() => {
+  const radius = Math.min(pointType.width, pointType.height) / 2
+  return {
+    cx: pointType.x + pointType.width / 2,
+    cy: pointType.y + pointType.height / 2,
+    r: radius,
+  }
+})
+
+const configuredCategoryHref = computed(
+  () =>
+    settings.value?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image ||
+    ''
+)
+
+const selectedCategoryHref = computed(() => {
+  const selectImage =
+    settings.value?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image
+      ?.select_image
+
+  if (selectImage === 'point_category') {
+    return props.categorySrc
+  }
+
+  return configuredCategoryHref.value
+})
+
+const resolveImageHref = (src, fallback) => {
+  return new Promise((resolve) => {
+    if (!import.meta.client) {
+      resolve(fallback)
+      return
+    }
+
+    if (!src || typeof src !== 'string') {
+      resolve(fallback)
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => resolve(src)
+    img.onerror = () => resolve(fallback)
+    img.src = src
+  })
+}
+
+let pointSeq = 0
+watchEffect(() => {
+  const current = ++pointSeq
+  resolveImageHref(props.imageSrc, noImage).then((href) => {
+    if (current !== pointSeq) return
+    pointHref.value = href
+  })
+})
+
+let categorySeq = 0
+watchEffect(() => {
+  const current = ++categorySeq
+  resolveImageHref(selectedCategoryHref.value, noImage).then((href) => {
+    if (current !== categorySeq) return
+    categoryHref.value = href
+  })
 })
 
 onMounted(() => {
@@ -127,7 +202,35 @@ onMounted(() => {
       <!-- <ellipse cx="200" cy="198" rx="200" ry="198" fill="white" /> -->
     </g>
     
-    <image v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point" :x="pointType.x" :y="pointType.y" :width="pointType.width" :height="pointType.height" :href="props.imageSrc" />
+    <g v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point">
+      <circle
+        v-if="isPointFallback"
+        :cx="pointCircle.cx"
+        :cy="pointCircle.cy"
+        :r="pointCircle.r"
+        fill="white"
+        stroke="#D0D0D0"
+        stroke-width="4"
+      />
+      <g v-if="isPointFallback" clip-path="url(#clipPoint)">
+        <image
+          :x="pointType.x"
+          :y="pointType.y"
+          :width="pointType.width"
+          :height="pointType.height"
+          :href="pointHref"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </g>
+      <image
+        v-else
+        :x="pointType.x"
+        :y="pointType.y"
+        :width="pointType.width"
+        :height="pointType.height"
+        :href="pointHref"
+      />
+    </g>
 
     <image
       v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_category || settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image !== 'none'"
@@ -135,10 +238,13 @@ onMounted(() => {
       :y="giftType.y"
       :width="giftType.width"
       :height="giftType.height"
-      :href="settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.select_image === 'point_category' ? props.categorySrc : settings?.gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.image?.image"
+      :href="categoryHref"
     />
 
     <defs>
+      <clipPath id="clipPoint">
+        <circle :cx="pointCircle.cx" :cy="pointCircle.cy" :r="pointCircle.r" />
+      </clipPath>
       <filter
         id="filter0_b_12_49"
         x="-30"
