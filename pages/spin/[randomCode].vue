@@ -856,6 +856,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+  document.body.classList.remove('modal-open')
 })
 
 watch(isNotAllowed, (newValue) => {
@@ -880,11 +881,7 @@ onMounted(() => {
 </script>
 
 <style>
-:global(body.modal-open) {
+:global(body.modal-open #__nuxt) {
   pointer-events: none;
-}
-
-:global(body.modal-open .p-dialog) {
-  pointer-events: auto;
 }
 </style>
