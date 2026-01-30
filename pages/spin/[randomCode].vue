@@ -78,6 +78,7 @@
   <AutoplayVideo
     v-if="playVideo"
     :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
+    :is-external-gacha="gachaType == 'external'"
     @ended="goToSpinPoint"
   />
 

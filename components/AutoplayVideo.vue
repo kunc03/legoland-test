@@ -8,7 +8,7 @@
       @ended="$emit('ended')"
       @play="startButtonDelay"
     >
-      <source :src="props.src" type="video/mp4" />
+      <source :src="videoSource" type="video/mp4" />
     </video>
 
     <SolidButton
@@ -22,7 +22,13 @@
 </template>
 
 <script setup>
-const props = defineProps(['src'])
+import externalGachaVideo from '~/assets/videos/external-gacha.mp4'
+
+const props = defineProps(['src', 'isExternalGacha'])
+
+const videoSource = computed(() => {
+  return props.isExternalGacha ? externalGachaVideo : props.src
+})
 const emit = defineEmits(['ended'])
 
 const showButton = ref(false)
