@@ -539,7 +539,7 @@ const nextToSpin = async () => {
     validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
-  if (!notRequiredRadius.value) {
+  if (!notRequiredRadius.value && !isPrizeSpinRoute.value) {
     await checkingLocation()
   }
 
@@ -573,7 +573,7 @@ const goToSpinPoint = async () => {
     validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
-  if (!notRequiredRadius.value) {
+  if (!notRequiredRadius.value && !isPrizeSpinRoute.value) {
     await checkingLocation()
   }
 
