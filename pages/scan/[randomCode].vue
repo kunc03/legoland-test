@@ -672,6 +672,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+  document.body.classList.remove('modal-open')
 })
 
 watch(value, (newVal) => {
@@ -739,12 +740,8 @@ watch(isNotAllowed, (newValue) => {
   align-items: center;
 }
 
-:global(body.modal-open) {
+:global(body.modal-open #__nuxt) {
   pointer-events: none;
-}
-
-:global(body.modal-open .p-dialog) {
-  pointer-events: auto;
 }
 
 /* @media screen and (max-width: 460px) { */
