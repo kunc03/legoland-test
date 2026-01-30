@@ -12,7 +12,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       settings.value = data
     }
 
-    console.log('settings', settings.value)
     if (import.meta.client) {
       const root = document.documentElement
       const textColors = settings.value?.global?.text_colors || {}
