@@ -515,10 +515,6 @@ const nextToSpin = async () => {
 }
 
 const goToSpinPoint = async () => {
-  if (gachaType.value === 'external') {
-    navigateTo(`/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`)
-  }
-
   const notRequiredPin = useState('not_required_pin')
   const notRequiredRadius = useState('not_required_radius')
 
@@ -534,6 +530,14 @@ const goToSpinPoint = async () => {
   if (stepAllowLocation.value || isNotAllowed.value) {
     return
   }
+
+  if (gachaType.value === 'external') {
+    return await navigateTo({
+      path: `/spin/prize/point/${spinSlug.value}`,
+      query: { ...route.query },
+    })
+  }
+
   await navigateTo(`/spin/point/${spinSlug.value}`)
 }
 

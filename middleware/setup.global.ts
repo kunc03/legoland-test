@@ -11,8 +11,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       if (!data) return navigateTo('/not-found')
       settings.value = data
     }
-
-    console.log('settings', settings.value)
     if (import.meta.client) {
       const root = document.documentElement
       const textColors = settings.value?.global?.text_colors || {}
@@ -39,6 +37,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
 
     if (!allowPaths.some(path => to.path.includes(path))) return
+    if (!import.meta.client) return
 
     const gacha = settings.value?.gacha
     if (!gacha) return
@@ -59,7 +58,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Spin point
     const spin1 = gacha.spin_gacha_1_screen
     if (spin1) {
-      addToCache(spin1.gacha_1_video)
       if (spin1.before_gacha_1_screen?.background?.type === 'image') {
         addToCache(spin1.before_gacha_1_screen.background.value)
       }
@@ -71,14 +69,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Spin character
     const spin2 = gacha.spin_gacha_2_screen
     if (spin2) {
-      addToCache(spin2.gacha_2_video)
       if (spin2.after_gacha_2_screen?.background?.type === 'image') {
         addToCache(spin2.after_gacha_2_screen.background.value)
       }
     }
 
     if (cachePromises.length > 0) {
-      await Promise.allSettled(cachePromises)
+      Promise.allSettled(cachePromises)
     }
   } catch (err) {
     console.error(`Gacha middleware error on route ${to.path}:`, err)

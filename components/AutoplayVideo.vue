@@ -2,6 +2,7 @@
   <div tabindex="0">
     <video
       autoplay
+      preload="auto"
       playsinline
       :muted="shouldMute"
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
@@ -22,16 +23,18 @@
 </template>
 
 <script setup>
-const props = defineProps(['src'])
+const props = defineProps({
+  src: { type: String, default: '' },
+  muted: { type: Boolean, default: undefined },
+})
 const emit = defineEmits(['ended'])
 
 const showButton = ref(false)
 let buttonDelayTimeout = null
 
-const isAndroid = /Android/i.test(navigator.userAgent)
-const isInstagram = /Instagram/i.test(navigator.userAgent)
-
-const shouldMute = isAndroid && isInstagram
+const isAndroid = ref(false)
+const isInstagram = ref(false)
+const shouldMute = computed(() => props.muted ?? (isAndroid.value && isInstagram.value))
 
 const startButtonDelay = () => {
   showButton.value = false
@@ -58,6 +61,9 @@ const handleKeydown = (event) => {
 }
 
 onMounted(() => {
+  const ua = navigator.userAgent || ''
+  isAndroid.value = /Android/i.test(ua)
+  isInstagram.value = /Instagram/i.test(ua)
   window.addEventListener('keydown', handleKeydown)
 })
 

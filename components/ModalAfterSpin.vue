@@ -196,7 +196,7 @@ const handleToRedirectToDashboard = async () => {
   await navigateTo('/dashboard')
 }
 
-const detailCharacter = ref({})
+const detailCharacter = ref({ character_image: null, point_image: null })
 
 const description = settings.value?.global?.ogp?.description
 const requestURL = useRequestURL()
@@ -218,9 +218,15 @@ const quote = cleanDescription + ' ' + url
 const handleToRedirect = async () => {
   if (props.pointCategoryIsFail) {
     const storedData = useCookie('VALID_PASSWORD')
-    let parsedData = decryptData(storedData.value)
+    let parsedData = null
+    try {
+      parsedData = decryptData(storedData.value || '{}')
+    } catch {
+      parsedData = null
+    }
 
-    const slug = parsedData.slug
+    const slug = parsedData?.slug ? String(parsedData.slug) : ''
+    if (!slug) return
 
     await navigateTo(`/spin/${slug}`)
   } else {
@@ -276,8 +282,13 @@ const share = (type) => {
 
 const generateUrlToShare = () => {
   const storedData = useCookie('VALID_PASSWORD')
-  const parsedData = decryptData(storedData.value)
-  const slug = parsedData.slug
+  let parsedData = null
+  try {
+    parsedData = decryptData(storedData.value || '{}')
+  } catch {
+    parsedData = null
+  }
+  const slug = parsedData?.slug ? String(parsedData.slug) : ''
   
   let objectToShare = {
     url: url,
@@ -285,12 +296,10 @@ const generateUrlToShare = () => {
   }
 
   try {
-    objectToShare.url =
-      url +
-      `/spin/${slug}`
-    objectToShare.quote =
-      quote +
-      `/spin/${slug}`
+    if (slug) {
+      objectToShare.url = url + `/spin/${slug}`
+      objectToShare.quote = quote + `/spin/${slug}`
+    }
   } catch (error) {
     console.log(error)
   }
@@ -370,12 +379,30 @@ onBeforeUnmount(() => {
 
 onMounted(() => {
   const storedData = useCookie('VALID_PASSWORD')
-  const parsedData = decryptData(storedData.value)
-  const slug = parsedData.slug.toUpperCase()
-  const slugData = decryptData(localStorage.getItem(`${slug}_GACHA`))
+  let parsedData = null
+  try {
+    parsedData = decryptData(storedData.value || '{}')
+  } catch {
+    parsedData = null
+  }
+
+  const slug = parsedData?.slug ? String(parsedData.slug).toUpperCase() : null
+
+  let slugData = null
+  if (slug) {
+    const raw = localStorage.getItem(`${slug}_GACHA`)
+    if (raw) {
+      try {
+        slugData = decryptData(raw)
+      } catch {
+        slugData = null
+      }
+    }
+  }
   const gachaSocialMedia = afterGacha.value?.data?.data_share_social_media
 
-  detailCharacter.value = slugData
+  detailCharacter.value =
+    slugData || { character_image: null, point_image: null }
 
   if (!gachaSocialMedia) {
     socialMediaLinks.value = []

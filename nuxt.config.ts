@@ -1,6 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
+import type { Plugin } from 'vite'
 import Aura from '@primevue/themes/aura'
+
+const ensureSsrEntryHasSemicolon = (): Plugin => {
+  return {
+    name: 'ensure-ssr-entry-has-semicolon',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const entry = bundle['server.mjs']
+      if (!entry || entry.type !== 'chunk') return
+
+      const code = entry.code
+      const patched = code.replace(
+        /^export\s+\{\s*default\s*\}\s+from\s+(['"][^'"]+['"])\s*$/m,
+        'export { default } from $1;'
+      )
+
+      entry.code = patched
+    },
+  }
+}
 
 export default defineNuxtConfig({
   app: {
@@ -102,6 +122,7 @@ export default defineNuxtConfig({
     esbuild: {
       drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     },
+    plugins: [ensureSsrEntryHasSemicolon()],
   },
 
   compatibilityDate: '2024-07-29',

@@ -16,13 +16,17 @@
       :src="settings?.global?.gacha_machine_image"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none h-auto max-h-[96svh] object-contain"
-      preload
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
     />
     <img
       src="/images/sparkling.png"
       alt="sparkling"
       class="absolute z-10 object-cover w-full h-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 animate-sparkling"
-      preload
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
     />
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinPoint
@@ -377,10 +381,6 @@ const fetchImageFromApi = async () => {
           : null,
         is_redirect: true,
         button_name: data.button_name,
-        popup_image: data.point?.point_category_image,
-        popup_description: data.point?.point_category_description,
-        redirect_link: data.point?.point_category_link,
-        point_category_is_fail: !!data.point?.point_category_is_fail,
         spin_date: new Date().toLocaleString(),
         hide_character:
           !settings.value?.flow?.screens?.spin_gacha_2_screen
