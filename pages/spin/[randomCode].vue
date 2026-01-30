@@ -526,7 +526,7 @@ const nextToSpin = async () => {
 
   if (isPrizeSpinRoute.value) {
     try {
-      await useFetchApi('POST', 'external-prize/spin', {
+      await useFetchApi('POST', 'external-prize/validate', {
         body: {
           external_gacha_slug: spinSlug.value,
           prize_id: route.query.prize_id,
