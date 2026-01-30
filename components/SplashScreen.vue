@@ -47,6 +47,7 @@ onMounted(() => {
 })
 
 function completeLoading() {
+  if (!loading.value) return
   loading.value = false
   emit('finish')
 }
@@ -118,6 +119,8 @@ const preCacheDuringLoading = async () => {
     return
   }
 
+  const startedAt = Date.now()
+  const minWaitMs = 2000
   const cacheName = `gacharary-v2 - ${window.location.origin}`
   const urlsToCache = buildUrlsToCache()
   const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
@@ -175,6 +178,11 @@ const preCacheDuringLoading = async () => {
   } catch {
   } finally {
     if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
+    const elapsed = Date.now() - startedAt
+    const remaining = minWaitMs - elapsed
+    if (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remaining))
+    }
     completeLoading()
   }
 }
