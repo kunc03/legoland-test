@@ -357,10 +357,6 @@ const fetchImageFromApi = async () => {
           : null,
         is_redirect: true,
         button_name: data.button_name,
-        popup_image: data.point?.point_category_image,
-        popup_description: data.point?.point_category_description,
-        redirect_link: data.point?.point_category_link,
-        point_category_is_fail: !!data.point?.point_category_is_fail,
         spin_date: new Date().toLocaleString(),
         hide_character:
           !settings.value?.flow?.screens?.spin_gacha_2_screen

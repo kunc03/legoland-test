@@ -33,8 +33,7 @@
               class="max-w-full font-bold text-exd-1424 text-exd-gray-scorpion"
               :class="{
                 'max-w-[220px] line-clamp-3':
-                  prizeDetailData.rarity?.type === 'color',
-                'max-w-[220px] line-clamp-3':
+                  prizeDetailData.rarity?.type === 'color' ||
                   prizeDetailData.rarity?.type === 'image',
               }"
             >
