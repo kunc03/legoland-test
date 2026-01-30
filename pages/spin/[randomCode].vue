@@ -6,9 +6,10 @@
 
   <div
     v-show="
-      !settings?.flow?.screens?.show_loading_screen ||
-      settings?.flow?.screens?.show_before_gacha_screen ||
-      isSplashComplete
+      !playVideo &&
+      (!settings?.flow?.screens?.show_loading_screen ||
+        settings?.flow?.screens?.show_before_gacha_screen ||
+        isSplashComplete)
     "
     class="flex flex-col grow"
   >
@@ -18,9 +19,11 @@
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
       :style="{
         background:
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.type === 'image'
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+            ?.type === 'image'
             ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
-            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value,
+            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+                ?.value,
       }"
     >
       <div
@@ -36,7 +39,10 @@
 
       <div
         v-if="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed == '1' || gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_needed === true
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+            ?.popup_needed == '1' ||
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+            ?.popup_needed === true
         "
         class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
       >
@@ -54,11 +60,12 @@
       <SolidButton
         :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
         :bgColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color
-            ?.background
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.background
         "
         :textColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_and_text_color?.color
+          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+            ?.button_and_text_color?.color
         "
         :disabled="isLoading"
         :has-loading="isLoading"
@@ -314,12 +321,7 @@
         class="relative max-h-[55vh] overflow-y-auto flex flex-col items-center justify-start w-full gap-5 px-4 py-6"
       >
         <div class="w-full text-left">
-          <p
-            v-html="
-              popUpContent
-            "
-            class="text-exd-gray-scorpion"
-          ></p>
+          <p v-html="popUpContent" class="text-exd-gray-scorpion"></p>
         </div>
       </div>
     </template>
@@ -391,12 +393,15 @@ const gachaType = computed(() => {
 })
 const settings = useState('settings')
 const gachaSettings = computed(() =>
-  gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
+  gachaType.value === 'external'
+    ? settings.value?.external_gacha
+    : settings.value?.gacha
 )
 const gacha = computed(() => gachaSettings.value)
 const popUpContent = computed(() => {
   const data =
-    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_content
+    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+      ?.popup_content
   if (!data) return ''
 
   const preferredLocale = locale.value
@@ -430,7 +435,7 @@ const popUpContent = computed(() => {
 const router = useRouter()
 const route = useRoute()
 const isPrizeSpinRoute = computed(() => route.path?.startsWith('/spin/prize/'))
-const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
+const spinSlug = computed(() => route.params.randomCode || route.params.slug)
 const errorMessages = ref('')
 const isNotAllowed = ref(false)
 const showAboutSpin = ref(false)
@@ -521,7 +526,10 @@ const nextToSpin = async () => {
   if (isPrizeSpinRoute.value) {
     try {
       await useFetchApi('POST', 'external-prize/spin', {
-        body: { external_gacha_slug: spinSlug.value, prize_id: route.query.prize_id },
+        body: {
+          external_gacha_slug: spinSlug.value,
+          prize_id: route.query.prize_id,
+        },
       })
     } catch (error) {
       if (error?.status === 400) {
@@ -555,14 +563,22 @@ const nextToSpin = async () => {
     ) {
       playVideo.value = true
     } else {
-      await navigateTo(`/spin/point/${spinSlug.value}`)
+      if (gachaType.value == 'external') {
+        navigateTo(
+          `/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`
+        )
+      } else {
+        navigateTo(`/spin/point/${spinSlug.value}`)
+      }
     }
   }
 }
 
 const goToSpinPoint = async () => {
   if (gachaType.value === 'external') {
-    navigateTo(`/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`)
+    navigateTo(
+      `/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`
+    )
   }
 
   const notRequiredPin = useState('not_required_pin')
@@ -580,7 +596,13 @@ const goToSpinPoint = async () => {
   if (stepAllowLocation.value || isNotAllowed.value) {
     return
   }
-  await navigateTo(`/spin/point/${spinSlug.value}`)
+  if (gachaType.value == 'external') {
+    navigateTo(
+      `/spin/prize/point/${spinSlug.value}?prize_id=${route.query.prize_id}`
+    )
+  } else {
+    navigateTo(`/spin/point/${spinSlug.value}`)
+  }
 }
 
 const closeStepAllowLocation = () => {
@@ -699,12 +721,10 @@ const checkingLocation = async () => {
 }
 
 const radiusCheck = async () => {
-  if (
-    gachaType.value === 'external'
-  ) {
-    return;
+  if (gachaType.value === 'external') {
+    return
   }
-  
+
   const location = spinSlug.value
   isLoading.value = true
   try {
