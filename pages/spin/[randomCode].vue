@@ -361,9 +361,16 @@
           </p>
         </div>
         <SolidButton
-          v-if="redirectLink"
-          :label="$t('gacha')"
-          variant="red-coral"
+          v-if="redirectLink || route.path.includes('/spin/prize')"
+          :label="gachaSettings?.after_gacha_screen?.data?.button_text"
+          :bgColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.background
+          "
+          :textColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.color
+          "
           :on-click="() => continueToSpin(redirectLink)"
         />
       </div>
@@ -510,6 +517,20 @@ definePageMeta({
 const nextToSpin = async () => {
   const beforeSpinType = useState('before_spin_type')
   const notRequiredRadius = useState('not_required_radius')
+
+  if (isPrizeSpinRoute.value) {
+    try {
+      await useFetchApi('POST', 'external-prize/spin', {
+        body: { external_gacha_slug: spinSlug.value, prize_id: route.query.prize_id },
+      })
+    } catch (error) {
+      if (error?.status === 400) {
+        errorMessages.value = error?._data?.message || t('no_available_data')
+        modalSpinWarning.value = true
+        return
+      }
+    }
+  }
 
   await checkSpinEligibility()
 
@@ -798,6 +819,10 @@ function countdown(targetDate) {
 }
 
 const continueToSpin = async (url) => {
+  if (route.path.includes('/spin/prize')) {
+    navigateTo('/')
+    return
+  }
   if (
     settings.value?.flow?.screens?.spin_gacha_1_screen?.show_spin_gacha_1_video
   ) {
@@ -843,6 +868,7 @@ watch(isNotAllowed, (newValue) => {
 
 onMounted(() => {
   const location = spinSlug.value
+
   if (!isPrizeSpinRoute.value) {
     getPassword(location)
   }

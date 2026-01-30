@@ -84,6 +84,7 @@ const checkCaches = () => {
     spin1.value?.gacha_1_video || "",
     getImageValue(spin1.value?.before_gacha_1_screen?.background),
     getImageValue(spin1.value?.after_gacha_1_screen?.background),
+    spin1.value?.after_gacha_1_screen?.image?.image || "",
     spin2.value?.gacha_2_video || "",
     getImageValue(spin2.value?.after_gacha_2_screen?.popup_icon),
     getImageValue(spin2.value?.after_gacha_2_screen?.background)
