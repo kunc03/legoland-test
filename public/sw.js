@@ -50,20 +50,33 @@ self.addEventListener('activate', function (event) {
 })
 
 self.addEventListener('message', async (event) => {
-  if (event.data?.type === 'CACHE_IMAGES') {
-    const urls = event.data.payload;
-    const cache = await caches.open(CACHE_NAME);
+  const type = event.data?.type
+  if (type !== 'CACHE_IMAGES' && type !== 'CACHE_VIDEOS') return
 
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, { mode: 'cors' });
-        if (response.ok) {
-          await cache.put(url, response.clone());
-          console.log('[SW] Cached from middleware:', url);
+  const urls = event.data.payload
+  if (!Array.isArray(urls) || urls.length === 0) return
+
+  const cache = await caches.open(CACHE_NAME)
+
+  for (const url of urls) {
+    try {
+      let response
+      if (type === 'CACHE_VIDEOS') {
+        try {
+          response = await fetch(url)
+        } catch {
+          response = await fetch(url, { mode: 'no-cors' })
         }
-      } catch (err) {
-        console.error('[SW] Failed to cache image:', url, err);
+      } else {
+        response = await fetch(url, { mode: 'no-cors' })
       }
+
+      if (response.ok || response.type === 'opaque') {
+        await cache.put(url, response.clone())
+        console.log('[SW] Cached:', url)
+      }
+    } catch (err) {
+      console.error('[SW] Failed to cache:', url, err)
     }
   }
 });
@@ -122,24 +135,36 @@ async function handleRangeRequest(request) {
     return fetch(request)
   }
 
+  if (response.type === 'opaque') {
+    return fetch(request)
+  }
+
   const range = request.headers.get('range')
   const bytes = /bytes\=(\d+)\-(\d+)?/.exec(range)
-  const start = Number(bytes[1])
-  const videoBlob = await response.blob()
-  const videoArrayBuffer = await videoBlob.arrayBuffer()
-  const videoSize = videoArrayBuffer.byteLength
+  if (!bytes) {
+    return fetch(request)
+  }
 
-  const end = bytes[2] ? Number(bytes[2]) : videoSize - 1
-  const chunk = videoArrayBuffer.slice(start, end + 1)
+  try {
+    const start = Number(bytes[1])
+    const videoBlob = await response.blob()
+    const videoArrayBuffer = await videoBlob.arrayBuffer()
+    const videoSize = videoArrayBuffer.byteLength
 
-  return new Response(chunk, {
-    status: 206,
-    statusText: 'Partial Content',
-    headers: [
-      ['Cache-Control', 'public, max-age=3600'],
-      ['Content-Range', `bytes ${start}-${end}/${videoSize}`],
-      ['Content-Length', chunk.byteLength],
-      ['Content-Type', 'video/mp4'],
-    ],
-  })
+    const end = bytes[2] ? Number(bytes[2]) : videoSize - 1
+    const chunk = videoArrayBuffer.slice(start, end + 1)
+
+    return new Response(chunk, {
+      status: 206,
+      statusText: 'Partial Content',
+      headers: [
+        ['Cache-Control', 'public, max-age=3600'],
+        ['Content-Range', `bytes ${start}-${end}/${videoSize}`],
+        ['Content-Length', chunk.byteLength],
+        ['Content-Type', 'video/mp4'],
+      ],
+    })
+  } catch {
+    return fetch(request)
+  }
 }
