@@ -77,7 +77,7 @@
 
       <div
         v-if="
-          settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title
+          settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title && charName
         "
         class="absolute flex justify-center h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
         :class="

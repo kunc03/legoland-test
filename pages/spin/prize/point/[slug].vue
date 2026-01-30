@@ -39,7 +39,7 @@
         :is-external-gacha="true"
       />
       <div
-        v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title"
+        v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title && displayPointName"
         class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[20%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
       >
         <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
@@ -140,7 +140,7 @@ const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
 const { t } = useI18n()
 
 const displayPointName = computed(() => {
-  return spinResultData.value?.name || pointName.value || t('no_available_data')
+  return spinResultData.value?.name || pointName.value || ""
 })
 
 const handleCloseModalLogin = () => (modalLogin.value = false)

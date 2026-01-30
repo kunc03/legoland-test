@@ -99,10 +99,28 @@ onMounted(() => {
     box-shadow: 0px 0px 10px 5px #ffffff5e;
   }
 }
+
+@keyframes sparkle-webkit {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateZ(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateZ(0) scale(1.03);
+  }
+}
 .animate-sparkle {
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center center;
   animation: sparkle 0.7s infinite alternate;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .animate-sparkle {
+    animation: sparkle-webkit 1.2s infinite;
+  }
 }
 </style>

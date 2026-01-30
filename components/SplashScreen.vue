@@ -1,4 +1,6 @@
 <script setup>
+import circleBlur from '~/assets/images/circle-blur.png'
+
 const route = useRoute()
 const loading = ref(true)
 const isSupportSerWorker = ref(false)
@@ -41,15 +43,7 @@ if (import.meta.client && 'serviceWorker' in navigator) {
 }
 
 onMounted(() => {
-  if (!isSupportSerWorker.value) {
-    completeLoading()
-    return
-  }
-
-  checkCaches()
-  maxWaitTimeout = setTimeout(() => {
-    completeLoading()
-  }, 2000)
+  preCacheDuringLoading()
 })
 
 function completeLoading() {
@@ -63,37 +57,126 @@ const getImageValue = (obj) => {
   return obj.type === 'image' ? obj.value : ''
 }
 
-const checkCaches = () => {
-  const urlsToCache = [
+const isCacheableUrl = (url) => {
+  if (!url || typeof url !== 'string') return false
+  const trimmed = url.trim()
+  if (!trimmed) return false
+  if (trimmed.startsWith('data:')) return false
+  return true
+}
+
+const unique = (arr) => Array.from(new Set(arr))
+
+const isMp4Url = (url) => {
+  if (!url || typeof url !== 'string') return false
+  return /\.mp4(\?|#|$)/i.test(url)
+}
+
+const getGachaAssets = (gachaConfig) => {
+  if (!gachaConfig) return []
+
+  const spin1 = gachaConfig.spin_gacha_1_screen
+  const spin2 = gachaConfig.spin_gacha_2_screen
+
+  return [
+    getImageValue(gachaConfig.loading_screen?.background),
+    gachaConfig.loading_screen?.gif,
+    spin1?.gacha_1_video,
+    getImageValue(spin1?.before_gacha_1_screen?.background),
+    getImageValue(spin1?.after_gacha_1_screen?.background),
+    spin1?.after_gacha_1_screen?.image?.image,
+    spin2?.gacha_2_video,
+    getImageValue(spin2?.after_gacha_2_screen?.background),
+    getImageValue(spin2?.after_gacha_2_screen?.popup_icon),
+    spin2?.after_gacha_2_screen?.get_character_title_image,
+  ]
+}
+
+const buildUrlsToCache = () => {
+  const base = [
     '/images/sparkling.png',
     '/images/gacha-aichi.png',
     '/images/close.svg',
     '/images/export.svg',
     '/images/text-char.png',
     '/icons/icon-gift.svg',
+    circleBlur,
     settings.value?.global?.logo,
     settings.value?.global?.gacha_machine_image,
-    getImageValue(gacha.value?.loading_screen?.background),
-    gacha.value?.loading_screen?.gif || '',
   ]
 
-  caches
-    .open(`gacharary-v2 - ${window.location.origin}`)
-    .then((cache) => cache.keys())
-    .then((keys) => {
-      const cachesUrl = keys.map((i) => i.url)
+  const gachaConfigs = unique([settings.value?.gacha, settings.value?.external_gacha, gacha.value])
+  const fromGacha = gachaConfigs.flatMap((g) => getGachaAssets(g))
 
-      const filteredUrls = urlsToCache.filter(Boolean)
+  return unique([...base, ...fromGacha].filter(isCacheableUrl))
+}
 
-      const isCacheAlready = filteredUrls.every((i) =>
-        cachesUrl.some((a) => a.includes(i))
-      )
+const preCacheDuringLoading = async () => {
+  if (!import.meta.client) return
+  if (!('caches' in window)) {
+    completeLoading()
+    return
+  }
 
-      if (isCacheAlready) {
-        if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
-        completeLoading()
-      }
-  })
+  const cacheName = `gacharary-v2 - ${window.location.origin}`
+  const urlsToCache = buildUrlsToCache()
+  const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
+  const videoUrlsToCache = urlsToCache.filter((url) => isMp4Url(url))
+
+  const maxWaitMs = 5000
+  maxWaitTimeout = setTimeout(() => {
+    completeLoading()
+  }, maxWaitMs)
+
+  try {
+    const cache = await caches.open(cacheName)
+
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CACHE_IMAGES',
+        payload: imageUrlsToCache,
+      })
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CACHE_VIDEOS',
+        payload: videoUrlsToCache,
+      })
+    }
+
+    const tasks = [
+      ...imageUrlsToCache.map(async (url) => {
+        try {
+          const cached = await cache.match(url)
+          if (cached) return
+          const response = await fetch(url, { mode: 'no-cors' })
+          await cache.put(url, response.clone())
+        } catch {
+        }
+      }),
+      ...videoUrlsToCache.map(async (url) => {
+        try {
+          const cached = await cache.match(url)
+          if (cached) return
+          let response
+          try {
+            response = await fetch(url, { mode: 'cors' })
+          } catch {
+            response = await fetch(url, { mode: 'no-cors' })
+          }
+          await cache.put(url, response.clone())
+        } catch {
+        }
+      }),
+    ]
+
+    await Promise.race([
+      Promise.allSettled(tasks),
+      new Promise((resolve) => setTimeout(resolve, maxWaitMs - 250)),
+    ])
+  } catch {
+  } finally {
+    if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
+    completeLoading()
+  }
 }
 
 onUnmounted(() => {

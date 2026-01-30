@@ -264,15 +264,32 @@ const handleToRedirect = async () => {
     const url = gachaSettings.value?.after_gacha_screen?.data?.url_link
 
     if (url) {
+      const normalizePath = (path) => {
+        const raw = String(path || '')
+        const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`
+        const normalized = withLeadingSlash.replace(/\/+$/, '')
+        return normalized || '/'
+      }
+
       let targetPath = ''
+      let isSameOrigin = false
       try {
-        targetPath = new URL(url, window.location.origin).pathname
+        const resolved = new URL(url, window.location.origin)
+        targetPath = resolved.pathname
+        isSameOrigin = resolved.origin === window.location.origin
       } catch (e) {
         targetPath = String(url).split('?')[0].split('#')[0]
+        isSameOrigin = !/^https?:\/\//i.test(String(url))
       }
 
       const currentPath = route.path
-      const target = targetPath === currentPath ? '_self' : '_blank'
+      const normalizedCurrentPath = normalizePath(currentPath)
+      const normalizedTargetPath = normalizePath(targetPath)
+      const isPathIncluded =
+        normalizedTargetPath === normalizedCurrentPath ||
+        normalizedTargetPath.startsWith(`${normalizedCurrentPath}/`) ||
+        normalizedCurrentPath.startsWith(`${normalizedTargetPath}/`)
+      const target = isSameOrigin && isPathIncluded ? '_self' : '_blank'
       window.open(url, target)
     }
   }
