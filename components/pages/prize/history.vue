@@ -66,10 +66,6 @@
               {{ $t('applicationPeriod') }}：{{ startedAt }}〜{{ expiredAt }}
             </p>
             <p
-              v-if="
-                settings?.prize?.step_1?.has_been_redeemed
-                  ?.show_redemption_date
-              "
               class="text-[10px] sm:text-[12px] font-medium"
               :style="{
                 color: settings?.global?.text_colors?.secondary,
