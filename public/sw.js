@@ -16,9 +16,9 @@ self.addEventListener('install', function (event) {
     caches
       .open(CACHE_NAME)
       .then(function (cache) {
-        console.log('Opened cache')
+        // console.log('Opened cache')
         return cache.addAll(urlsToCache).then(() => {
-          console.log('Add all cache')
+          // console.log('Add all cache')
         })
       })
       .catch((error) => {
@@ -73,7 +73,7 @@ self.addEventListener('message', async (event) => {
 
       if (response.ok || response.type === 'opaque') {
         await cache.put(url, response.clone())
-        console.log('[SW] Cached:', url)
+        // console.log('[SW] Cached:', url)
       }
     } catch (err) {
       console.error('[SW] Failed to cache:', url, err)
