@@ -196,7 +196,7 @@ const handleToRedirectToDashboard = async () => {
   await navigateTo('/dashboard')
 }
 
-const detailCharacter = ref({})
+const detailCharacter = ref({ character_image: null, point_image: null })
 
 const description = settings.value?.global?.ogp?.description
 const requestURL = useRequestURL()
@@ -411,15 +411,20 @@ onMounted(() => {
     return
   }
 
-  let slugData = {}
+  let slugData = null
   try {
-    slugData = decryptData(localStorage.getItem(`${slug.toUpperCase()}_GACHA`)) || {}
-  } catch (e) {
-    slugData = {}
+    slugData =
+      decryptData(localStorage.getItem(`${slug.toUpperCase()}_GACHA`)) || null
+  } catch {
+    slugData = null
   }
   const gachaSocialMedia = afterGacha.value?.data?.data_share_social_media
 
-  detailCharacter.value = slugData
+  detailCharacter.value = {
+    character_image: null,
+    point_image: null,
+    ...(slugData && typeof slugData === 'object' ? slugData : {}),
+  }
 
   if (!gachaSocialMedia) {
     socialMediaLinks.value = []

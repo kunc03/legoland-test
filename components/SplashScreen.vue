@@ -10,11 +10,8 @@ const gachaSettings = computed(() =>
   gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
 )
 const gacha = computed(() => gachaSettings.value)
-const spin1 = computed(() => gacha.value?.spin_gacha_1_screen)
-const spin2 = computed(() => gacha.value?.spin_gacha_2_screen)
 
-let checkCachesInterval
-let firstCount = 1
+let maxWaitTimeout
 
 const emit = defineEmits(['finish'])
 
@@ -44,20 +41,15 @@ if (import.meta.client && 'serviceWorker' in navigator) {
 }
 
 onMounted(() => {
-  checkCachesInterval = setInterval(() => {
-    firstCount += 1
-    if (isSupportSerWorker.value) {
-      checkCaches()
-    } else {
-      clearInterval(checkCachesInterval)
-      completeLoading()
-    }
+  if (!isSupportSerWorker.value) {
+    completeLoading()
+    return
+  }
 
-    if (firstCount >= 7) {
-      clearInterval(checkCachesInterval)
-      completeLoading()
-    }
-  }, 1500)
+  checkCaches()
+  maxWaitTimeout = setTimeout(() => {
+    completeLoading()
+  }, 2000)
 })
 
 function completeLoading() {
@@ -66,8 +58,10 @@ function completeLoading() {
 }
 
 const getImageValue = (obj) => {
-  return obj && obj.type === 'image' ? obj.value : "";
-};
+  if (!obj) return ''
+  if (typeof obj === 'string') return obj
+  return obj.type === 'image' ? obj.value : ''
+}
 
 const checkCaches = () => {
   const urlsToCache = [
@@ -80,14 +74,7 @@ const checkCaches = () => {
     settings.value?.global?.logo,
     settings.value?.global?.gacha_machine_image,
     getImageValue(gacha.value?.loading_screen?.background),
-    gacha.value?.loading_screen?.gif || "",
-    spin1.value?.gacha_1_video || "",
-    getImageValue(spin1.value?.before_gacha_1_screen?.background),
-    getImageValue(spin1.value?.after_gacha_1_screen?.background),
-    spin1.value?.after_gacha_1_screen?.image?.image || "",
-    spin2.value?.gacha_2_video || "",
-    getImageValue(spin2.value?.after_gacha_2_screen?.popup_icon),
-    getImageValue(spin2.value?.after_gacha_2_screen?.background)
+    gacha.value?.loading_screen?.gif || '',
   ]
 
   caches
@@ -103,13 +90,15 @@ const checkCaches = () => {
       )
 
       if (isCacheAlready) {
-        clearInterval(checkCachesInterval)
+        if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
         completeLoading()
       }
   })
 }
 
-onUnmounted(() => clearInterval(checkCachesInterval))
+onUnmounted(() => {
+  if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
+})
 </script>
 
 <template>
