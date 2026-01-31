@@ -295,6 +295,14 @@ const handleSwipe = async () => {
         vueslideunlock.value.reset()
         return
       }
+      // Reset scroll position before navigation to prevent iOS Safari viewport issues
+      window.scrollTo(0, 0)
+      document.body.scrollTop = 0
+      document.documentElement.scrollTop = 0
+      
+      // Wait for scroll settle before navigation
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
         query: {
