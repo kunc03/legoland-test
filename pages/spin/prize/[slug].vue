@@ -57,6 +57,31 @@ const prizeId = computed(() => route.query.prize_id)
 const externalGachaSlug = computed(() => route.params.slug)
 
 onMounted(async () => {
+  // Comprehensive iOS Safari scroll reset
+  const resetScroll = () => {
+    window.scrollTo(0, 0)
+    document.body.scrollTop = 0
+    document.documentElement.scrollTop = 0
+    
+    // Reset any scrollable containers
+    const mainContainer = document.querySelector('main')
+    if (mainContainer) {
+      mainContainer.scrollTop = 0
+    }
+    
+    // Force layout recalculation
+    document.body.style.transform = 'translateZ(0)'
+    requestAnimationFrame(() => {
+      document.body.style.transform = ''
+    })
+  }
+  
+  // Run reset immediately and after a short delay to handle iOS Safari timing
+  resetScroll()
+  requestAnimationFrame(resetScroll)
+  setTimeout(resetScroll, 50)
+  setTimeout(resetScroll, 100)
+
   if (!prizeId.value) {
     errorMessage.value = t('otherGachaNotAccessible')
     insufficientDialogVisible.value = true

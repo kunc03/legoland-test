@@ -9,7 +9,7 @@
       </p>
     </HeaderBar>
 
-    <div class="flex flex-col items-center h-screen mt-24 grow">
+    <div class="flex flex-col items-center h-screen mt-24 grow overflow-y-auto">
       <div
         class="flex flex-col items-center justify-between w-full p-5 bg-yellow-300 min-h-[55%]"
         :style="{
