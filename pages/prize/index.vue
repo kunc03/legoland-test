@@ -15,7 +15,7 @@
     <div class="flex flex-col sm:mt-[30%] mt-[36%] items-center"></div>
 
     <div class="relative flex flex-col gap-3 px-10 mb-10">
-      <template v-if="isFetching">
+      <template v-if="isFetchingPrizes">
         <div
           v-for="n in 3"
           :key="`prize-skeleton-${n}`"
@@ -52,7 +52,7 @@
           :headColor="prize.color"
           :headImage="prize.image"
           :currentPoint="store.point"
-          :is-fetching="isFetching"
+          :is-fetching="isFetchingPrizes"
           :showTitle="settings?.prize?.step_1?.to_be_redeemed?.show_prize_title"
           :showPeriod="
             settings?.prize?.step_1?.to_be_redeemed?.show_application_period
@@ -69,7 +69,7 @@
       class="relative flex flex-col px-10 sm:mb-[23%] mb-[28%]"
     >
       <div class="px-2 py-1 text-white bg-exd-gray-44">
-        <template v-if="isFetching">
+        <template v-if="isFetchingRedeems">
           <Skeleton width="8rem" height="1.25rem"></Skeleton>
         </template>
         <template v-else>
@@ -79,9 +79,9 @@
         </template>
       </div>
 
-      <template v-if="isFetching">
+      <template v-if="isFetchingRedeems">
         <div
-          v-for="n in 5"
+          v-for="n in 10"
           :key="`history-skeleton-${n}`"
           class="flex items-center p-3 bg-white border-b border-surface-200"
         >
@@ -100,9 +100,36 @@
           :keyBody="key"
           :body="redeem"
           :currentPoint="store.point"
-          :is-fetching="isFetching"
+          :is-fetching="isFetchingRedeems"
         />
       </template>
+
+      <div
+        v-if="!isFetchingRedeems && redeemLastPage > 1"
+        class="flex items-center justify-between p-3 bg-white border-t border-surface-200"
+      >
+        <button
+          class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="redeemPage <= 1"
+          aria-label="Previous page"
+          @click="handlePrevRedeemPage"
+        >
+          <IconsArrow class="w-7 h-7" />
+        </button>
+
+        <p class="font-semibold text-exd-gray-scorpion text-[12px]">
+          {{ redeemFrom }}-{{ redeemTo }} / {{ redeemTotal }}
+        </p>
+
+        <button
+          class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="redeemPage >= redeemLastPage"
+          aria-label="Next page"
+          @click="handleNextRedeemPage"
+        >
+          <IconsArrow class="w-7 h-7 rotate-180" />
+        </button>
+      </div>
     </div>
   </div>
 
@@ -140,7 +167,6 @@
 
 <script setup>
 import { store } from '~/stores/dashboard.js'
-import noImage from '~/assets/images/no-image.svg'
 
 definePageMeta({
   middleware: 'auth',
@@ -150,35 +176,77 @@ definePageMeta({
 const prizes = ref([])
 const redeems = ref([])
 const prizeCards = ref(null)
-const isFetching = ref(false)
+const isFetchingPrizes = ref(false)
+const isFetchingRedeems = ref(false)
 const settings = useState('settings')
 const bgPrize = ref('')
 
 const prizeHistory = ref(null)
 
+const redeemPage = ref(1)
+const redeemPerPage = ref(10)
+const redeemLastPage = ref(1)
+const redeemTotal = ref(0)
+
+const redeemFrom = computed(() => {
+  if (!redeemTotal.value) return 0
+  return (redeemPage.value - 1) * redeemPerPage.value + 1
+})
+
+const redeemTo = computed(() => {
+  if (!redeemTotal.value) return 0
+  return Math.min(redeemPage.value * redeemPerPage.value, redeemTotal.value)
+})
+
 const fetchingPrizesData = async () => {
   try {
-    isFetching.value = true
+    isFetchingPrizes.value = true
     const { data } = await useFetchApi('GET', 'prize-list')
 
     prizes.value = data
   } catch (error) {
     console.log(error)
   } finally {
-    isFetching.value = false
+    isFetchingPrizes.value = false
   }
 }
 
-const fetchingRedeemsData = async () => {
+const fetchingRedeemsData = async (page = redeemPage.value) => {
   try {
-    isFetching.value = true
-    const { data } = await useFetchApi('GET', 'prize-redeemed')
-    redeems.value = data.data
+    isFetchingRedeems.value = true
+    const { data } = await useFetchApi('GET', 'prize-redeemed', {
+      params: { page, per_page: redeemPerPage.value },
+    })
+    redeems.value = data?.data || []
+    redeemPage.value = data?.meta?.current_page ?? page
+    redeemLastPage.value = data?.meta?.last_page ?? 1
+    redeemTotal.value = data?.meta?.total ?? 0
   } catch (error) {
     console.log(error)
   } finally {
-    isFetching.value = false
+    isFetchingRedeems.value = false
   }
+}
+
+const scrollRedeemsToTop = async () => {
+  await nextTick()
+  if (prizeHistory.value) {
+    prizeHistory.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+const handlePrevRedeemPage = async () => {
+  if (redeemPage.value <= 1) return
+  redeemPage.value -= 1
+  await fetchingRedeemsData(redeemPage.value)
+  await scrollRedeemsToTop()
+}
+
+const handleNextRedeemPage = async () => {
+  if (redeemPage.value >= redeemLastPage.value) return
+  redeemPage.value += 1
+  await fetchingRedeemsData(redeemPage.value)
+  await scrollRedeemsToTop()
 }
 
 const dataArrays = (data) => {
@@ -224,7 +292,7 @@ const handleScrollDown = () => {
 
 onMounted(async () => {
   await fetchingPrizesData()
-  fetchingRedeemsData()
+  await fetchingRedeemsData(1)
 })
 </script>
 
