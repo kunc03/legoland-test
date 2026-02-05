@@ -76,7 +76,8 @@
   </div>
 
   <AutoplayVideo
-    v-if="playVideo"
+    v-show="playVideo"
+    :trigger-play="playVideo"
     :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
     :is-external-gacha="gachaType == 'external'"
     @ended="goToSpinPoint"
