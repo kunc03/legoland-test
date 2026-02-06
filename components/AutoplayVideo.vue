@@ -1,47 +1,171 @@
 <template>
-  <div tabindex="0">
+  <div tabindex="0" class="relative w-full h-full bg-black" @click="handleTapToPlay">
     <video
-      autoplay
+      ref="videoRef"
       preload="auto"
       playsinline
-      :muted="shouldMute"
+      webkit-playsinline
+      x5-playsinline
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
-      @ended="$emit('ended')"
-      @play="startButtonDelay"
+      @ended="handleVideoEnded"
+      @play="onVideoPlay"
+      @loadeddata="onVideoLoaded"
+      @error="onVideoError"
     >
-      <source :src="videoSource" type="video/mp4" />
     </video>
 
+    <!-- Loading overlay - shown while video is loading -->
+    <div
+      v-if="showLoading"
+      class="absolute z-[1201] inset-0 flex flex-col items-center justify-center bg-black"
+    >
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+        <p class="text-white/70 text-sm">{{ loadingStatus }}</p>
+      </div>
+    </div>
+
     <SolidButton
-      v-if="showButton"
+      v-if="showButton && !showLoading"
       :label="$t('skip')"
-      class="absolute bottom-5 -right-2 !max-w-48 z-[1200]"
+      class="absolute bottom-5 -right-2 !max-w-48 z-[1202]"
       variant="skip"
-      @click="handleButtonClick"
+      @click.stop="handleButtonClick"
     />
   </div>
 </template>
 
 <script setup>
-import externalGachaVideo from '~/assets/videos/external-gacha.mp4'
-
 const props = defineProps({
   src: { type: String, default: '' },
-  isExternalGacha: { type: Boolean, default: false },
-  muted: { type: Boolean, default: undefined },
+  triggerPlay: { type: Boolean, default: false },
 })
 
-const videoSource = computed(() => {
-  return props.isExternalGacha ? externalGachaVideo : props.src
-})
 const emit = defineEmits(['ended'])
 
+const videoRef = ref(null)
 const showButton = ref(false)
+const showLoading = ref(true)
+const hasPlayed = ref(false)
+const isVideoLoaded = ref(false)
+const loadingStatus = ref('Loading...')
+const blobUrl = ref(null)
 let buttonDelayTimeout = null
 
-const isAndroid = ref(false)
-const isInstagram = ref(false)
-const shouldMute = computed(() => props.muted ?? (isAndroid.value && isInstagram.value))
+// Check if we're in an in-app browser  
+const checkInAppBrowser = () => {
+  if (typeof window === 'undefined') return true
+  const ua = navigator.userAgent || ''
+  return /Instagram|FBAN|FBAV|Line|Twitter/i.test(ua)
+}
+
+// Get video source URL
+const getVideoUrl = () => {
+  return props.src
+}
+
+// Try to get video from cache first
+const getCachedVideo = async () => {
+  if (!('caches' in window)) return null
+  
+  try {
+    const cacheName = `gacharary-v2 - ${window.location.origin}`
+    const cache = await caches.open(cacheName)
+    const cachedResponse = await cache.match(getVideoUrl())
+    
+    if (cachedResponse) {
+      const blob = await cachedResponse.blob()
+      return URL.createObjectURL(blob)
+    }
+  } catch (error) {
+    console.warn('Cache lookup failed:', error)
+  }
+  
+  return null
+}
+
+// Fetch video as blob for in-app browsers
+const fetchVideoAsBlob = async () => {
+  loadingStatus.value = 'Loading video...'
+  
+  try {
+    const response = await fetch(getVideoUrl())
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const blob = await response.blob()
+    blobUrl.value = URL.createObjectURL(blob)
+    
+    if (videoRef.value) {
+      videoRef.value.src = blobUrl.value
+      videoRef.value.load()
+    }
+    
+    loadingStatus.value = 'Starting...'
+    isVideoLoaded.value = true
+  } catch (error) {
+    console.error('Failed to fetch video:', error)
+    loadingStatus.value = 'Failed to load video'
+    
+    // Fallback: try direct source
+    if (videoRef.value) {
+      videoRef.value.src = getVideoUrl()
+      videoRef.value.load()
+    }
+  }
+}
+
+// Called when video data has loaded
+const onVideoLoaded = () => {
+  isVideoLoaded.value = true
+  if (props.triggerPlay) {
+     loadingStatus.value = 'Starting...'
+  } else {
+     loadingStatus.value = 'Ready'
+     showLoading.value = false
+  }
+}
+
+// Called on video error
+const onVideoError = (e) => {
+  loadingStatus.value = 'Loading video...'
+  console.error('Video error:', e)
+}
+
+// Called when video starts playing
+const onVideoPlay = () => {
+  hasPlayed.value = true
+  showLoading.value = false
+  startButtonDelay()
+}
+
+// Handle tap on the video area to play
+const handleTapToPlay = async () => {
+  if (!videoRef.value) return
+  
+  const video = videoRef.value
+  
+  // If video not loaded yet, try to load
+  if (!isVideoLoaded.value && !blobUrl.value) {
+    if (checkInAppBrowser()) {
+       await fetchVideoAsBlob()
+    } else {
+        video.load()
+    }
+    // We don't return here, we try to play after initiating load
+  }
+  
+  // Play the video
+  try {
+    await video.play()
+    hasPlayed.value = true
+    showLoading.value = false
+  } catch (err) {
+    console.warn('Play failed:', err)
+    loadingStatus.value = 'Retrying...'
+  }
+}
 
 const startButtonDelay = () => {
   showButton.value = false
@@ -49,6 +173,10 @@ const startButtonDelay = () => {
   buttonDelayTimeout = setTimeout(() => {
     showButton.value = true
   }, 200)
+}
+
+const handleVideoEnded = () => {
+  emit('ended')
 }
 
 const resetButton = () => {
@@ -67,14 +195,125 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(() => {
-  const ua = navigator.userAgent || ''
-  isAndroid.value = /Android/i.test(ua)
-  isInstagram.value = /Instagram/i.test(ua)
+const attemptPlay = async () => {
+    if (!videoRef.value) return
+
+    showLoading.value = true
+    loadingStatus.value = 'Starting...'
+
+    try {
+        await videoRef.value.play()
+        hasPlayed.value = true
+        showLoading.value = false
+    } catch (e) {
+        console.warn('Auto play failed:', e)
+        loadingStatus.value = 'Tap to play'
+    }
+}
+
+// Watch for triggerPlay prop to start playing
+watch(() => props.triggerPlay, async (val) => {
+    if (val) {
+        await attemptPlay()
+    }
+})
+
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+  
+  await nextTick()
+  
+  const isInApp = checkInAppBrowser()
+  
+  if (isInApp) {
+    loadingStatus.value = 'Loading video...'
+    showLoading.value = true
+    
+    if (videoRef.value) {
+      // First: Check if video is already cached (fastest)
+      const cachedBlobUrl = await getCachedVideo()
+      
+      if (cachedBlobUrl) {
+        // Use cached video - instant playback
+        blobUrl.value = cachedBlobUrl
+        videoRef.value.src = cachedBlobUrl
+        videoRef.value.load()
+        
+        // If already triggered, play immediately
+        if (props.triggerPlay) {
+            await attemptPlay()
+        }
+        return 
+      }
+      
+      // Second try: direct source (supports streaming - faster start)
+      // BUT for preloading in In-App Browser, we might want to be careful.
+      // However original logic used direct source first then blob.
+      
+      // We will follow the pattern: Set src -> Load. Play is separate.
+      videoRef.value.src = getVideoUrl()
+      videoRef.value.load()
+
+      // If triggered already, try to play
+      if (props.triggerPlay) {
+         await attemptPlay()
+      } else {
+         // If waiting for trigger, we might want to fallback to blob if direct load fails?
+         // But `error` event should handle that.
+         
+         // Actually, for In-App Browser, we often prefer Blob to avoid streaming issues or interference.
+         // Let's stick to the previous robust logic but adapt for preloading.
+         
+         // Start fetching blob in background if not playing immediately?
+         // The original code tried direct play, then blob play.
+         // Since we want to preload, we should probably start the blob fetch if we suspect direct streaming might fail or be slow?
+         // Or just let the `fetchVideoAsBlob()` do the work?
+         
+         // Let's initiate blob fetch as it's the most reliable for In-App Browsers
+          try {
+             const response = await fetch(getVideoUrl())
+              if (response.ok) {
+                 const blob = await response.blob()
+                 blobUrl.value = URL.createObjectURL(blob)
+                 // Only switch src if we haven't started playing successfully with direct source
+                 if (!hasPlayed.value) {
+                     videoRef.value.src = blobUrl.value
+                     videoRef.value.load()
+                 }
+              }
+          } catch (e) {
+              console.warn("Background blob fetch failed", e)
+          }
+      }
+    }
+  } else {
+    // For regular browsers, set source directly
+    if (videoRef.value) {
+      videoRef.value.src = getVideoUrl()
+      videoRef.value.load()
+      
+      if (props.triggerPlay) {
+         await attemptPlay()
+      } else {
+         showLoading.value = false // Ready to play
+      }
+    }
+  }
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+  if (buttonDelayTimeout) {
+    clearTimeout(buttonDelayTimeout)
+  }
+  // Clean up blob URL
+  if (blobUrl.value) {
+    URL.revokeObjectURL(blobUrl.value)
+  }
 })
 </script>
+
+
+
+
+
