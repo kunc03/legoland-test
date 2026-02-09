@@ -258,18 +258,6 @@ onMounted(async () => {
       if (props.triggerPlay) {
          await attemptPlay()
       } else {
-         // If waiting for trigger, we might want to fallback to blob if direct load fails?
-         // But `error` event should handle that.
-         
-         // Actually, for In-App Browser, we often prefer Blob to avoid streaming issues or interference.
-         // Let's stick to the previous robust logic but adapt for preloading.
-         
-         // Start fetching blob in background if not playing immediately?
-         // The original code tried direct play, then blob play.
-         // Since we want to preload, we should probably start the blob fetch if we suspect direct streaming might fail or be slow?
-         // Or just let the `fetchVideoAsBlob()` do the work?
-         
-         // Let's initiate blob fetch as it's the most reliable for In-App Browsers
           try {
              const response = await fetch(getVideoUrl())
               if (response.ok) {
