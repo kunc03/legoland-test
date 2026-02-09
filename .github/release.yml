@@ -1,0 +1,26 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - octocat
+  categories:
+    - title: Features
+      labels:
+        - feat
+        - feature
+        - enhancement
+    - title: Bug Fixes
+      labels:
+        - bug
+        - fix
+        - bugfix
+    - title: Styling
+      labels:
+        - style
+        - styling
+    - title: Maintenance
+      labels:
+        - chore
+        - documentation
+        - docs
