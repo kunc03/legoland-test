@@ -78,6 +78,7 @@
 
   <AutoplayVideo
     v-if="playVideo"
+    :trigger-play="playVideo"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
     @ended="handleGoToCharacter"
