@@ -66,6 +66,7 @@
               {{ $t('applicationPeriod') }}：{{ startedAt }}〜{{ expiredAt }}
             </p>
             <p
+              v-if="redemptionDate"
               class="text-[10px] sm:text-[12px] font-medium"
               :style="{
                 color: settings?.global?.text_colors?.secondary,
@@ -115,6 +116,7 @@ const redemptionDate = ref('')
 const handleGoToDetailRedeem = (id) => router.push(`/prize/history/${id}`)
 
 onMounted(() => {
+  const isShowRedeem = settings?.value?.prize?.step_1?.has_been_redeemed?.show_redemption_date
   const data =
     props.body.type == 'external_prize' ? props.body.external_prize : props.body
   name.value = data.name
@@ -122,6 +124,6 @@ onMounted(() => {
   id.value = data.id
   startedAt.value = props.body.started_at
   expiredAt.value = props.body.expired_at
-  redemptionDate.value = props.body.redeemed_at
+  redemptionDate.value = isShowRedeem ? props.body.redeemed_at : null
 })
 </script>

@@ -655,7 +655,19 @@ const fetchRegister = async (payload) => {
 
       localStorage.removeItem('registerForm')
 
-      navigateTo('/register/complete')
+      const registerComplete = settings.value?.register_login?.membership_registration_page_2
+      if (isCompletePageEmpty(registerComplete)) {
+        await saveSpinTemp()
+        const needConfirm = localStorage.getItem('NEED_CONFIRMATION')
+        if (needConfirm === 'false') {
+          navigateTo('/#registration-complete')
+        } else {
+          navigateTo('/')
+        }
+        localStorage.removeItem('REGISTER_SUBMITTED')
+      } else {
+        navigateTo('/register/complete')
+      }
       isLoading.value = false
     }
   } catch (error) {
@@ -700,6 +712,50 @@ const handleApiError = (error) => {
     ) {
       emailErrorKey.value = 'emailIsAlreadyRegistered'
     }
+  }
+}
+
+const isCompletePageEmpty = (config) => {
+  if (!config) return true
+  const fieldsToCheck = [
+    'page_title',
+    'page_sub_title',
+    'page_description',
+    'button_text',
+    'background_page',
+    'button_text_and_color',
+  ]
+  return fieldsToCheck.every((field) => {
+    const val = config[field]
+    if (val === null || val === undefined || val === '') return true
+    if (typeof val === 'object') {
+      const keys = Object.keys(val)
+      if (keys.length === 0) return true
+      return keys.every((k) => !val[k])
+    }
+    return false
+  })
+}
+
+const saveSpinTemp = async () => {
+  if (!isSpin.value) return
+  const storedData = useCookie('VALID_PASSWORD')
+  const parseData = decryptData(storedData.value)
+  const slug = parseData?.slug?.toUpperCase()
+  const slugStorageName = `${slug}_GACHA`
+  const slugStorage = decryptData(localStorage.getItem(slugStorageName))
+  try {
+    await useFetchApi('POST', 'gacha/save/temp', {
+      body: {
+        point_id: slugStorage?.point_id,
+        location_id: slugStorage?.location_id,
+        temporary_user_id: localStorage.getItem('USER_ID'),
+        character_id: slugStorage?.character_id,
+        log_id: slugStorage?.log_id,
+      },
+    })
+  } catch (error) {
+    console.log("Error: Can't save spin result")
   }
 }
 
