@@ -815,13 +815,39 @@ const fetchPostUserData = async (payload) => {
       localStorage.setItem('PROFILE_SUBMITTED', 'true')
       localStorage.setItem('PROFILE_SUBMIT_TIME', Date.now().toString())
 
-      navigateTo('/profile/complete')
+      const profileComplete = settings.value?.register_login?.change_membership_information_page_2
+      if (!isCompletePageEmpty(profileComplete)) {
+        navigateTo('/profile/complete')
+      } else {
+        navigateTo('/dashboard')
+      }
     }
   } catch (error) {
     handleApiError(error)
   } finally {
     isLoading.value = false
   }
+}
+
+const isCompletePageEmpty = (config) => {
+  if (!config) return true
+  const fieldsToCheck = [
+    'page_title',
+    'page_description',
+    'button_text',
+    'background_page',
+    'button_text_and_color',
+  ]
+  return fieldsToCheck.every((field) => {
+    const val = config[field]
+    if (val === null || val === undefined || val === '') return true
+    if (typeof val === 'object') {
+      const keys = Object.keys(val)
+      if (keys.length === 0) return true
+      return keys.every((k) => !val[k])
+    }
+    return false
+  })
 }
 
 const handleApiError = (error) => {

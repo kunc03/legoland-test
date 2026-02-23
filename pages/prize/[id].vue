@@ -258,6 +258,7 @@ const loadGoogleMaps = () => {
 
 const fetchingPrizeData = async () => {
   try {
+    disableRedeem.value = true
     isFetching.value = true
     const { data } = await useFetchApi('GET', 'prizes/' + id)
     prizeDetailData.value = data
@@ -266,6 +267,7 @@ const fetchingPrizeData = async () => {
       initializeMap(data.lat, data.long)
     }
     popupType.value = data.type
+    disableRedeem.value = prizeDetailData.value.redeemable == false;
   } catch (error) {
     console.log(error)
   } finally {

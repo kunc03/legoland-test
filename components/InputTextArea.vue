@@ -104,7 +104,7 @@ const updateValue = (value) => {
 }
 
 const validate = () => {
-  isLengthValid.value = modelValue.value.length > 0
+  isLengthValid.value = (modelValue.value?.length || 0) > 0
   emit('validate', modelValue.value)
 }
 
