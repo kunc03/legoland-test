@@ -844,7 +844,9 @@ const isCompletePageEmpty = (config) => {
     if (typeof val === 'object') {
       const keys = Object.keys(val)
       if (keys.length === 0) return true
-      return keys.every((k) => !val[k])
+      const contentKeys = keys.filter((k) => k !== 'type')
+      if (contentKeys.length === 0) return true
+      return contentKeys.every((k) => !val[k])
     }
     return false
   })
