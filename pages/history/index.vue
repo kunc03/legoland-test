@@ -39,6 +39,33 @@
         :bgColor="historyData?.image_background_color"
       />
     </template>
+
+    <div
+      v-if="!isFetching && lastPage > 1"
+      class="flex items-center justify-between p-3 bg-white border-t border-surface-200"
+    >
+      <button
+        class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="page <= 1"
+        aria-label="Previous page"
+        @click="handlePrevPage"
+      >
+        <IconsArrow class="w-7 h-7" />
+      </button>
+
+      <p class="font-semibold text-exd-gray-scorpion text-[12px]">
+        {{ historyFrom }}-{{ historyTo }} / {{ total }}
+      </p>
+
+      <button
+        class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="page >= lastPage"
+        aria-label="Next page"
+        @click="handleNextPage"
+      >
+        <IconsArrow class="w-7 h-7 rotate-180" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -56,12 +83,32 @@ const settings = useState('settings')
 
 const historyData = settings.value?.character_collection || {}
 
-const fetchingHistoryData = async () => {
+const page = ref(1)
+const perPage = ref(10)
+const lastPage = ref(1)
+const total = ref(0)
+
+const historyFrom = computed(() => {
+  if (!total.value) return 0
+  return (page.value - 1) * perPage.value + 1
+})
+
+const historyTo = computed(() => {
+  if (!total.value) return 0
+  return Math.min(page.value * perPage.value, total.value)
+})
+
+const fetchingHistoryData = async (p = page.value) => {
   try {
     isFetching.value = true
-    const data = await useFetchApi('GET', 'history')
+    const data = await useFetchApi('GET', 'history', {
+      params: { page: p, per_page: perPage.value },
+    })
 
     histories.value = data.data
+    page.value = data?.meta?.current_page ?? p
+    lastPage.value = data?.meta?.last_page ?? 1
+    total.value = data?.meta?.total ?? 0
 
     character_count.value = data.character_count
     master_count.value = data.master_count
@@ -72,7 +119,19 @@ const fetchingHistoryData = async () => {
   }
 }
 
+const handlePrevPage = async () => {
+  if (page.value <= 1) return
+  page.value -= 1
+  await fetchingHistoryData(page.value)
+}
+
+const handleNextPage = async () => {
+  if (page.value >= lastPage.value) return
+  page.value += 1
+  await fetchingHistoryData(page.value)
+}
+
 onMounted(() => {
-  fetchingHistoryData()
+  fetchingHistoryData(1)
 })
 </script>
