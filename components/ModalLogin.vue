@@ -168,7 +168,7 @@
               color: settings?.global?.modal?.text_color,
             }"
           >
-            {{ t('notRegistered') }}
+            {{ t('incorrectCode') }}
           </p>
         </div>
 
