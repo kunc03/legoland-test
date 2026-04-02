@@ -326,12 +326,23 @@
       </div>
     </template>
   </Dialog>
+
+  <StepWalkthrough
+    v-model="hasWalkthrough"
+    :steps="walkthroughSteps"
+  />
 </template>
 
 <script setup>
 import peopleImg from '~/assets/images/people.png'
 import cameraImg from '~/assets/images/camera.png'
 import arrow from '~/assets/images/arrow.svg'
+import step1 from '~/assets/images/step-1.png'
+import step2 from '~/assets/images/step-2.png'
+import step3 from '~/assets/images/step-3.png'
+import step4 from '~/assets/images/step-4.png'
+import step5 from '~/assets/images/step-5.png'
+import step6 from '~/assets/images/step-6.png'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
 import close from '~/assets/images/close.svg'
@@ -373,6 +384,17 @@ const { t } = useI18n()
 
 const legoland = ref(true)
 
+const hasWalkthrough = ref(false)
+
+const walkthroughSteps = computed(() => [
+  { image: step1, text: t('step1'), category: t('category1') },
+  { image: step2, text: t('step2'), category: t('category1') },
+  { image: step3, text: t('step3') },
+  { image: step4, text: t('step4'), category: t('category2') },
+  { image: step5, text: t('step5') },
+  { image: step6, text: t('step6') },
+])
+
 const menuItemCount = computed(() => {
   let count = 0
   if (
@@ -409,7 +431,7 @@ const visibleSubMenus = computed(() => {
       show: flow?.show_sub_menu_2_user_manual,
       text: menu?.sub_menu_1?.text,
       url: menu?.sub_menu_1?.url,
-      action: () => handleSubMenuClick(menu?.sub_menu_1?.url),
+      action: () => { hasWalkthrough.value = true },
     },
     {
       key: 'sub_menu_3',

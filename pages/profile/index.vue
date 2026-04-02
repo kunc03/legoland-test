@@ -77,6 +77,7 @@
                   : false
               "
               :type="item.text_type"
+              :disabled="item.name === 'login_code'"
               :model="form[item.name]"
               :label="item.label"
               :required="item.required"
@@ -453,7 +454,7 @@
               ?.button_text
           "
           :has-loading="isLoading"
-          :disabled="!isButtonEnabled || !form.checked"
+          :disabled="hasLoginCodeField || !isButtonEnabled || !form.checked"
           :on-click="handleSubmit"
           :bgColor="
             settings?.register_login?.change_membership_information_page_1
@@ -558,6 +559,10 @@ const visibleRegisterFields = computed(() =>
       }
     })
     .filter((field) => field.show)
+)
+
+const hasLoginCodeField = computed(() =>
+  visibleRegisterFields.value.some((field) => field.name === 'login_code')
 )
 
 const getTerms = async () => {
