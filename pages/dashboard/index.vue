@@ -404,6 +404,13 @@ const visibleSubMenus = computed(() => {
   const flow = settings.value?.flow?.screens?.sub_menus || {}
 
   const items = [
+     {
+      key: 'sub_menu_1',
+      show: flow?.show_sub_menu_2_user_manual,
+      text: menu?.sub_menu_1?.text,
+      url: menu?.sub_menu_1?.url,
+      action: () => handleSubMenuClick(menu?.sub_menu_1?.url),
+    },
     {
       key: 'sub_menu_3',
       show: flow?.show_sub_menu_3_change_member_information,
@@ -416,13 +423,6 @@ const visibleSubMenus = computed(() => {
       text: menu?.sub_menu_2?.text,
       url: menu?.sub_menu_2?.url,
       action: () => handleSubMenuClick(menu?.sub_menu_2?.url),
-    },
-    {
-      key: 'sub_menu_1',
-      show: flow?.show_sub_menu_2_user_manual,
-      text: menu?.sub_menu_1?.text,
-      url: menu?.sub_menu_1?.url,
-      action: () => handleSubMenuClick(menu?.sub_menu_1?.url),
     },
     {
       key: 'sub_menu_4',
