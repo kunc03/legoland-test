@@ -35,6 +35,7 @@
     "primevue": "4.0.1",
     "swiper": "^11.1.14",
     "vue-meta": "^2.4.0",
+    "vue-qrcode-reader": "^5.5.3",
     "yup": "^1.4.0"
   },
   "devDependencies": {
