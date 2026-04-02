@@ -358,5 +358,10 @@
   "redemptionLocationDescription": "引き換え場所の説明",
   "otherGachaNotAccessible": "このページにはまだアクセスできません。先にGacha Sundra Aで景品を交換してください。",
   "noPrizesAtOtherGacha": "ガチャSundra Bの景品は現在在庫切れです。",
-  "redemptionDate": "引換日"
+  "camera": "カメラ",
+  "switchCamera": "カメラを切り替える",
+  "flashlight": "ライト",
+  "scanQRCode": "QRコードをスキャン",
+  "lowLightTip": "暗い場合はライトをオンにしてください",
+  "scanResults": "スキャン結果"
 }

@@ -27,7 +27,9 @@
     </div>
 
     <div
-      class="relative inline-flex flex-col items-center justify-center gap-5 mb-5"
+      v-if="legoland"
+      class="relative items-center justify-center gap-5 mb-5 w-full"
+      :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
     >
       <div
         v-if="
@@ -35,7 +37,7 @@
         "
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :class="[
-          `bg-${settings?.user_dashboard?.prize_collections?.background.value}`,
+          dashboardBg, layoutClass
         ]"
         :style="{
           boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
@@ -47,14 +49,16 @@
         }"
         @click="handleGoToPrize"
       >
-        <img
-          :src="settings?.user_dashboard?.prize_collections?.icon"
-          alt="icon-gift"
-          width="60"
-          height="60"
-          preload
-          class="text-center cursor-pointer"
-        />
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="settings?.user_dashboard?.prize_collections?.icon"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
         <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
           {{ settings?.user_dashboard?.prize_collections?.page_title }}
         </p>
@@ -65,6 +69,38 @@
           settings?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
         "
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
+        :class="[dashboardBg, layoutClass]"
+        :style="{
+          boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
+          background:
+            settings.user_dashboard.gacha_collections.background.type ===
+            'color'
+              ? settings?.user_dashboard?.gacha_collections?.background.value
+              : `url(${settings?.user_dashboard?.gacha_collections?.background.value})`,
+        }"
+        @click="handleGoToPrize"
+      >
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="settings?.user_dashboard?.gacha_collections?.icon"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
+          {{ settings?.user_dashboard?.gacha_collections?.page_title }}
+        </p>
+      </div>
+
+      <div
+        v-if="legoland"
+        class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
+        :class="[
+          dashboardBg, layoutClass
+        ]"
         :style="{
           boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
           background:
@@ -75,19 +111,123 @@
         }"
         @click="handleGoToHistory"
       >
-        <img
-          :src="settings?.user_dashboard?.gacha_collections?.icon"
-          alt="icon-gift"
-          width="60"
-          height="60"
-          preload
-          class="text-center cursor-pointer"
-        />
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="peopleImg"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
+          {{ $t('character') }}
+        </p>
+      </div>
+
+      <div
+        v-if="legoland"
+        class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
+        :class="[
+          dashboardBg, layoutClass
+        ]"
+        :style="{
+          boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
+          background:
+            settings.user_dashboard.gacha_collections.background.type ===
+            'color'
+              ? settings?.user_dashboard?.gacha_collections?.background.value
+              : `url(${settings?.user_dashboard?.gacha_collections?.background.value})`,
+        }"
+        @click="handleGoToCamera"
+      >
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="cameraImg"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
+          {{ $t('camera') }}
+        </p>
+      </div>
+    </div>
+
+    <div
+      v-if="!legoland"
+      class="relative items-center justify-center gap-5 mb-5 w-full"
+      :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
+    >
+      <div
+        v-if="
+          settings?.flow?.screens?.user_dashboard_screen?.show_prize_collection
+        "
+        class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
+        :class="[
+          dashboardBg, layoutClass
+        ]"
+        :style="{
+          boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
+          background:
+            settings.user_dashboard.prize_collections.background.type ===
+            'color'
+              ? settings?.user_dashboard?.prize_collections?.background.value
+              : `url(${settings?.user_dashboard?.prize_collections?.background.value})`,
+        }"
+        @click="handleGoToPrize"
+      >
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="settings?.user_dashboard?.prize_collections?.icon"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
+          {{ settings?.user_dashboard?.prize_collections?.page_title }}
+        </p>
+      </div>
+
+      <div
+        v-if="
+          settings?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
+        "
+        class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
+        :class="[dashboardBg, layoutClass]"
+        :style="{
+          boxShadow: '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)',
+          background:
+            settings.user_dashboard.gacha_collections.background.type ===
+            'color'
+              ? settings?.user_dashboard?.gacha_collections?.background.value
+              : `url(${settings?.user_dashboard?.gacha_collections?.background.value})`,
+        }"
+        @click="handleGoToHistory"
+      >
+        <div class="flex items-center justify-center h-[60px]">
+          <img
+            :src="settings?.user_dashboard?.gacha_collections?.icon"
+            alt="icon-gift"
+            width="60"
+            height="60"
+            preload
+            class="text-center cursor-pointer object-contain"
+          />
+        </div>
         <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
           {{ settings?.user_dashboard?.gacha_collections?.page_title }}
         </p>
       </div>
     </div>
+
     <div class="relative w-full border-b-exd-light-grey">
       <div
         v-for="(item, index) in visibleSubMenus"
@@ -189,15 +329,12 @@
 </template>
 
 <script setup>
-import iconStar from '~/assets/images/icon-star.svg'
-import collection from '~/assets/images/collection.png'
+import peopleImg from '~/assets/images/people.png'
+import cameraImg from '~/assets/images/camera.png'
 import arrow from '~/assets/images/arrow.svg'
-import exportIcon from '~/assets/images/export.svg'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
 import close from '~/assets/images/close.svg'
-import banner from '~/assets/images/banner.png'
-import banner1 from '~/assets/images/banner1.png'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination, Navigation } from 'swiper/modules'
 
@@ -218,6 +355,9 @@ definePageMeta({
 const handleGoToHistory = () => router.push('/history')
 const handleGoToPrize = () => router.push('/prize')
 const profile = () => router.push('/profile')
+const handleGoToCamera = () => {
+  navigateTo('/camera')
+}
 
 const settings = useState('settings')
 
@@ -230,6 +370,34 @@ const errorMessages = ref('')
 const redirectLink = ref('')
 const hidePoint = ref(false)
 const { t } = useI18n()
+
+const legoland = ref(true)
+
+const menuItemCount = computed(() => {
+  let count = 0
+  if (
+    settings.value?.flow?.screens?.user_dashboard_screen?.show_prize_collection
+  )
+    count++
+  if (
+    settings.value?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
+  )
+    count++
+  if (legoland.value) count += 2
+  return count
+})
+
+const isGrid = computed(() => {
+  return menuItemCount.value > 2 || legoland.value
+})
+
+const dashboardBg = computed(() => {
+  const color = settings.value?.user_dashboard?.prize_collections?.background?.value;
+  return color ? `bg-${color}` : 'bg-default';
+});
+
+const layoutClass = computed(() => isGrid.value ? 'flex-col gap-1' : 'flex-row gap-4');
+
 
 const visibleSubMenus = computed(() => {
   const menu = settings.value?.user_dashboard?.my_account_settings || {}
