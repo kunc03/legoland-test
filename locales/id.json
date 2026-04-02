@@ -357,6 +357,12 @@
   "redemptionLocationDescription": "Deskripsi Lokasi Penukaran",
   "otherGachaNotAccessible": "Halaman ini belum dapat diakses. Silakan tukarkan hadiah Anda di Gacha Sundra A terlebih dahulu",
   "noPrizesAtOtherGacha": "Tidak ada hadiah yang tersedia di Gacha Sundra B.",
-  "redemptionDate": "Tanggal Penukaran"
-  }
+  "redemptionDate": "Tanggal Penukaran",
+  "camera": "Kamera",
+  "switchCamera": "Beralih Kamera",
+  "flashlight": "Senter",
+  "scanQRCode": "Pindai Kode QR",
+  "lowLightTip": "Nyalakan senter jika gelap",
+  "scanResults": "Hasil Pindaian"
+}
   

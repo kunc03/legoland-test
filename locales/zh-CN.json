@@ -357,6 +357,12 @@
     "redemptionLocationDescription": "兑换地点说明",
     "otherGachaNotAccessible": "此页面尚无法访问。请先在 Gacha Sundra A 兑换您的奖品",
     "noPrizesAtOtherGacha": "Gacha Sundra B 目前没有提供的奖品。",
-    "redemptionDate": "兑换日期"
-  }
+    "redemptionDate": "兑换日期",
+    "camera": "相机",
+    "switchCamera": "切换相机",
+    "flashlight": "手电筒",
+    "scanQRCode": "扫描二维码",
+    "lowLightTip": "光线暗时请开启手电筒",
+    "scanResults": "扫描结果"
+}
   

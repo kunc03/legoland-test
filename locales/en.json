@@ -357,5 +357,11 @@
   "redemptionLocationDescription": "Redemption Location Description",
   "otherGachaNotAccessible": "This page is not yet accessible. Please exchange your prizes at Gacha Sundra A first",
   "noPrizesAtOtherGacha": "There are no prizes available in Gacha Sundra B.",
-  "redemptionDate": "Redemption Date"
+  "redemptionDate": "Redemption Date",
+  "camera": "Camera",
+  "switchCamera": "Switch Camera",
+  "flashlight": "Flashlight",
+  "scanQRCode": "Scan QR Code",
+  "lowLightTip": "Turn on flashlight in low light",
+  "scanResults": "Scan Results"
 }
