@@ -212,7 +212,7 @@ const props = defineProps({
   },
 })
 
-const emits = defineEmits(['update:modelValue', 'callback'])
+const emits = defineEmits(['update:modelValue', 'callback', 'logged-in'])
 
 const isLoading = ref(false)
 const config = useRuntimeConfig()
@@ -331,7 +331,7 @@ const handleSubmit = async () => {
 
     await saveSpin()
 
-    await navigateTo('/dashboard', { replace: true })
+    emits('logged-in')
   } catch (error) {
     errorStatus.value = error._data?.data?.type
 
@@ -376,7 +376,7 @@ const processLoginLine = async () => {
 
     await saveSpin()
 
-    await navigateTo('/dashboard', { replace: true })
+    emits('logged-in')
   } catch (error) {
     errorStatus.value = error._data?.data?.type
     console.log('error', error)
