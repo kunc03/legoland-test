@@ -331,7 +331,7 @@ const handleSubmit = async () => {
 
     await saveSpin()
 
-    emits('logged-in')
+    emits('logged-in', { isFirstLogin: response.data.is_first_login })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
 
@@ -376,7 +376,7 @@ const processLoginLine = async () => {
 
     await saveSpin()
 
-    emits('logged-in')
+    emits('logged-in', { isFirstLogin: response.data.is_first_login })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
     console.log('error', error)

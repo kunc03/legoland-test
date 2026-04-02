@@ -102,10 +102,13 @@ const walkthroughSteps = computed(() => [
   { image: step6, text: t('step6') },
 ])
 
-const handleLoggedIn = () => {
-  // TODO: Implement walkthrough only once based on user data
+const handleLoggedIn = ({ isFirstLogin } = {}) => {
   hasModal.value = false
-  hasWalkthrough.value = true
+  if (isFirstLogin) {
+    hasWalkthrough.value = true
+  } else {
+    navigateTo('/dashboard', { replace: true })
+  }
 }
 
 const onWalkthroughDone = () => {
