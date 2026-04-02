@@ -36,7 +36,7 @@
         <!-- Text -->
         <div
           v-if="text"
-          class="px-8 font-bold text-center text-exd-1424"
+          class="px-8 font-bold text-center text-exd-1424 min-h-[72px]"
           :style="{
             color: settings?.global?.modal?.text_color,
           }"
