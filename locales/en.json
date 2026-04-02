@@ -363,5 +363,12 @@
   "flashlight": "Flashlight",
   "scanQRCode": "Scan QR Code",
   "lowLightTip": "Turn on flashlight in low light",
-  "scanResults": "Scan Results"
+  "scanResults": "Scan Results",
+  "next": "Next",
+  "step1": "A stamp rally will be held at Mini Land starting at 6 PM!",
+  "step2": "There are 4 stamps hidden in Mini Land!",
+  "step3": "When you find a QR code, scan it with your camera! If you can't scan the QR code, try using the standard camera app on your device!",
+  "step4": "Collect all 4 stamps and you might win a wonderful prize!",
+  "step5": "The prize exchange booth opens at 6:30 PM!",
+  "step6": "Before scanning the QR code, please make sure the browser you are using is not in Incognito (Private) mode."
 }

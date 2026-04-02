@@ -363,6 +363,13 @@
   "flashlight": "Senter",
   "scanQRCode": "Pindai Kode QR",
   "lowLightTip": "Nyalakan senter jika gelap",
-  "scanResults": "Hasil Pindaian"
+  "scanResults": "Hasil Pindaian",
+  "next": "Selanjutnya",
+  "step1": "Mulai pukul 18.00, akan diadakan stamp rally di Mini Land!",
+  "step2": "Ada 4 stempel yang tersembunyi di Mini Land!",
+  "step3": "Jika menemukan kode QR, pindai dengan kamera! Jika kode QR tidak bisa dipindai, coba gunakan aplikasi kamera bawaan perangkat!",
+  "step4": "Kumpulkan 4 stempel dan mungkin kamu akan mendapatkan hadiah spesial!?",
+  "step5": "Tempat penukaran hadiah dibuka mulai pukul 18.30!",
+  "step6": "Sebelum memindai kode QR, pastikan browser yang digunakan tidak dalam mode Penyamaran (Privat)."
 }
   

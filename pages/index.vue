@@ -6,12 +6,11 @@
       background:
         settings?.gacha?.user_tap_splash_screen?.background.type === 'image'
           ? `url(${settings?.gacha?.user_tap_splash_screen?.background.value})`
-          : settings?.gacha?.user_tap_splash_screen?.background.value
+          : settings?.gacha?.user_tap_splash_screen?.background.value,
     }"
     @click="handleShowModal"
   >
     <div class="flex flex-col items-center justify-end h-full">
-
       <div
         class="w-full h-[150px] flex flex-col justify-end pb-[8%] items-center gap-3"
       >
@@ -29,17 +28,37 @@
     <!-- Tap screen -->
   </div>
 
-  <ModalLogin v-model="hasModal" :email="emailVerified" />
+  <ModalLogin
+    v-model="hasModal"
+    :email="emailVerified"
+    @logged-in="handleLoggedIn"
+  />
+
+  <StepWalkthrough
+    v-model="hasWalkthrough"
+    :steps="walkthroughSteps"
+    @done="onWalkthroughDone"
+  />
 
   <WarningPopUp
     :is-open="isComplete"
     :on-close="handleClose"
     :has-button="true"
     :on-click-button="handleDialog"
-    :label-button="settings?.register_login?.successful_member_registration_page?.button_text"
-    :modal-title="settings?.register_login?.successful_member_registration_page?.pop_up_text"
-    :bgColor="settings?.register_login?.successful_member_registration_page?.button_text_and_color?.background"
-    :textColor="settings?.register_login?.successful_member_registration_page?.button_text_and_color?.color"
+    :label-button="
+      settings?.register_login?.successful_member_registration_page?.button_text
+    "
+    :modal-title="
+      settings?.register_login?.successful_member_registration_page?.pop_up_text
+    "
+    :bgColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.background
+    "
+    :textColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.color
+    "
   />
 
   <WarningPopUp
@@ -54,15 +73,44 @@
 
 <script setup>
 import { nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import WarningPopUp from '~/components/WarningPopUp.vue'
+import step1 from '~/assets/images/step-1.png'
+import step2 from '~/assets/images/step-2.png'
+import step3 from '~/assets/images/step-3.png'
+import step4 from '~/assets/images/step-4.png'
+import step5 from '~/assets/images/step-5.png'
+import step6 from '~/assets/images/step-6.png'
 
 const route = useRoute()
 const router = useRouter()
 const { setSourceFrom } = useRegister()
 const hasModal = ref(false)
+const hasWalkthrough = ref(false)
 const isComplete = ref(false)
 const isFailed = ref(false)
 const emailVerified = ref('')
+
+const { t } = useI18n()
+
+const walkthroughSteps = computed(() => [
+  { image: step1, text: t('step1'), category: t('category1') },
+  { image: step2, text: t('step2'), category: t('category1') },
+  { image: step3, text: t('step3') },
+  { image: step4, text: t('step4'), category: t('category2') },
+  { image: step5, text: t('step5') },
+  { image: step6, text: t('step6') },
+])
+
+const handleLoggedIn = () => {
+  // TODO: Implement walkthrough only once based on user data
+  hasModal.value = false
+  hasWalkthrough.value = true
+}
+
+const onWalkthroughDone = () => {
+  navigateTo('/dashboard', { replace: true })
+}
 
 const TOKEN = useCookie('TOKEN')
 const USER = useCookie('USER')
@@ -107,7 +155,10 @@ const checkVerified = async (verified) => {
 }
 
 const openBookmarkLink = () => {
-  window.open(settings.value?.gacha?.user_tap_splash_screen?.url?.url_link, '_blank')
+  window.open(
+    settings.value?.gacha?.user_tap_splash_screen?.url?.url_link,
+    '_blank'
+  )
 }
 
 const handleEmailVerify = async (token) => {
@@ -170,7 +221,6 @@ watchEffect(() => {
     isComplete.value = true
   }
 })
-
 </script>
 
 <style>
