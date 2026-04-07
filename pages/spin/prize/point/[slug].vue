@@ -75,6 +75,56 @@
       @closeModalLogin="handleCloseModalLogin"
     />
     <ModalLogin v-model="modalLogin" />
+
+    <Dialog
+      v-model:visible="modalSpinWarning"
+      modal
+      :closable="false"
+      :dismissableMask="false"
+      :closeOnEscape="false"
+      class="!w-11/12 !max-w-sm border border-exd-gray-44"
+      :style="{
+        background: settings?.global?.modal?.background_color,
+      }"
+    >
+      <template #container>
+        <img
+          v-if="modalSpinWarningMode === 'exchange'"
+          :src="close"
+          alt="close"
+          width="30"
+          height="30"
+          preload
+          class="absolute z-50 cursor-pointer right-1 top-1"
+          @click="handleCloseModalSpinWarning"
+        />
+        <div
+          class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
+        >
+          <IconsWarning
+            v-if="modalSpinWarningMode !== 'exchange'"
+            class="w-10 h-10"
+            :style="{ color: settings?.global?.icon_color?.background }"
+          />
+          <div class="w-10/12 text-center">
+            <p
+              class="font-bold text-exd-1424"
+              :style="{
+                color: settings?.global?.modal?.text_color,
+              }"
+            >
+              {{ modalSpinWarningMode === 'exchange' ? t('exchangeItemDesc') : errorMessages }}
+            </p>
+          </div>
+          <SolidButton
+            :label="modalSpinWarningMode === 'exchange' ? t('myPage') : t('gacha')"
+            :bgColor="gachaSettings?.after_gacha_screen?.data?.button_and_text_color?.background"
+            :textColor="gachaSettings?.after_gacha_screen?.data?.button_and_text_color?.color"
+            :on-click="handleSpinWarningAction"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 
   <AutoplayVideo
@@ -89,6 +139,7 @@
 <script setup>
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
+import close from '~/assets/images/close.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -121,6 +172,10 @@ const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
 const modalLogin = ref(false)
 const showPointOnly = ref(false)
+const modalSpinWarning = ref(false)
+const modalSpinWarningMode = ref('error')
+const errorMessages = ref('')
+const handleCloseModalSpinWarning = () => (modalSpinWarning.value = false)
 
 const settings = useState('settings')
 const GACHA_TYPE = useState('GACHA_TYPE', () => null)
@@ -137,8 +192,34 @@ const gacha = computed(() => gachaSettings.value)
 const isInstagram = ref(false)
 
 const spinSlug = computed(() => (route.params.randomCode || route.params.slug))
+const prizeId = computed(() =>
+  Array.isArray(route.query.prize_id) ? route.query.prize_id[0] : route.query.prize_id
+)
 
 const { t } = useI18n()
+
+const continueToSpin = async () => {
+  modalSpinWarning.value = false
+  await navigateTo({
+    path: `/spin/prize/${spinSlug.value}`,
+    query: {
+      prize_id: prizeId.value,
+    },
+  })
+}
+
+const continueToMyPage = async () => {
+  modalSpinWarning.value = false
+  await navigateTo('/dashboard')
+}
+
+const handleSpinWarningAction = async () => {
+  if (modalSpinWarningMode.value === 'exchange') {
+    await continueToMyPage()
+    return
+  }
+  await continueToSpin()
+}
 
 const displayPointName = computed(() => {
   return spinResultData.value?.name || pointName.value || ""
@@ -491,6 +572,13 @@ const fetchImageFromApi = async () => {
       return
     }
   } catch (e) {
+    if (e?.status === 400) {
+      modalSpinWarningMode.value = 'error'
+      errorMessages.value = e?._data?.message || t('no_available_data')
+      modalSpinWarning.value = true
+      return
+    }
+
     if (e === 'refetch') {
       TOKEN.value = null
       USER.value = null
@@ -510,16 +598,23 @@ const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
 }
 
 const handleButton = async () => {
-  const showVideo =
-    settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
-
-  if (showVideo) {
-    playVideo.value = true
+  if (gachaType.value === 'external') {
+    hasModal.value = false
+    modalSpinWarningMode.value = 'exchange'
+    modalSpinWarning.value = true
     return
   }
 
   if (!TOKEN.value && !USER.value) {
     handleShowDialog()
+    return
+  }
+
+  const showVideo =
+    settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
+
+  if (showVideo) {
+    playVideo.value = true
     return
   }
 

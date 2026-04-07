@@ -30,8 +30,8 @@
           </p>
 
           <SolidButton
-            :on-click="() => navigateTo('/prize')"
-            :label="$t('returnToPrizeList')"
+            :on-click="() => navigateTo('/dashboard')"
+            :label="$t('myPage')"
             :bgColor="settings?.prize?.step_2?.swipe_exchange?.data?.button_and_text_color?.background"
             :textColor="settings?.prize?.step_2?.swipe_exchange?.data?.button_and_text_color?.color"
             class="w-full"
