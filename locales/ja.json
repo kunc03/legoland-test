@@ -356,8 +356,8 @@
   "cannotClaim": "選択した景品はすでに交換されました。在庫は残り1点でしたが、他のユーザーにより取得されました。別の景品を選択してください。",
   "returnToPrizeList": "景品選択に戻る",
   "redemptionLocationDescription": "引き換え場所の説明",
-  "otherGachaNotAccessible": "このページにはまだアクセスできません。先にGacha Sundra Aで景品を交換してください。",
-  "noPrizesAtOtherGacha": "ガチャSundra Bの景品は現在在庫切れです。",
+  "otherGachaNotAccessible": "マイページにアクセスして賞品を受け取るには、マイページへ移動してください。",
+  "noPrizesAtOtherGacha": "ガチャLegoland Bの景品は現在在庫切れです。",
   "camera": "カメラ",
   "switchCamera": "カメラを切り替える",
   "flashlight": "ライト",
@@ -373,5 +373,6 @@
   "step6": "QRコードを読み取る前に、表示するブラウザがシークレット（プライベート）モードになっていないかご確認下さい。",
   "category1": "ダミー",
   "category2": "素材待ち",
-  "incorrectCode": "入力したコードが正しくありません。もう一度お試しください。"
+  "incorrectCode": "入力したコードが正しくありません。もう一度お試しください。",
+  "exchangeItemDesc": "マイページ「けいひんこうかん」から こうかんしてね！"
 }
