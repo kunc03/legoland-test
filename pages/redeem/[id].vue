@@ -12,7 +12,7 @@
   </HeaderBar>
 
   <RedeemExternalSpin
-    v-if="legoland === true"
+    v-if="legolandStore.isLegoland === true"
     :prize-detail-data="prizeDetailData"
     :is-fetching="isFetching"
     :visible-redeem-fields="visibleRedeemFields"
@@ -500,6 +500,8 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
 import { store } from '~/stores/dashboard.js'
+import { useLegolandStore } from '~/stores/legoland'
+
 import JapanPostalCode from 'japan-postal-code'
 import Dropdown from '~/components/Dropdown.vue'
 import InputText from '~/components/InputText.vue'
@@ -530,7 +532,7 @@ const validateOnSubmit = ref(false)
 const isLoadingPostalCode = ref(false)
 const insufficientDialogVisible = ref(false)
 const settings = useState('settings')
-const legoland = ref(true)
+const legolandStore = useLegolandStore()
 const prizeDetailData = ref({})
 
 const handleToggleModal = () => {
