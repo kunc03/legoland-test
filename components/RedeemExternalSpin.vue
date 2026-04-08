@@ -1,16 +1,10 @@
 <template>
-  <HeaderBar hasBack>
-    <p
-      style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
-      class="text-exd-gray-scorpion font-bold text-exd-1824.52"
-    >
-      {{ settings?.prize?.step_1?.page_title }}
-    </p>
-  </HeaderBar>
-
-  <div class="flex flex-col px-8 pt-32 text-black bg-center">
+  <div
+    v-if="currentStep === 1"
+    class="flex flex-col px-8 pt-32 text-black bg-center"
+  >
     <div
-      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow"
+      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow mx-auto"
     >
       <div class="w-full overflow-hidden bg-[#FFF6E8]">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
@@ -82,10 +76,15 @@
           />
 
           <HeadingSection
-            v-if="settings?.prize?.step_1?.prize_description?.show_redemption_location_description"
+            v-if="
+              settings?.prize?.step_1?.prize_description
+                ?.show_redemption_location_description
+            "
             :is-fetching="isFetching"
             :title="$t('redemptionLocationDescription')"
-            :body="prizeDetailData != null ? prizeDetailData?.location_description : ''"
+            :body="
+              prizeDetailData != null ? prizeDetailData?.location_description : ''
+            "
           />
 
           <div
@@ -234,41 +233,44 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
-import { store } from '~/stores/dashboard.js'
 
-definePageMeta({
-  middleware: 'auth',
-  layout: 'with-bottom-bar',
+const props = defineProps({
+  prizeDetailData: { type: Object, default: () => ({}) },
+  isFetching: { type: Boolean, default: false },
+  visibleRedeemFields: { type: Array, default: () => [] },
+  form: { type: Object, default: () => ({}) },
+  isLoading: { type: Boolean, default: false },
+  disableRedeem: { type: Boolean, default: false },
+  settings: { type: Object, default: () => ({}) },
+  type: { type: String, default: '' },
+  validateOnSubmit: { type: Boolean, default: false },
+  handleError: { type: Function, required: true },
 })
 
-const map = ref(null)
-const route = useRoute()
-const popupType = ref('a')
-const router = useRouter()
-const id = route.params.id
-const hasModal = ref(false)
-const isFetching = ref(false)
-const prizeTypeText = ref(null)
-const prizeDetailData = ref({})
-const disableRedeem = ref(false)
-const config = useRuntimeConfig()
-const { t } = useI18n()
-const LOCALE = useCookie('LOCALE')
-const settings = useState('settings')
+const emit = defineEmits([
+  'update-model',
+  'check-postal-code',
+  'validate-input',
+  'submit',
+])
 
-const redeemType = ref('form')
-const legoland = ref(true)
-const externalGachaSlug = ref(null)
-const showPrizeValidationMessage = ref(false)
+const { t } = useI18n()
+const id = useRoute().params.id
+const router = useRouter()
+const config = useRuntimeConfig()
+const LOCALE = useCookie('LOCALE')
+
+const currentStep = ref(1)
+const hasModal = ref(false)
 const insufficientDialogVisible = ref(false)
 const errorMessage = ref(null)
-const isLoading = ref(false)
+const showPrizeValidationMessage = ref(false)
+const disableRedeem = ref(false)
+const popupType = ref('')
 
 const handleToggleModal = () => {
-  if (disableRedeem.value) return
+  if (props.disableRedeem) return
   hasModal.value = !hasModal.value
 }
 
@@ -277,52 +279,19 @@ const handleClose = () => {
   showPrizeValidationMessage.value = false
 }
 
-const handleGoToRedeem = async () => {
+const handleGoToRedeem = () => {
+  console.log('sadsada')
   if (disableRedeem.value) return
 
-  if (legoland.value) {
-    if (
-      prizeDetailData.value.type === 'external_prize' &&
-      externalGachaSlug.value
-    ) {
-      // Reset scroll position before navigation to prevent iOS Safari viewport issues
-      window.scrollTo(0, 0)
-      document.body.scrollTop = 0
-      document.documentElement.scrollTop = 0
-      
-      // Wait for scroll settle before navigation
-      await new Promise(resolve => requestAnimationFrame(resolve))
-      
-      router.push({
-        path: `/spin/prize/${externalGachaSlug.value}`,
-        query: {
-          prize_id: id,
-        },
-      })
-      return;
-    }
-  }
-
   if (
-    popupType.value === 'swipe_exchange' ||
-    popupType.value === 'external_prize'
+    props.type === 'swipe_exchange' ||
+    props.type === 'external_prize'
   ) {
     router.push(`/claim/${id}`)
   } else {
     router.push(`/redeem/${id}`)
   }
 }
-
-const colorBg = ref('')
-
-const imgTag =
-  '<img src="/images/export.svg" alt="export" width="23" height="23" class="inline ml-1" />'
-
-const formattedMessage = t('exchange_prize', {
-  img: imgTag,
-  link1: 'https://maps.app.goo.gl/JBjhtuEiDRWySEjKA',
-  link2: 'https://maps.app.goo.gl/hSwAQSMUTHNW8qbW7',
-})
 
 const loadGoogleMaps = () => {
   return new Promise((resolve, reject) => {
@@ -339,72 +308,23 @@ const loadGoogleMaps = () => {
   })
 }
 
-const fetchingPrizeData = async () => {
-  try {
-    disableRedeem.value = true
-    isFetching.value = true
-    const { data } = await useFetchApi('GET', 'prizes/' + id)
-    prizeDetailData.value = data
-    externalGachaSlug.value = data?.external_gacha_slug ?? null
-    checkPoint(data.point)
-    if (data.lat !== null && data.long !== null) {
-      initializeMap(data.lat, data.long)
-    }
-    popupType.value = data.type
-    disableRedeem.value = prizeDetailData.value.redeemable == false;
-  } catch (error) {
-    console.log(error)
-  } finally {
-    isFetching.value = false
-  }
-}
-
-const checkType = (type) => {
-  if (type === 1) {
-    disableRedeem.value = false
-  } else {
-    disableRedeem.value = true
-  }
-}
-
-const checkPoint = (point) => {
-  try {
-    const currentPoint = parseInt(store.point)
-    if (currentPoint < point) {
-      disableRedeem.value = true
-    }
-  } catch (error) {}
-}
-
-const openMapA = () => {
-  const googleMapsUrl = `https://maps.app.goo.gl/YfqmSJ6Azkbethyf6`
-  window.open(googleMapsUrl, '_blank')
-}
-
-const openMapB = () => {
-  const googleMapsUrl = `https://maps.app.goo.gl/ZWaTkoyFa1orUyZC7`
-  window.open(googleMapsUrl, '_blank')
-}
-
-const openMapC = () => {
-  const googleMapsUrl = `https://maps.app.goo.gl/YFCpSQixPXDAw68v6?g_st=com.google.maps.preview.copy`
-  window.open(googleMapsUrl, '_blank')
-}
-
 const initializeMap = async (lat, long) => {
+  await nextTick()
+  const mapElement = document.getElementById('map')
+  if (!mapElement) return
+
   const mapOptions = {
     center: { lat: lat, lng: long },
     zoom: 17,
-    disableDefaultUI: true, // Disables all default controls like zoom and map type
-    draggable: false, // Disables dragging of the map
-    scrollwheel: false, // Disables zooming with the mouse scroll
-    disableDoubleClickZoom: true, // Disables zooming by double-clicking
-    zoomControl: false, // Disables zoom control buttons
-    mapTypeControl: false, // Disables map type control (e.g., satellite vs. roadmap)
-    streetViewControl: false, // Disables street view control
-    fullscreenControl: false, // Disables fullscreen control
+    disableDefaultUI: true,
+    draggable: false,
+    scrollwheel: false,
+    disableDoubleClickZoom: true,
+    zoomControl: false,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
   }
-  const mapElement = document.getElementById('map')
   const map = new google.maps.Map(mapElement, mapOptions)
 
   new google.maps.Marker({
@@ -414,85 +334,54 @@ const initializeMap = async (lat, long) => {
 }
 
 const openGoogleMaps = () => {
-  const lat = prizeDetailData.value.lat
-  const long = prizeDetailData.value.long
+  const lat = props.prizeDetailData.lat
+  const long = props.prizeDetailData.long
   if (lat && long) {
     const googleMapsUrl = `https://www.google.jp/maps?q=${lat},${long}`
     window.open(googleMapsUrl, '_blank')
   }
 }
 
-const handleKeydown = (event) => {
-  if (event.key === 'Enter') {
-    if (!disableRedeem.value && !isFetching.value && !hasModal.value) {
-      handleToggleModal()
-    } else if (hasModal.value) {
-      handleGoToRedeem()
-    }
-  }
+const optionsMap = (rawOptions) => {
+  if (!rawOptions || typeof rawOptions !== 'object') return []
+  return Object.entries(rawOptions)
+    .filter(([value, label]) => !!value && !!label)
+    .map(([value, label]) => ({
+      label,
+      value,
+    }))
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
+const getAutocomplete = (item) => {
+  if (item.name === 'password') return 'new-password'
+  return 'off'
+}
 
 onMounted(async () => {
-  await loadGoogleMaps()
-  await fetchingPrizeData()
-
-  if (!settings.value?.flow?.screens?.user_dashboard_screen?.redeem_prize) {
-    disableRedeem.value = true
-  }
-
-  if (legoland.value) {
-    if (
-      prizeDetailData.value.type === 'external_prize' &&
-      externalGachaSlug.value
-    ) {
-      try {
-        await useFetchApi('POST', 'external-prize/validate', {
-          body: {
-            external_gacha_slug: externalGachaSlug.value,
-            prize_id: id,
-          },
-        })
-      } catch (error) {
-        disableRedeem.value = true
-        showPrizeValidationMessage.value = true
-        errorMessage.value = error._data.message
-        insufficientDialogVisible.value = true
+  if (props.settings?.prize?.step_1?.prize_description?.show_redemption_location) {
+    try {
+      await loadGoogleMaps()
+      if (props.prizeDetailData.lat && props.prizeDetailData.long) {
+        initializeMap(props.prizeDetailData.lat, props.prizeDetailData.long)
       }
+    } catch (e) {
+      console.error('Google Maps Load Error:', e)
     }
   }
 })
 
-watch(LOCALE, async (val) => {
-  const map = document.getElementById('map')
-
-  if (map.parentNode) {
-    map.parentNode.removeChild(map)
-    const div = document.createElement('div')
-    const parentMap = document.getElementById('parentMap')
-    div.id = 'map'
-    div.style = 'width: 100%; height: 100%'
-
-    parentMap.appendChild(div)
+watch(() => props.prizeDetailData, (newData) => {
+  if (newData.lat && newData.long && currentStep.value === 1) {
+    initializeMap(newData.lat, newData.long)
   }
+}, { deep: true })
 
-  delete window.google
-
-  await loadGoogleMaps()
-  let lat = prizeDetailData.value.lat
-  let long = prizeDetailData.value.long
-
-  if (lat != undefined && long != undefined) {
-    initializeMap(lat, long)
+watch(currentStep, async (newStep) => {
+  if (newStep === 1) {
+    await nextTick()
+    if (props.prizeDetailData.lat && props.prizeDetailData.long) {
+      initializeMap(props.prizeDetailData.lat, props.prizeDetailData.long)
+    }
   }
 })
 </script>
-
-<style scoped></style>

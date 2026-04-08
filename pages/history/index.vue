@@ -42,7 +42,7 @@
 
     <div
       v-if="!isFetching && lastPage > 1"
-      class="flex items-center justify-between p-3 bg-white border-t border-surface-200"
+      class="flex items-center justify-between p-3 bg-white border-t border-surface-200 rounded-xl"
     >
       <button
         class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"

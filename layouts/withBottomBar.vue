@@ -55,6 +55,8 @@ const handleBackground = () => {
     background.value = resolveBackground(settings.value?.user_dashboard?.my_account_settings?.background)
   } else if (path.includes('prize')) {
     background.value = resolveBackground(settings.value?.prize?.step_1?.background_page)
+  } else if (path.includes('redeem')) {
+    background.value = resolveBackground(settings.value?.prize?.step_1?.background_page)
   } else {
     background.value = ''
   }
