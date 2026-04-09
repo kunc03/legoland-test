@@ -27,7 +27,7 @@
     </div>
 
     <div
-      v-if="legoland"
+      v-if="legolandStore.isLegoland"
       class="relative items-center justify-center gap-5 mb-5 w-full"
       :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
     >
@@ -96,7 +96,7 @@
       </div>
 
       <div
-        v-if="legoland"
+        v-if="legolandStore.isLegoland"
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :class="[
           dashboardBg, layoutClass
@@ -127,7 +127,7 @@
       </div>
 
       <div
-        v-if="legoland"
+        v-if="legolandStore.isLegoland"
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :class="[
           dashboardBg, layoutClass
@@ -159,7 +159,7 @@
     </div>
 
     <div
-      v-if="!legoland"
+      v-if="!legolandStore.isLegoland"
       class="relative items-center justify-center gap-5 mb-5 w-full"
       :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
     >
@@ -345,6 +345,8 @@ import step5 from '~/assets/images/step-5.png'
 import step6 from '~/assets/images/step-6.png'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
+import { useLegolandStore } from '~/stores/legoland'
+
 import close from '~/assets/images/close.svg'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination, Navigation } from 'swiper/modules'
@@ -355,6 +357,8 @@ import 'swiper/css/navigation'
 import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const legolandStore = useLegolandStore()
+
 
 const config = useRuntimeConfig()
 
@@ -382,8 +386,6 @@ const redirectLink = ref('')
 const hidePoint = ref(false)
 const { t } = useI18n()
 
-const legoland = ref(true)
-
 const hasWalkthrough = ref(false)
 
 const walkthroughSteps = computed(() => [
@@ -405,12 +407,14 @@ const menuItemCount = computed(() => {
     settings.value?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
   )
     count++
-  if (legoland.value) count += 2
+  if (legolandStore.isLegoland) count += 2
+
   return count
 })
 
 const isGrid = computed(() => {
-  return menuItemCount.value > 2 || legoland.value
+  return menuItemCount.value > 2 || legolandStore.isLegoland
+
 })
 
 const dashboardBg = computed(() => {

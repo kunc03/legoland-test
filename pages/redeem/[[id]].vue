@@ -7,11 +7,30 @@
       style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
       class="text-exd-gray-scorpion font-bold text-exd-1824.52"
     >
-      {{ settings?.prize?.step_2?.[type]?.data?.page_title }}
+      {{ settings?.prize?.step_2?.[type]?.data?.page_title || settings?.prize?.step_1?.page_title }}
     </p>
   </HeaderBar>
 
+  <RedeemExternalSpin
+    v-if="legolandStore.isLegoland === true"
+    :prize-detail-data="prizeDetailData"
+    :is-fetching="isFetching"
+    :visible-redeem-fields="visibleRedeemFields"
+    :form="form"
+    :is-loading="isLoading"
+    :disable-redeem="disableRedeem"
+    :settings="settings"
+    :type="type"
+    :validate-on-submit="validateOnSubmit"
+    :handle-error="handleError"
+    @update-model="updateModel"
+    @check-postal-code="checkPostalCode"
+    @validate-input="validateInput"
+    @submit="handleSubmit"
+  />
+
   <div
+    v-else
     class="flex flex-col text-black !bg-no-repeat h-full !bg-cover !bg-center"
     :style="{
       background:
@@ -29,7 +48,7 @@
         >
           {{ settings?.prize?.step_2?.[type]?.data?.sub_title }}
         </h1>
-        
+
         <div v-if="!type" class="flex justify-center">
           <Skeleton class="!w-44 !h-6 bg-gray-200" />
         </div>
@@ -101,10 +120,12 @@
               "
               :border="true"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
               :autocomplete="getAutocomplete(item)"
             />
@@ -116,10 +137,12 @@
               :required="item.required"
               :options="optionsMap(item.options)"
               :bg-color="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :text-color="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
             />
 
@@ -150,10 +173,12 @@
                 ),
               }"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
               border
             />
@@ -185,10 +210,12 @@
                 ),
               }"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
             />
 
@@ -217,10 +244,12 @@
                 ),
               }"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
               :required="item.required"
             />
@@ -256,10 +285,12 @@
                 ),
               }"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
             />
 
@@ -292,10 +323,12 @@
                 ),
               }"
               :bgColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.background
               "
               :textColor="
-                settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                  ?.color
               "
             />
 
@@ -330,19 +363,19 @@
                 @validate="validateInput('prefecture', $event)"
                 :validate-on-submit="validateOnSubmit"
                 :error="
-                  !form.prefecture && validateOnSubmit
-                    ? $t('fieldRequired')
-                    : ''
+                  !form.prefecture && validateOnSubmit ? $t('fieldRequired') : ''
                 "
                 :class="{
                   'input-error': !form.prefecture && validateOnSubmit,
                 }"
                 :border="true"
                 :bgColor="
-                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                    ?.background
                 "
                 :textColor="
-                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                    ?.color
                 "
               />
 
@@ -372,10 +405,12 @@
                 }"
                 :border="true"
                 :bgColor="
-                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                    ?.background
                 "
                 :textColor="
-                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
+                  settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+                    ?.color
                 "
               />
             </div>
@@ -386,11 +421,16 @@
     <div class="mt-2" />
     <div class="fixed bottom-0 z-50 w-full max-w-md mx-auto mb-2">
       <SolidButton
-        :label="isLoading ? 'Loading...' : settings?.prize?.step_2?.[type]?.data?.button_text"
+        :label="
+          isLoading
+            ? 'Loading...'
+            : settings?.prize?.step_2?.[type]?.data?.button_text
+        "
         :has-loading="isLoading"
         :disabled="disableRedeem || isLoading"
         :bgColor="
-          settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.background
+          settings?.prize?.step_2?.[type]?.data?.button_and_text_color
+            ?.background
         "
         :textColor="
           settings?.prize?.step_2?.[type]?.data?.button_and_text_color?.color
@@ -460,6 +500,8 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
 import { store } from '~/stores/dashboard.js'
+import { useLegolandStore } from '~/stores/legoland'
+
 import JapanPostalCode from 'japan-postal-code'
 import Dropdown from '~/components/Dropdown.vue'
 import InputText from '~/components/InputText.vue'
@@ -469,7 +511,7 @@ import InputMultipleSelect from '~/components/InputMultipleSelect.vue'
 
 definePageMeta({
   middleware: 'auth',
-  layout: 'default',
+  layout: 'with-bottom-bar',
 })
 
 const type = ref('')
@@ -490,6 +532,8 @@ const validateOnSubmit = ref(false)
 const isLoadingPostalCode = ref(false)
 const insufficientDialogVisible = ref(false)
 const settings = useState('settings')
+const legolandStore = useLegolandStore()
+const prizeDetailData = ref({})
 
 const handleToggleModal = () => {
   if (disableRedeem.value) return
@@ -497,7 +541,10 @@ const handleToggleModal = () => {
 }
 const handleClose = () => (insufficientDialogVisible.value = false)
 
-const handleGoToClaim = () => router.push(`/claim/${route.params.id}`)
+const handleGoToClaim = () => {
+  if (!id) return navigateTo('/dashboard')
+  router.push(`/claim/${id}`)
+}
 const errorKeyPostCode = ref('')
 const errorPostCodeMessage = computed(() => t(errorKeyPostCode.value))
 const errorPhoneNumber = ref('')
@@ -684,13 +731,19 @@ const validateForm = () => {
 }
 
 const fetchingPrizeData = async () => {
+  if (!legolandStore.isLegoland && !id) {
+    return navigateTo('/dashboard')
+  }
+
   try {
-    const { data } = await useFetchApi('GET', 'prizes/' + id)
+    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
+    const { data } = await useFetchApi('GET', endpoint)
     sessionStorage.setItem('type', data.type)
     type.value = data.type
+    prizeDetailData.value = data
 
     redeemFields.value = redeemData.value || []
-    
+
     checkPoint(data.point)
   } catch (error) {
     console.log(error)
@@ -748,11 +801,13 @@ const fetchRedeem = async (payload) => {
   isLoading.value = true
 
   try {
+    const body = { ...payload }
+    if (id) {
+      body.prize_id = id
+    }
+
     const { status, data } = await useFetchApi('POST', 'prizes/redeem', {
-      body: {
-        prize_id: id,
-        ...payload
-      },
+      body,
     })
 
     if (!status) {

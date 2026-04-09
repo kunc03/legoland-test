@@ -373,5 +373,6 @@
   "step6": "Sebelum memindai kode QR, pastikan browser yang digunakan tidak dalam mode Penyamaran (Privat).",
   "category1": "Dummy",
   "category2": "Menunggu Aset",
-  "incorrectCode": "Kode yang Anda masukkan salah. Silakan coba lagi."
+  "incorrectCode": "Kode yang Anda masukkan salah. Silakan coba lagi.",
+  "redeem": "Tukar"
 }

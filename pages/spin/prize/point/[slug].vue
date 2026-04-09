@@ -139,10 +139,12 @@
 <script setup>
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
+import { useLegolandStore } from '~/stores/legoland'
 import close from '~/assets/images/close.svg'
 
 const router = useRouter()
 const route = useRoute()
+const legolandStore = useLegolandStore()
 
 const apiPoint = ref(null)
 const USER = useCookie('USER')
@@ -252,8 +254,9 @@ const fetchImageFromApi = async () => {
     const slugStorageName = `${slug}_GACHA`
 
     if (TOKEN.value && USER.value) {
+      const endpoint = legolandStore.isLegoland ? 'external-prize/spin-only' : 'external-prize/spin'
       if (isExternal) {
-        const { data: prizeData } = await useFetchApi('POST', 'external-prize/spin', {
+        const { data: prizeData } = await useFetchApi('POST', endpoint, {
           body: { external_gacha_slug: spinSlug.value, prize_id: route.query.prize_id },
         })
 

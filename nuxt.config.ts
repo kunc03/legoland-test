@@ -125,5 +125,9 @@ export default defineNuxtConfig({
     plugins: [ensureSsrEntryHasSemicolon()],
   },
 
+  imports: {
+    dirs: ['services'],
+  },
+
   compatibilityDate: '2024-07-29',
 })

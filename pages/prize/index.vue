@@ -167,6 +167,7 @@
 
 <script setup>
 import { store } from '~/stores/dashboard.js'
+import { useLegolandStore } from '~/stores/legoland'
 
 definePageMeta({
   middleware: 'auth',
@@ -187,6 +188,7 @@ const redeemPage = ref(1)
 const redeemPerPage = ref(10)
 const redeemLastPage = ref(1)
 const redeemTotal = ref(0)
+const legolandStore = useLegolandStore()
 
 const redeemFrom = computed(() => {
   if (!redeemTotal.value) return 0
@@ -214,7 +216,8 @@ const fetchingPrizesData = async () => {
 const fetchingRedeemsData = async (page = redeemPage.value) => {
   try {
     isFetchingRedeems.value = true
-    const { data } = await useFetchApi('GET', 'prize-redeemed', {
+    const endpoint = legolandStore.isLegoland ? 'external-prize/user-prizes' : 'prize-redeemed'
+    const { data } = await useFetchApi('GET', endpoint, {
       params: { page, per_page: redeemPerPage.value },
     })
     redeems.value = data?.data || []
