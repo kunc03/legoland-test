@@ -125,7 +125,7 @@
             : settings?.prize?.step_1?.button_text
         "
         :disabled="disableRedeem || isFetching"
-        :on-click="handleToggleModal"
+        :on-click="handleSwipe"
         :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
         :textColor="settings?.prize?.step_1?.button_and_text_color?.color"
         has-bottom
@@ -255,6 +255,15 @@ const isFetching = ref(false)
 const prizeTypeText = ref(null)
 const prizeDetailData = ref({})
 const disableRedeem = ref(false)
+const isClicked = ref(false)
+const isRedeemDialogVisible = ref(false)
+const insufficientDialogVisible = ref(false)
+const errorMessage = ref(null)
+const redeemMessage = ref('')
+const isLoading = ref(false)
+const disableSwipe = ref(false)
+const showPrizeValidationMessage = ref(false)
+const externalGachaSlug = ref(null)
 const config = useRuntimeConfig()
 const { t } = useI18n()
 const LOCALE = useCookie('LOCALE')
@@ -262,11 +271,6 @@ const settings = useState('settings')
 
 const redeemType = ref('form')
 const legolandStore = useLegolandStore()
-const externalGachaSlug = ref(null)
-const showPrizeValidationMessage = ref(false)
-const insufficientDialogVisible = ref(false)
-const errorMessage = ref(null)
-const isLoading = ref(false)
 
 const handleToggleModal = () => {
   if (disableRedeem.value) return
@@ -314,6 +318,74 @@ const handleGoToRedeem = async () => {
   }
 }
 
+const fetchRedeem = async () => {
+  try {
+    errorMessage.value = null
+    disableSwipe.value = true
+    const { message, status } = await useFetchApi('POST', 'prizes/redeem', {
+      body: {
+        prize_id: id,
+      },
+    })
+
+    if (status) {
+      redeemMessage.value = t('giftExchangeComplete')
+      isRedeemDialogVisible.value = true
+      localStorage.setItem('CLAIM_SUCCESS', true)
+    } else {
+      errorMessage.value = message
+      insufficientDialogVisible.value = true
+    }
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = error._data.message
+    insufficientDialogVisible.value = true
+  }
+}
+
+const handleSwipe = async () => {
+  isClicked.value = true
+  console.log(
+    prizeDetailData.value.type === 'external_prize' && externalGachaSlug.value
+  )
+  if (isClicked.value) {
+    if (
+      prizeDetailData.value.type === 'external_prize' &&
+      externalGachaSlug.value
+    ) {
+      try {
+        await useFetchApi('POST', 'external-prize/validate', {
+          body: {
+            external_gacha_slug: externalGachaSlug.value,
+            prize_id: id,
+          },
+        })
+      } catch (error) {
+        showPrizeValidationMessage.value = true
+        errorMessage.value = error._data.message
+        insufficientDialogVisible.value = true
+        return
+      }
+      // Reset scroll position before navigation to prevent iOS Safari viewport issues
+      window.scrollTo(0, 0)
+      document.body.scrollTop = 0
+      document.documentElement.scrollTop = 0
+
+      // Wait for scroll settle before navigation
+      await new Promise(resolve => requestAnimationFrame(resolve))
+
+      router.push({
+        path: `/spin/prize/${externalGachaSlug.value}`,
+        query: {
+          prize_id: id,
+        },
+      })
+    } else {
+      fetchRedeem()
+    }
+  }
+}
+
 const colorBg = ref('')
 
 const imgTag =
@@ -345,16 +417,21 @@ const fetchingPrizeData = async () => {
     disableRedeem.value = true
     isFetching.value = true
     const { data } = await useFetchApi('GET', 'prizes/' + id)
+    
+    // Also fetch external gacha info if needed
+    const { data: externalGachaData } = await useFetchApi('GET', 'prize-list/' + id)
+    
     prizeDetailData.value = data
-    externalGachaSlug.value = data?.external_gacha_slug ?? null
+    externalGachaSlug.value = data?.external_gacha_slug ?? externalGachaData?.slug ?? null
+    
     checkPoint(data.point)
     if (data.lat !== null && data.long !== null) {
       initializeMap(data.lat, data.long)
     }
     popupType.value = data.type
-    disableRedeem.value = prizeDetailData.value.redeemable == false;
+    disableRedeem.value = prizeDetailData.value.redeemable === false
   } catch (error) {
-    console.log(error)
+    console.error('[ERROR] fetchingPrizeData failed:', error)
   } finally {
     isFetching.value = false
   }
