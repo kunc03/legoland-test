@@ -74,6 +74,45 @@
       @closeModalLogin="handleCloseModalLogin"
     />
     <ModalLogin v-model="modalLogin" />
+
+    <Dialog
+      v-model:visible="modalSpinWarning"
+      modal
+      :closable="false"
+      :dismissableMask="false"
+      :closeOnEscape="false"
+      class="!w-11/12 !max-w-sm border border-exd-gray-44"
+      :style="{
+        background: settings?.global?.modal?.background_color,
+      }"
+    >
+      <template #container>
+        <div
+          class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
+        >
+          <IconsWarning
+            class="w-10 h-10"
+            :style="{ color: settings?.global?.icon_color?.background }"
+          />
+          <div class="w-10/12 text-center">
+            <p
+              class="font-bold text-exd-1424"
+              :style="{
+                color: settings?.global?.modal?.text_color,
+              }"
+            >
+              {{ errorMessages }}
+            </p>
+          </div>
+          <SolidButton
+            :label="t('back_to_top')"
+            :bgColor="gachaSettings?.after_gacha_screen?.data?.button_and_text_color?.background"
+            :textColor="gachaSettings?.after_gacha_screen?.data?.button_and_text_color?.color"
+            :on-click="() => navigateTo('/')"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 
   <AutoplayVideo
@@ -97,6 +136,8 @@ const USER = useCookie('USER')
 const TOKEN = useCookie('TOKEN')
 const playVideo = ref(false)
 const { encryptData, decryptData } = useEncryption()
+const { isScanVerified, clearScanVerified } = useGachaVerification()
+const { performSpin, getStoredResult, isEligibleForSpin } = useGachaService()
 
 const pointImageUrl = ref(null)
 const categoryImageUrl = ref(null)
@@ -129,6 +170,8 @@ const gachaSettings = computed(() =>
 )
 const gacha = computed(() => gachaSettings.value)
 const isInstagram = ref(false)
+const modalSpinWarning = ref(false)
+const errorMessages = ref('')
 
 const { t } = useI18n()
 
@@ -142,86 +185,22 @@ definePageMeta({
 const fetchImageFromApi = async () => {
   try {
     const storedData = useCookie('VALID_PASSWORD')
+    if (!storedData.value) return
 
-    if (!storedData.value) {
-      console.error('[ERROR] No verified data found in localStorage')
-      return
+    const payload = decryptData(storedData.value) || {}
+    const slug = payload?.slug?.toUpperCase()
+    if (!slug) return
+
+    const spinType = useState('spin_type').value
+    let storage = getStoredResult(slug)
+
+    // If not eligible for a new spin, we must use the existing storage if it exists.
+    // Otherwise, we perform a new spin.
+    if (isEligibleForSpin(slug, spinType)) {
+      storage = await performSpin(slug, payload)
     }
 
-    let parsedData
-    try {
-      parsedData = decryptData(storedData.value)
-    } catch (e) {
-      console.error('[ERROR] Failed decryptData:', e)
-      return
-    }
-
-    const slug = parsedData?.slug?.toUpperCase()
-    const slugStorageName = `${slug}_GACHA`
-
-    if (TOKEN.value && USER.value) {
-      const payload = decryptData(storedData.value) || {}
-
-      const { data, status } = await useFetchApi('POST', 'gacha/spin', {
-        body: { ...payload },
-      })
-
-      const spinType = useState('spin_type')
-
-      sessionStorage.setItem('IS_ALREADY_SPIN', data.is_already_spin)
-      sessionStorage.setItem('SPIN_TYPE', spinType.value)
-      sessionStorage.setItem(
-        'READY_SPIN_AFTER_DATE',
-        data?.ready_spin_after_date || ''
-      )
-
-      const storage = {
-        location_id: data.userPoint?.location.id,
-        point_id: data.userPoint?.point?.id,
-        point_image: data.userPoint?.point?.image,
-        point_name: data.userPoint?.point?.name,
-        character_id: data.userCollection?.gacha_character.id,
-        character_image: data.userCollection?.gacha_character.image,
-        character_name: data.userCollection?.gacha_character.name,
-        character_category: data.userCollection?.gacha_character.category,
-        character_description: data.userCollection?.gacha_character.description,
-        character_rarity:
-          data.userCollection?.gacha_character.rarity_image_during_gacha,
-        character_star1: data.userCollection?.gacha_character.star1,
-        character_star2: data.userCollection?.gacha_character.star2,
-        character_star3: data.userCollection?.gacha_character.star3,
-        character_star_name1: data.userCollection?.gacha_character.star_name1,
-        character_star_name2: data.userCollection?.gacha_character.star_name2,
-        character_star_name3: data.userCollection?.gacha_character.star_name3,
-        store_name: data.userCollection?.gacha_character.store_name,
-        store_description:
-          data.userCollection?.gacha_character.store_description,
-        // gift_id: data.userPoint.gift.point_id,
-        // gift_image: data.userPoint.gift.image,
-        // gift_type: data.userPoint.gift.type,
-        // voucher_name: data.userPoint.gift.name,
-        // gift_type_image: data.userPoint.gift.typeImage,
-        is_redirect: data.is_redirect,
-        button_name: data.button_name,
-        popup_image: data.userPoint?.point?.point_category_image,
-        popup_description: data.popup_description,
-        redirect_link: data.redirect_link,
-        hide_character:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.show_character_screen,
-        hide_character_info:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.show_character_details,
-        hide_store_details:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.display_character_introduction?.store_details,
-        hide_character_details:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.display_character_introduction?.character_details,
-      }
-
-      localStorage.setItem(slugStorageName, encryptData(storage))
-
+    if (storage) {
       pointImageUrl.value = storage.point_image
       categoryImageUrl.value = storage.popup_image
       pointName.value = storage.point_name
@@ -233,174 +212,15 @@ const fetchImageFromApi = async () => {
       popupImage.value = storage.popup_image
       pointCategoryIsFail.value = storage.point_category_is_fail
 
-      if (storage.point_category_is_fail) {
-        popupButton.value = t('playAgain')
-      } else {
-        popupButton.value = t('formHere')
-      }
-    } else {
-      const spinType = useState('spin_type')
-      sessionStorage.setItem('SPIN_TYPE', spinType.value)
-      const slugData = localStorage.getItem(slugStorageName)
-
-      if (spinType.value === 1 && slugData) {
-        const now = new Date().getTime()
-        const parse = decryptData(slugData)
-        const expired_date = moment(new Date(parse.spin_date))
-          .add(1, 'days')
-          .startOf('day')
-          .valueOf()
-
-        if (now < expired_date) {
-          pointImageUrl.value = parse.point_image
-          categoryImageUrl.value = parse.popup_image
-          pointName.value = parse.point_name
-
-          localStorage.setItem(slugStorageName, encryptData({ ...parse }))
-
-          return
-        }
-      } else if (spinType.value === 3 && slugData) {
-        const parse = decryptData(slugData)
-
-        pointImageUrl.value = parse.point_image
-        categoryImageUrl.value = parse.popup_image
-        pointName.value = parse.point_name
-        hideCharacter.value = parse.hide_character
-        isRedirect.value = parse.is_redirect
-        popupLink.value = parse.redirect_link
-        popupDescription.value = parse.popup_description
-        popupImage.value = parse.popup_image
-        pointCategoryIsFail.value = parse.point_category_is_fail
-
-        if (parse.point_category_is_fail) {
-          popupButton.value = t('playAgain')
-        } else {
-          popupButton.value = t('formHere')
-        }
-
-        localStorage.setItem(
-          slugStorageName,
-          encryptData({ ...parse })
-          // encryptData({ ...parse, is_already_spin: true })
-        )
-        // reportMultipleSpin({ ...parse })
-
-        return
-      } else if ((spinType.value === 4 || spinType.value === 5) && slugData) {
-        const now = new Date().getTime()
-
-        const parse = decryptData(slugData)
-        if (
-          parse?.spin_date_interval &&
-          new Date(parse.spin_date_interval).getTime() > now
-        ) {
-          pointImageUrl.value = parse.point_image
-          categoryImageUrl.value = parse.popup_image
-          pointName.value = parse.point_name
-          hideCharacter.value = parse.hide_character
-          isRedirect.value = parse.is_redirect
-          popupLink.value = parse.redirect_link
-          popupDescription.value = parse.popup_description
-          popupImage.value = parse.popup_image
-          pointCategoryIsFail.value = parse.point_category_is_fail
-
-          if (parse.point_category_is_fail) {
-            popupButton.value = t('playAgain')
-          } else {
-            popupButton.value = t('formHere')
-          }
-
-          localStorage.setItem(slugStorageName, encryptData({ ...parse }))
-          return
-        }
-      }
-
-      const { data, error } = await useFetchApi('GET', 'gacha/spin', {
-        params: {
-          slug: parsedData.slug,
-          password: parsedData.password,
-        },
-      })
-
-      const storage = {
-        location_id: data.location?.id ?? null,
-
-        point_id: data.point?.id ?? null,
-        point_image: data.point?.image ?? null,
-        point_name: data.point?.name ?? null,
-        popup_image: data.point?.point_category_image ?? null,
-        popup_description: data.point?.point_category_description ?? null,
-        redirect_link: data.point?.point_category_link ?? null,
-        point_category_is_fail: !!data.point?.point_category_is_fail,
-
-        character_id: data.character?.id ?? null,
-        character_image: data.character?.image ?? null,
-        character_name: data.character?.name ?? null,
-        character_description: data.character?.description ?? null,
-        character_category: data.character?.category ?? null,
-        character_rarity: data.character?.rarity_image_during_gacha ?? null,
-        character_star1: data.character?.star1 ?? null,
-        character_star2: data.character?.star2 ?? null,
-        character_star3: data.character?.star3 ?? null,
-        character_star_name1: data.character?.star_name1 ?? null,
-        character_star_name2: data.character?.star_name2 ?? null,
-        character_star_name3: data.character?.star_name3 ?? null,
-        store_name: data.character?.store_name ?? null,
-        store_description: data.character?.store_description ?? null,
-        log_id: data.log_id ?? null,
-
-        // gift_id: data.gift.point_id,
-        // gift_image: data.gift.image,
-        // voucher_name: data.gift.name,
-        // gift_type: data.gift.type,
-        // gift_type_image: data.gift.typeImage,
-
-        spin_interval: spinInterval?.value ?? null,
-        spin_date_interval: spinInterval?.value
-          ? futureDateFromMinutes(spinInterval.value)
-          : null,
-        is_redirect: true,
-        button_name: data.button_name,
-        spin_date: new Date().toLocaleString(),
-        hide_character:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.show_character_screen,
-        hide_character_info:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.show_character_details,
-        hide_store_details:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.display_character_introduction?.store_details,
-        hide_character_details:
-          !settings.value?.flow?.screens?.spin_gacha_2_screen
-            ?.display_character_introduction?.character_details,
-      }
-
-      localStorage.setItem(slugStorageName, encryptData(storage))
-
-      pointImageUrl.value = storage?.point_image
-      categoryImageUrl.value = storage?.popup_image
-      pointName.value = storage?.point_name
-      hideCharacter.value = storage?.hide_character
-      isRedirect.value = storage?.is_redirect
-      popupLink.value = storage?.redirect_link
-      popupDescription.value = storage?.popup_description
-      popupImage.value = storage?.popup_image
-      pointCategoryIsFail.value = storage?.point_category_is_fail
-
-      if (storage.point_category_is_fail) {
-        popupButton.value = t('playAgain')
-      } else {
-        popupButton.value = t('formHere')
-      }
-    }
-
-    if (error) {
-      console.error('Error fetching image:', error)
-      return
+      popupButton.value = storage.point_category_is_fail ? t('playAgain') : t('formHere')
     }
   } catch (e) {
+    if (e?.status === 400) {
+      errorMessages.value = e.data?.message || e._data?.message || t('no_available_data')
+      modalSpinWarning.value = true
+      return
+    }
+
     if (e === 'refetch') {
       TOKEN.value = null
       USER.value = null

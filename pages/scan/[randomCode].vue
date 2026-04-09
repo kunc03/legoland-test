@@ -415,14 +415,18 @@ const { encryptData } = useEncryption()
 
 definePageMeta({
   middleware: async (to, from) => {
-    const location = to.params.randomCode
-    const { data } = await useFetchApi('GET', '/location/password/' + location)
+    try {
+      const location = to.params.randomCode
+      const { data } = await useFetchApi('GET', '/location/password/' + location)
 
-    if (data && data.before_spin_type === 1) {
-      return navigateTo(`/spin/${location}`)
-    }
-    if (data && data.before_spin_type === 3) {
-      return navigateTo(`/quiz/${location}`)
+      if (data && data.before_spin_type === 1) {
+        return navigateTo(`/spin/${location}`)
+      }
+      if (data && data.before_spin_type === 3) {
+        return navigateTo(`/quiz/${location}`)
+      }
+    } catch (error) {
+      // Allow page to load so getPassword can show the dialog
     }
   },
 })
@@ -524,7 +528,7 @@ const getPassword = async (id) => {
   } catch (error) {
     errorLink.value = true
     isHiddenClose.value = true
-    errorMessages.value = error._data.message
+    errorMessages.value = error._data?.message || error.data?.message || t('no_available_data')
 
     isNotAllowed.value = true
   }

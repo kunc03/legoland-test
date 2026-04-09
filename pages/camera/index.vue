@@ -161,6 +161,9 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
+const { setScanVerified } = useGachaVerification()
+const config = useRuntimeConfig()
+
 const refQrcodeStream = ref(null)
 const paused = ref(false)
 const drawerVisible = ref(false)
@@ -398,10 +401,15 @@ const isValidLink = (url) => {
   return regex.test(url)
 }
 
+const { encryptData } = useEncryption()
+
 const handleRedirect = (url) => {
-  if (isValidLink(url)) {
-    window.open(url, '_blank')
-  }
+  const secureTicket = encryptData({
+    verified: true,
+    timestamp: Date.now()
+  })
+  sessionStorage.setItem('GACHA_SCAN_TICKET_', secureTicket)
+  window.open(url, '_blank')
 }
 
 watch(drawerVisible, (value) => {

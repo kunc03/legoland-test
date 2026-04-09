@@ -330,6 +330,50 @@
   </Modal>
 
   <Dialog
+    v-if="legolandStore.isLegoland"
+    v-model:visible="modalSpinWarning"
+    modal
+    class="!w-11/12 !max-w-sm border border-exd-gray-44"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
+  >
+    <template #container>
+      <div
+        class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
+      >
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
+        <div class="w-10/12 text-center">
+          <p
+            class="font-bold text-exd-1424"
+            :style="{
+              color: settings?.global?.modal?.text_color,
+            }"
+          >
+            {{ errorMessages }}
+          </p>
+        </div>
+        <SolidButton
+          :label="$t('myPage')"
+          :bgColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.background
+          "
+          :textColor="
+            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
+              ?.color
+          "
+          :on-click="() => navigateTo('/')"
+        />
+      </div>
+    </template>
+  </Dialog>
+
+  <Dialog
+    v-else
     v-model:visible="modalSpinWarning"
     modal
     class="!w-11/12 !max-w-sm border border-exd-gray-44"
@@ -364,19 +408,6 @@
             {{ errorMessages }}
           </p>
         </div>
-        <SolidButton
-          v-if="redirectLink || route.path.includes('/spin/prize')"
-          :label="gachaSettings?.after_gacha_screen?.data?.button_text"
-          :bgColor="
-            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
-              ?.background
-          "
-          :textColor="
-            gachaSettings?.after_gacha_screen?.data?.button_and_text_color
-              ?.color
-          "
-          :on-click="() => continueToSpin(redirectLink)"
-        />
       </div>
     </template>
   </Dialog>
@@ -389,6 +420,9 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
+import { useLegolandStore } from '~/stores/legoland'
+
+const legolandStore = useLegolandStore()
 
 const gachaType = computed(() => {
   return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
@@ -447,6 +481,8 @@ const handleCloseDialog = () => (isNotAllowed.value = false)
 const handleAboutSpin = () => (showAboutSpin.value = true)
 
 const { encryptData, decryptData } = useEncryption()
+const { isScanVerified, clearScanVerified } = useGachaVerification()
+const { performSpin, isEligibleForSpin } = useGachaService()
 const { t, locale } = useI18n()
 const config = useRuntimeConfig()
 
@@ -479,44 +515,47 @@ const handleCloseModalSpinWarning = () => {
 definePageMeta({
   layout: 'gacha-machine',
   middleware: async (to, from) => {
-    const { decryptData } = useEncryption()
-
-    const location = to.params.randomCode || to.params.slug
-    if (to.path?.startsWith('/spin/prize/')) {
-      useState('before_spin_type', () => 0).value = 0
-      useState('not_required_radius', () => 1).value = 1
-      useState('not_required_pin', () => 1).value = 1
-      useState('spin_type', () => 0).value = 0
-      return
-    }
-    const validPassword = useCookie('VALID_PASSWORD')
-
-    const { data } = await useFetchApi('GET', '/location/password/' + location)
-
-    if (data) {
-      const beforeSpinType = useState('before_spin_type', () => 1)
-      beforeSpinType.value = data.before_spin_type
-
-      const notRequiredRadius = useState('not_required_radius', () => 0)
-      notRequiredRadius.value = data.not_required_radius
-
-      const spinType = useState('spin_type', () => 0)
-      spinType.value = data.spin_type
-
-      if (data.spin_type === 4 || data.spin_type === 5) {
-        const spinInterval = useState('spin_interval', () => 0)
-        spinInterval.value = data.spin_interval
+    try {
+      const { decryptData } = useEncryption()
+      const location = to.params.randomCode || to.params.slug
+      if (to.path?.startsWith('/spin/prize/')) {
+        useState('before_spin_type', () => 0).value = 0
+        useState('not_required_radius', () => 1).value = 1
+        useState('not_required_pin', () => 1).value = 1
+        useState('spin_type', () => 0).value = 0
+        return
       }
-    }
+      const validPassword = useCookie('VALID_PASSWORD')
 
-    const validSlug = decryptData(validPassword.value || '{}')
+      const { data } = await useFetchApi('GET', '/location/password/' + location)
 
-    if (data && data.before_spin_type === 2 && validSlug?.slug !== location) {
-      return navigateTo(`/scan/${location}`)
-    }
+      if (data) {
+        const beforeSpinType = useState('before_spin_type', () => 1)
+        beforeSpinType.value = data.before_spin_type
 
-    if (data && data.before_spin_type === 3 && validSlug?.slug !== location) {
-      return navigateTo(`/quiz/${location}`)
+        const notRequiredRadius = useState('not_required_radius', () => 0)
+        notRequiredRadius.value = data.not_required_radius
+
+        const spinType = useState('spin_type', () => 0)
+        spinType.value = data.spin_type
+
+        if (data.spin_type === 4 || data.spin_type === 5) {
+          const spinInterval = useState('spin_interval', () => 0)
+          spinInterval.value = data.spin_interval
+        }
+      }
+
+      const validSlug = decryptData(validPassword.value || '{}')
+
+      if (data && data.before_spin_type === 2 && validSlug?.slug !== location) {
+        return navigateTo(`/scan/${location}`)
+      }
+
+      if (data && data.before_spin_type === 3 && validSlug?.slug !== location) {
+        return navigateTo(`/quiz/${location}`)
+      }
+    } catch (error) {
+      // Catch error to prevent crash, let onMounted/getPassword handle it
     }
   },
 })
@@ -535,8 +574,10 @@ const nextToSpin = async () => {
       })
     } catch (error) {
       if (error?.status === 400) {
-        errorMessages.value = error?._data?.message || t('no_available_data')
-        modalSpinWarning.value = true
+        errorMessages.value = error._data?.message || error.data?.message || t('no_available_data')
+        errorLink.value = true
+        isNotAllowed.value = true
+        isHiddenClose.value = true
         return
       }
     }
@@ -626,11 +667,22 @@ const getPassword = async (id) => {
 
     isLoading.value = false
   } catch (error) {
-    errorLink.value = true
-    isHiddenClose.value = true
-    errorMessages.value = error._data.message
-
     isNotAllowed.value = true
+    isHiddenClose.value = true
+  }
+}
+
+const triggerGachaSpin = async () => {
+  try {
+    const slug = String(spinSlug.value).toUpperCase()
+    const storedData = useCookie('VALID_PASSWORD')
+    const payload = storedData.value ? (decryptData(storedData.value) || {}) : { slug: slug.toLowerCase(), password: '' }
+
+    await performSpin(slug, payload)
+  } catch (error) {
+    errorMessages.value = error.data?.message || error._data?.message || t('no_available_data')
+    modalSpinWarning.value = true
+    console.error('[ERROR] triggerGachaSpin failed:', error)
   }
 }
 
@@ -889,6 +941,7 @@ onMounted(() => {
 
   if (!isPrizeSpinRoute.value) {
     getPassword(location)
+    triggerGachaSpin()
   }
 
   if (import.meta.client) {
