@@ -541,7 +541,10 @@ const handleToggleModal = () => {
 }
 const handleClose = () => (insufficientDialogVisible.value = false)
 
-const handleGoToClaim = () => router.push(`/claim/${route.params.id}`)
+const handleGoToClaim = () => {
+  if (!id) return navigateTo('/dashboard')
+  router.push(`/claim/${id}`)
+}
 const errorKeyPostCode = ref('')
 const errorPostCodeMessage = computed(() => t(errorKeyPostCode.value))
 const errorPhoneNumber = ref('')
@@ -728,14 +731,19 @@ const validateForm = () => {
 }
 
 const fetchingPrizeData = async () => {
+  if (!legolandStore.isLegoland && !id) {
+    return navigateTo('/dashboard')
+  }
+
   try {
-    const { data } = await useFetchApi('GET', 'prizes/' + id)
+    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
+    const { data } = await useFetchApi('GET', endpoint)
     sessionStorage.setItem('type', data.type)
     type.value = data.type
     prizeDetailData.value = data
 
     redeemFields.value = redeemData.value || []
-    
+
     checkPoint(data.point)
   } catch (error) {
     console.log(error)
@@ -793,11 +801,13 @@ const fetchRedeem = async (payload) => {
   isLoading.value = true
 
   try {
+    const body = { ...payload }
+    if (id) {
+      body.prize_id = id
+    }
+
     const { status, data } = await useFetchApi('POST', 'prizes/redeem', {
-      body: {
-        prize_id: id,
-        ...payload
-      },
+      body,
     })
 
     if (!status) {

@@ -373,5 +373,6 @@
   "step6": "掃描QR碼前，請確認您使用的瀏覽器未處於無痕（私密）模式。",
   "category1": "虛擬",
   "category2": "等待素材",
-  "incorrectCode": "您輸入的代碼不正確，請重試。"
+  "incorrectCode": "您輸入的代碼不正確，請重試。",
+  "redeem": "兌換"
 }

@@ -196,6 +196,7 @@ import Skeleton from 'primevue/skeleton'
 import Dialog from 'primevue/dialog'
 import close from '~/assets/images/close.svg'
 import { useI18n } from 'vue-i18n'
+import { useLegolandStore } from '~/stores/legoland'
 
 definePageMeta({
   middleware: 'auth',
@@ -208,6 +209,7 @@ const router = useRouter()
 const settings = useState('settings')
 
 const { t } = useI18n()
+const legolandStore = useLegolandStore()
 
 const isClicked = ref(false)
 const isRedeemDialogVisible = ref(false)
@@ -274,9 +276,54 @@ const fetchRedeem = async () => {
 
 const handleSwipe = async () => {
   isClicked.value = true
-  console.log(prizeDetailData.value.type === 'external_prize' &&
-      externalGachaSlug.value)
   if (isClicked.value) {
+    if (legolandStore.isLegoland) {
+      try {
+        const body = {
+          external_gacha_slug: prizeDetailData.value?.external_gacha_slug,
+          prize_id: prizeDetailData.value?.prize_id,
+          external_prize_id: prizeDetailData.value?.external_prize_id,
+        }
+
+        const { status, message } = await useFetchApi(
+          'POST',
+          'external-prize/redeem',
+          {
+            body,
+          }
+        )
+
+        if (status) {
+          redeemMessage.value = t('giftExchangeComplete')
+          isRedeemDialogVisible.value = true
+          localStorage.setItem('CLAIM_SUCCESS', true)
+        } else {
+          errorMessage.value = message
+          insufficientDialogVisible.value = true
+          vueslideunlock.value.reset()
+        }
+      } catch (error) {
+        console.error(error)
+        showPrizeValidationMessage.value = true
+        const errors = error._data?.data || {}
+        const messageList = []
+
+        Object.keys(errors).forEach((key) => {
+          if (Array.isArray(errors[key])) {
+            messageList.push(...errors[key])
+          } else {
+            messageList.push(errors[key])
+          }
+        })
+
+        errorMessage.value =
+          messageList.join('\n') || error._data?.message || t('errorOccurred')
+        insufficientDialogVisible.value = true
+        vueslideunlock.value.reset()
+      }
+      return
+    }
+
     if (
       prizeDetailData.value.type === 'external_prize' &&
       externalGachaSlug.value
@@ -327,14 +374,11 @@ const id = route.params.id
 const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
-    const { data } = await useFetchApi('GET', 'prizes/' + id)
-    const { data: externalGachaData } = await useFetchApi(
-      'GET',
-      'prize-list/' + id
-    )
+    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
+    const { data } = await useFetchApi('GET', endpoint)
 
     prizeDetailData.value = data
-    externalGachaSlug.value = externalGachaData?.external_gacha_slug ?? null
+    externalGachaSlug.value = data?.external_gacha_slug ?? null
 
     if (data) {
       localStorage.setItem('prize_name', data.name)

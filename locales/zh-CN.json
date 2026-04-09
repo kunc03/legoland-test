@@ -373,5 +373,6 @@
   "step6": "扫描QR码前，请确认您使用的浏览器没有处于隐私（无痕）模式。",
   "category1": "虚拟",
   "category2": "等待素材",
-  "incorrectCode": "您输入的代码不正确，请重试。"
+  "incorrectCode": "您输入的代码不正确，请重试。",
+  "redeem": "兑换"
 }

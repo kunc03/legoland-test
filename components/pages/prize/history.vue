@@ -77,6 +77,17 @@
           </div>
         </div>
       </template>
+      <template v-slot:action>
+        <button 
+          v-if="!isRedeemed" 
+          class="w-20 hover:opacity-80 text-[10px] py-1 font-semibold rounded-md"
+          :style="{
+            backgroundColor: settings?.prize?.step_1?.pop_up_button_and_text_color?.background, 
+            color: settings?.prize?.step_1?.pop_up_button_and_text_color?.color,
+          }"
+          @click="handleGoToDetailRedeem(body.id)"
+        >{{ $t('redeem') }}</button>
+      </template>
     </ImageTextCard>
   </div>
 </template>
@@ -102,28 +113,28 @@ const props = defineProps({
   },
 })
 
-const color = ref('')
 const router = useRouter()
 const settings = useState('settings')
 
-const name = ref('')
-const image = ref('')
-const id = ref('')
-const startedAt = ref('')
-const expiredAt = ref('')
-const redemptionDate = ref('')
-
-const handleGoToDetailRedeem = (id) => router.push(`/prize/history/${id}`)
-
-onMounted(() => {
-  const isShowRedeem = settings?.value?.prize?.step_1?.has_been_redeemed?.show_redemption_date
-  const data =
-    props.body.type == 'external_prize' ? props.body.external_prize : props.body
-  name.value = data.name
-  image.value = data.image
-  id.value = data.id
-  startedAt.value = props.body.started_at
-  expiredAt.value = props.body.expired_at
-  redemptionDate.value = isShowRedeem ? props.body.redeemed_at : null
+const innerData = computed(() => {
+  return props.body?.type === 'external_prize' ? props.body.external_prize : props.body
 })
+
+const name = computed(() => innerData.value?.name || '')
+const image = computed(() => innerData.value?.image || '')
+const id = computed(() => innerData.value?.id || '')
+const startedAt = computed(() => props.body?.started_at || '')
+const expiredAt = computed(() => props.body?.expired_at || '')
+const redemptionDate = computed(() => {
+  const isShowRedeem = settings.value?.prize?.step_1?.has_been_redeemed?.show_redemption_date
+  return isShowRedeem ? props.body?.redeemed_at : null
+})
+
+const isRedeemed = computed(() => {
+  return props.body?.is_redeemed || innerData.value?.is_redeemed
+})
+
+const handleGoToDetailRedeem = (id) => {
+  router.push(`/redeem/${id}`)
+}
 </script>

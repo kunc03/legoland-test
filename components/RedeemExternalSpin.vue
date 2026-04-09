@@ -169,7 +169,7 @@
       <div class="py-3">
         <SolidButton
           :label="settings?.prize?.step_1?.pop_up_button_text"
-          :on-click="handleGoToRedeem"
+          :on-click="handleGoToClaim"
           :bgColor="
             settings?.prize?.step_1?.pop_up_button_and_text_color?.background
           "
@@ -218,7 +218,7 @@
           </p>
 
           <SolidButton
-            :on-click="() => navigateTo('/prize')"
+            :on-click="handleGoToRedeem"
             :has-loading="isLoading"
             :label="$t('returnToPrizeList')"
             :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
@@ -280,7 +280,6 @@ const handleClose = () => {
 }
 
 const handleGoToRedeem = () => {
-  console.log('sadsada')
   if (disableRedeem.value) return
 
   if (
@@ -355,6 +354,11 @@ const optionsMap = (rawOptions) => {
 const getAutocomplete = (item) => {
   if (item.name === 'password') return 'new-password'
   return 'off'
+}
+
+const handleGoToClaim = () => {
+  if (!id) return navigateTo('/dashboard')
+  navigateTo('/claim/'+id)
 }
 
 onMounted(async () => {

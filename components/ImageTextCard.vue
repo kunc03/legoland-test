@@ -3,32 +3,35 @@
     <div
       :class="[
         roundedClass,
-        'bg-white w-full p-3 inline-flex gap-2 border-b border-b-exd-light-grey relative',
+        'bg-white w-full p-3 flex flex-col gap-2 border-b border-b-exd-light-grey relative',
         isDisabled ? 'cursor-default' : 'cursor-pointer',
       ]"
       @click="handleClick"
     >
-      <div v-if="showImage" class="w-[40%] flex items-center">
-        <CharacterCard :image="imageCard" :isDisabled="isDisabled" :bgColor="bgColor" />
+      <div class="flex items-center">
+        <div v-if="showImage" class="w-[40%] flex items-center">
+          <CharacterCard :image="imageCard" :isDisabled="isDisabled" :bgColor="bgColor" />
+        </div>
+        <slot name="text"></slot>
+        <div
+          v-if="!history"
+          class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2"
+        >
+          <img
+            :src="arrow"
+            alt="arrow"
+            width="10"
+            height="10"
+            preload
+            class="invert"
+          :class="isDisabled ? 'opacity-50' : ''"
+          />
+        </div>
+        <div v-if="history" class="w-full mt-1 max-w-16 max-h-16">
+          <CharacterCard :image="imageCard" variant="without-background" />
+        </div>
       </div>
-      <slot name="text"></slot>
-      <div
-        v-if="!history"
-        class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2"
-      >
-        <img
-          :src="arrow"
-          alt="arrow"
-          width="10"
-          height="10"
-          preload
-          class="invert"
-        :class="isDisabled ? 'opacity-50' : ''"
-        />
-      </div>
-      <div v-if="history" class="w-full mt-1 max-w-16 max-h-16">
-        <CharacterCard :image="imageCard" variant="without-background" />
-      </div>
+      <slot name="action"></slot>
     </div>
   </template>
   <template v-else>

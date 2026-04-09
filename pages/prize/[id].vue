@@ -345,9 +345,7 @@ const fetchRedeem = async () => {
 
 const handleSwipe = async () => {
   isClicked.value = true
-  console.log(
-    prizeDetailData.value.type === 'external_prize' && externalGachaSlug.value
-  )
+  
   if (isClicked.value) {
     if (
       prizeDetailData.value.type === 'external_prize' &&
@@ -417,10 +415,7 @@ const fetchingPrizeData = async () => {
     disableRedeem.value = true
     isFetching.value = true
     const { data } = await useFetchApi('GET', 'prizes/' + id)
-    
-    // Also fetch external gacha info if needed
-    const { data: externalGachaData } = await useFetchApi('GET', 'prize-list/' + id)
-    
+  
     prizeDetailData.value = data
     externalGachaSlug.value = data?.external_gacha_slug ?? externalGachaData?.slug ?? null
     
