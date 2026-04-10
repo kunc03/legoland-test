@@ -522,6 +522,7 @@ import JapanPostalCode from 'japan-postal-code'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const authService = useAuthService()
 
 const validateOnSubmit = ref(false)
 const config = useRuntimeConfig()
@@ -792,7 +793,7 @@ const fetchGetUserData = async () => {
   isLoading.value = true
 
   try {
-    const { data } = await useFetchApi('GET', 'user')
+    const { data } = await authService.getUserProfile()
 
     userId.value = data.user_id
 
@@ -811,9 +812,7 @@ const fetchPostUserData = async (payload) => {
   isLoading.value = true
 
   try {
-    const { data } = await useFetchApi('POST', 'user', {
-      body: payload,
-    })
+    const { data } = await authService.updateUserProfile(payload)
 
     if (validateForm()) {
       localStorage.setItem('USER_ID', data.user.id)

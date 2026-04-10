@@ -126,9 +126,8 @@ const handleSubmit = async () => {
 
     try {
       isLoading.value = true
-      const { status } = await useFetchApi('POST', 'email/forgot', {
-        body: payload,
-      })
+      const authService = useAuthService()
+      const { status } = await authService.forgotPassword(payload.email)
 
       if (status) {
         navigateTo({

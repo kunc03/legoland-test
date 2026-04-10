@@ -287,8 +287,9 @@ const validateEmailFormat = (email) => {
 
 const updateSpinStatus = async () => {
   const storedData = useCookie('VALID_PASSWORD')
+  const gachaService = useGachaService()
   const payload = decryptData(storedData.value || '{}')
-  const { data } = await useFetchApi('POST', 'gacha/spin', { body: payload })
+  const { data } = await gachaService.postSpinGacha(payload)
 
   const newStatus = data.is_already_spin
 
@@ -318,8 +319,9 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await useFetchApi('POST', 'login', {
-      body: { ...form.value },
+    const authService = useAuthService()
+    const response = await authService.login({
+      ...form.value,
     })
 
     const TOKEN = useCookie('TOKEN', { maxAge: 60 * 60 * 24 * 7 })
@@ -347,7 +349,8 @@ const handleSubmit = async () => {
 }
 
 const handleLoginLine = async () => {
-    const response = await useFetchApi('GET', `login/line/redirect?env=${config.public.NODE_ENV}`)
+    const authService = useAuthService()
+    const response = await authService.getLoginLineUrl(config.public.NODE_ENV)
 
     if (response?.data?.authorization_url) { 
       const loginUrl = response?.data?.authorization_url
@@ -359,12 +362,11 @@ const handleLoginLine = async () => {
 
 const processLoginLine = async () => {
   try {
-    const response = await useFetchApi('POST', 'login/line/token', {
-      body: { 
+    const authService = useAuthService()
+    const response = await authService.processLoginLineToken({
         code: route.query.code,
         state: route.query.state,
         env: config.public.NODE_ENV
-       },
     })
 
     const TOKEN = useCookie('TOKEN', { maxAge: 60 * 60 * 24 * 7 })
@@ -401,8 +403,8 @@ const saveSpin = async () => {
   if (!slugStorage) return
 
   try {
-    const { data } = await useFetchApi('POST', 'gacha/save', {
-      body: {
+    const gachaService = useGachaService()
+    const { data } = await gachaService.saveGacha({
         point_id: slugStorage?.point_id,
         location_id: slugStorage?.location_id,
         character_id: slugStorage?.character_id,
@@ -410,7 +412,6 @@ const saveSpin = async () => {
         gift_image: slugStorage?.gift_image,
         gift_name: slugStorage?.voucher_name,
         gift_type: slugStorage?.gift_type,
-      },
     })
 
     storedData.value = null

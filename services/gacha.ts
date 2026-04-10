@@ -9,12 +9,12 @@ export const useGachaService = () => {
   const { isScanVerified, clearScanVerified } = useGachaVerification()
   const TOKEN = useCookie('TOKEN')
   const USER = useCookie('USER')
-  const settings = useState('settings')
+  const settings = useState<any>('settings')
 
   /**
    * Transforms the raw backend response into a unified storage object used across pages.
    */
-  const mapGachaResponse = (data: any) => {
+  const mapGachaResponse = (data: any): any => {
     return {
       location_id: data.userPoint?.location?.id || data.location?.id || null,
       point_id: data.userPoint?.point?.id || data.point?.id || null,
@@ -85,19 +85,19 @@ export const useGachaService = () => {
     clearScanVerified(slug)
 
     // 5. Update session state
-    const spinType = useState('spin_type')
-    sessionStorage.setItem('IS_ALREADY_SPIN', data.is_already_spin)
-    sessionStorage.setItem('SPIN_TYPE', spinType?.value || '')
-    sessionStorage.setItem('READY_SPIN_AFTER_DATE', data?.ready_spin_after_date || '')
+    const spinType = useState<number | string>('spin_type')
+    sessionStorage.setItem('IS_ALREADY_SPIN', String(data.is_already_spin || 'false'))
+    sessionStorage.setItem('SPIN_TYPE', String(spinType.value || ''))
+    sessionStorage.setItem('READY_SPIN_AFTER_DATE', String(data?.ready_spin_after_date || ''))
 
     // 6. Map and store result
     const mappedResult = mapGachaResponse(data)
     
     // Add interval info if present
-    const spinInterval = useState('spin_interval')
+    const spinInterval = useState<number>('spin_interval')
     if (spinInterval?.value) {
       const now = new Date()
-      mappedResult.spin_date_interval = new Date(now.getTime() + spinInterval.value * 60 * 1000).toLocaleString()
+      mappedResult.spin_date_interval = new Date(now.getTime() + Number(spinInterval.value) * 60 * 1000).toLocaleString()
     }
 
     localStorage.setItem(slugStorageName, encryptData(mappedResult))
@@ -108,7 +108,7 @@ export const useGachaService = () => {
   /**
    * Retrieves and decrypts the gacha result for a specific slug.
    */
-  const getStoredResult = (slug: string) => {
+  const getStoredResult = (slug: string): any => {
     const slugUpper = slug.toUpperCase()
     const slugStorageName = `${slugUpper}_GACHA`
     const slugData = localStorage.getItem(slugStorageName)
@@ -148,10 +148,84 @@ export const useGachaService = () => {
     return true
   }
 
+  /**
+   * Saves temporary gacha data (pre-registration).
+   */
+  const saveTempData = (payload: any) => {
+    return useFetchApi('POST', 'gacha/save/temp', { body: payload })
+  }
+
+  /**
+   * Saves gacha data for a registered user.
+   */
+  const saveRegisteredData = (payload: any) => {
+    return useFetchApi('POST', 'gacha/save/registered', { body: payload })
+  }
+
+  /**
+   * Saves general gacha data.
+   */
+  const saveGacha = (payload: any) => {
+    return useFetchApi('POST', 'gacha/save', { body: payload })
+  }
+
+  /**
+   * Checks gacha availability/status.
+   */
+  const checkGacha = (params: any) => {
+    return useFetchApi('GET', 'gacha/check', { params })
+  }
+
+  /**
+   * Validates quiz response.
+   */
+  const validateQuiz = (payload: any) => {
+    return useFetchApi('POST', 'gacha/quiz/validate', { body: payload })
+  }
+
+  /**
+   * Retrieves quiz data.
+   */
+  const getQuiz = (params: any) => {
+    return useFetchApi('GET', 'gacha/quiz', { params })
+  }
+
+  /**
+   * Performs radius/geofencing check.
+   */
+  const radiusCheck = (payload: any) => {
+    return useFetchApi('POST', 'radius-check', { body: payload })
+  }
+
+  /**
+   * Reports gacha spin multiple times logic.
+   */
+  const reportGacha = (payload: any) => {
+    return useFetchApi('POST', 'gacha/report', { body: payload })
+  }
+
+  const getSpinGacha = (params: any) => {
+    return useFetchApi('GET', 'gacha/spin', { params })
+  }
+
+  const postSpinGacha = (payload: any) => {
+    return useFetchApi('POST', 'gacha/spin', { body: payload })
+  }
+
   return {
     performSpin,
     getStoredResult,
     isEligibleForSpin,
-    mapGachaResponse
+    mapGachaResponse,
+    saveTempData,
+    saveRegisteredData,
+    checkGacha,
+    validateQuiz,
+    getQuiz,
+    radiusCheck,
+    getSpinGacha,
+    postSpinGacha,
+    reportGacha,
+    saveGacha
   }
 }

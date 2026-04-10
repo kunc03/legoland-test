@@ -248,13 +248,9 @@ const fetchRedeem = async () => {
   try {
     errorMessage.value = null
     disableSwipe.value = true
-    const { message, status } = await useFetchApi('POST', 'prizes/redeem', {
-      // params: {
-      //   user_point_id: prizeDetailData.value?.id,
-      // },
-      body: {
-        prize_id: id,
-      },
+    const { redeemPrize } = usePrizeService()
+    const { message, status } = await redeemPrize({
+      prize_id: id,
     })
 
     if (status) {
@@ -285,13 +281,8 @@ const handleSwipe = async () => {
           external_prize_id: prizeDetailData.value?.external_prize_id,
         }
 
-        const { status, message } = await useFetchApi(
-          'POST',
-          'external-prize/redeem',
-          {
-            body,
-          }
-        )
+        const { redeemExternalPrize } = usePrizeService()
+        const { status, message } = await redeemExternalPrize(body)
 
         if (status) {
           redeemMessage.value = t('giftExchangeComplete')
@@ -329,11 +320,10 @@ const handleSwipe = async () => {
       externalGachaSlug.value
     ) {
       try {
-        await useFetchApi('POST', 'external-prize/validate', {
-          body: {
-            external_gacha_slug: externalGachaSlug.value,
-            prize_id: id,
-          },
+        const { validateExternalPrize } = usePrizeService()
+        await validateExternalPrize({
+          external_gacha_slug: externalGachaSlug.value,
+          prize_id: id,
         })
       } catch (error) {
         showPrizeValidationMessage.value = true
@@ -374,8 +364,11 @@ const id = route.params.id
 const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
-    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
-    const { data } = await useFetchApi('GET', endpoint)
+    const { getExternalPrizeDetail, getPrizeDetail } = usePrizeService()
+    const response = legolandStore.isLegoland 
+      ? await getExternalPrizeDetail(id)
+      : await getPrizeDetail(id)
+    const data = response.data
 
     prizeDetailData.value = data
     externalGachaSlug.value = data?.external_gacha_slug ?? null

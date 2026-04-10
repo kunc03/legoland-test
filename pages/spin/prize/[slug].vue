@@ -89,11 +89,10 @@ onMounted(async () => {
   }
 
   try {
-    await useFetchApi('POST', 'external-prize/validate', {
-      body: {
-        external_gacha_slug: externalGachaSlug.value,
-        prize_id: prizeId.value,
-      },
+    const prizeService = usePrizeService()
+    await prizeService.validateExternalPrize({
+      external_gacha_slug: externalGachaSlug.value,
+      prize_id: prizeId.value,
     })
   } catch (error) {
     errorMessage.value = error._data?.message || error.message

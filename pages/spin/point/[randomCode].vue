@@ -231,9 +231,8 @@ const fetchImageFromApi = async () => {
 
 const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
   try {
-    const response = await useFetchApi('POST', 'gacha/report', {
-      body: { gift_id, character_id, location_id },
-    })
+    const gachaService = useGachaService()
+    const response = await gachaService.reportGacha({ gift_id, character_id, location_id })
   } catch (error) {
     console.log('Error report multiple spin', error)
   }

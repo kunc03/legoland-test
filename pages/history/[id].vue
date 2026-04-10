@@ -303,7 +303,8 @@ const calculateStar = (characterStar) => {
 const fetchingHistoryData = async () => {
   try {
     isFetching.value = true
-    const { data } = await useFetchApi('GET', 'history/' + id)
+    const { getHistoryDetail } = useHistoryService()
+    const { data } = await getHistoryDetail(id)
     historyDetailData.value = data
 
     star1.value = calculateStar(data.character_star1)
@@ -494,7 +495,8 @@ const openGoogleMaps = () => {
 const downloadImage = async () => {
   try {
     const fileName = historyDetailData.value.character_name + '.png'
-    const blob = await useFetchApi('GET', '/history/image/' + id)
+    const { getHistoryImage } = useHistoryService()
+    const blob = await getHistoryImage(id)
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
     link.download = fileName

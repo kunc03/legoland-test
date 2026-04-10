@@ -736,8 +736,11 @@ const fetchingPrizeData = async () => {
   }
 
   try {
-    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
-    const { data } = await useFetchApi('GET', endpoint)
+    const { getExternalPrizeDetail, getPrizeDetail } = usePrizeService()
+    const response = legolandStore.isLegoland 
+      ? await getExternalPrizeDetail(id) 
+      : await getPrizeDetail(id)
+    const { data } = response
     sessionStorage.setItem('type', data.type)
     type.value = data.type
     prizeDetailData.value = data
@@ -806,9 +809,8 @@ const fetchRedeem = async (payload) => {
       body.prize_id = id
     }
 
-    const { status, data } = await useFetchApi('POST', 'prizes/redeem', {
-      body,
-    })
+    const { redeemPrize } = usePrizeService()
+    const { status, data } = await redeemPrize(body)
 
     if (!status) {
       throw new Error(t('unexpectedResponse'))

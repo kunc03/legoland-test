@@ -101,10 +101,8 @@ const getPassword = async (id) => {
   try {
     isLoading.value = true
 
-    const { status, data } = await useFetchApi(
-      'GET',
-      '/location/password/' + id
-    )
+    const locationService = useLocationService()
+    const { status, data } = await locationService.getLocationPassword(id)
     if (data) {
       responseData.value = {
         password:

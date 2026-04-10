@@ -101,8 +101,9 @@ const historyTo = computed(() => {
 const fetchingHistoryData = async (p = page.value) => {
   try {
     isFetching.value = true
-    const data = await useFetchApi('GET', 'history', {
-      params: { page: p, per_page: perPage.value },
+    const { getHistoryList } = useHistoryService()
+    const data = await getHistoryList({
+      page: p, per_page: perPage.value
     })
 
     histories.value = data.data

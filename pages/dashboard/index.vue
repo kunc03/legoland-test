@@ -488,7 +488,8 @@ const clearLocalStorageExcept = (whitelist) => {
 
 const logout = async () => {
   try {
-    const { data, status } = await useFetchApi('POST', 'logout')
+    const authService = useAuthService()
+    const { data, status } = await authService.logout()
     const WHITELIST_LOCAL = ['loginForm']
 
     clearLocalStorageExcept(WHITELIST_LOCAL)

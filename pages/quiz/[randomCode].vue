@@ -128,7 +128,8 @@ definePageMeta({
     if (isExternal) return
 
     const location = to.params.randomCode
-    const { data } = await useFetchApi('GET', '/location/password/' + location)
+    const locationService = useLocationService()
+    const { data } = await locationService.getLocationPassword(location)
 
     if (data && data.before_spin_type === 1) {
       return navigateTo(`/spin/${location}`)
@@ -143,6 +144,8 @@ const { encryptData } = useEncryption()
 const settings = useState('settings')
 const LOCALE = useCookie('LOCALE')
 const { t } = useI18n()
+const gachaService = useGachaService()
+const locationService = useLocationService()
 
 const isLoading = ref(false)
 
@@ -214,9 +217,7 @@ const checkAnswerQuiz = async (body) => {
   isLoading.value = true
 
   try {
-    const { status } = await useFetchApi('POST', 'gacha/quiz/validate', {
-      body,
-    })
+    const { status } = await gachaService.validateQuiz(body)
 
     const validPassword = useCookie('VALID_PASSWORD')
     validPassword.value = encryptData(body)
@@ -262,10 +263,8 @@ const getTerms = async () => {
 
 const getQuestions = async () => {
   try {
-    const res = await useFetchApi('GET', `gacha/quiz`, {
-      params: {
-        slug: route.params.randomCode,
-      },
+    const res = await gachaService.getQuiz({
+      slug: route.params.randomCode,
     })
     question.value = res?.data?.questions?.[LOCALE.value] || ''
   } catch (error) {

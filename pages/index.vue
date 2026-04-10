@@ -92,6 +92,7 @@ const isFailed = ref(false)
 const emailVerified = ref('')
 
 const { t } = useI18n()
+const authService = useAuthService()
 
 const walkthroughSteps = computed(() => [
   { image: step1, text: t('step1'), category: t('category1') },
@@ -144,10 +145,7 @@ const form = ref({
 
 const checkVerified = async (verified) => {
   try {
-    const { status, data } = await useFetchApi(
-      'GET',
-      `/login/decrypt/${verified}`
-    )
+    const { status, data } = await authService.decryptLoginToken(verified)
     if (status && data && data.email) {
       emailVerified.value = data.email
       handleShowModal()
@@ -165,7 +163,7 @@ const openBookmarkLink = () => {
 }
 
 const handleEmailVerify = async (token) => {
-  await useFetchApi('POST', '/email/verify', { body: { token } })
+  await authService.verifyEmail(token)
   navigateTo('/#registration-complete')
 }
 
