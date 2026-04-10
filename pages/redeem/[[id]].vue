@@ -762,8 +762,10 @@ const fetchingPrizeData = async () => {
 const checkPoint = (point) => {
   try {
     const currentPoint = parseInt(store.point)
-    if (currentPoint < point) {
-      disableRedeem.value = true
+    if (!legolandStore.isLegoland) {
+      if (currentPoint < point) {
+        disableRedeem.value = true
+      }
     }
   } catch (error) {}
 }
