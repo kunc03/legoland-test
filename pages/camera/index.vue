@@ -409,7 +409,7 @@ const handleRedirect = (url) => {
     timestamp: Date.now()
   })
   sessionStorage.setItem('GACHA_SCAN_TICKET_', secureTicket)
-  window.open(url, '_blank')
+  window.location.href = url
 }
 
 watch(drawerVisible, (value) => {
