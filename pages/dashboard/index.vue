@@ -374,16 +374,26 @@ const handleGoToCamera = () => {
   navigateTo('/camera')
 }
 
+const LOCALE = useCookie('LOCALE')
+
 const handleGoToRedeem = async () => {
   try {
     const { getNextRedeemId } = usePrizeService()
-    const { data, status } = await getNextRedeemId({ lang: 'en' })
+    const response = await getNextRedeemId({ lang: LOCALE.value || 'en' })
 
-    if (status && data?.user_point_id) {
-      navigateTo(`/redeem/${data.user_point_id}`)
+    if (response?.status && response?.data?.user_point_id) {
+      navigateTo(`/redeem/${response.data.user_point_id}`)
+    } else if (response?.message) {
+      errorMessages.value = response.message
+      isNotAllowed.value = true
     }
   } catch (error) {
     console.error(error)
+    const errMessage = error?._data?.message || error?.response?.data?.message || error?.message
+    if (errMessage) {
+      errorMessages.value = errMessage
+      isNotAllowed.value = true
+    }
   }
 }
 
@@ -485,6 +495,7 @@ const handleClose = () => {
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
   sessionStorage.removeItem('IS_QUOTA_AVAILABLE')
   sessionStorage.removeItem('LOCATION_SLUG')
+  sessionStorage.removeItem('PRIZE_NOT_FOUND')
 }
 
 const clearLocalStorageExcept = (whitelist) => {
@@ -554,6 +565,12 @@ const checkSpinEligibility = async () => {
 
   if (isAlreadySpin == 'true' && spinType === '3') {
     errorMessages.value = t('eligibilityMessageType3')
+    isNotAllowed.value = true
+  }
+
+  const prizeNotFound = sessionStorage.getItem('PRIZE_NOT_FOUND')
+  if (prizeNotFound === 'true') {
+    errorMessages.value = t('cannotClaim')
     isNotAllowed.value = true
   }
 
