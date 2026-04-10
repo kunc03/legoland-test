@@ -149,9 +149,8 @@ const handleSubmit = async () => {
     }
 
     try {
-      const { status, message } = await useFetchApi('POST', 'email/reset', {
-        body: payload,
-      })
+      const authService = useAuthService()
+      const { status, message } = await authService.resetPassword(payload)
 
       if (status) {
         isLoading.value = false
@@ -182,7 +181,8 @@ const handleSubmit = async () => {
 
 const fetchingEmailData = async () => {
   try {
-    const { data } = await useFetchApi('GET', 'email/decrypt?token=' + token)
+    const authService = useAuthService()
+    const { data } = await authService.decryptToken(token)
     form.value.email = data.email
   } catch (error) {
     console.log("Error: Can't save spin result")

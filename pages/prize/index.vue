@@ -203,7 +203,8 @@ const redeemTo = computed(() => {
 const fetchingPrizesData = async () => {
   try {
     isFetchingPrizes.value = true
-    const { data } = await useFetchApi('GET', 'prize-list')
+    const { getPrizeList } = usePrizeService()
+    const { data } = await getPrizeList()
 
     prizes.value = data
   } catch (error) {
@@ -216,10 +217,15 @@ const fetchingPrizesData = async () => {
 const fetchingRedeemsData = async (page = redeemPage.value) => {
   try {
     isFetchingRedeems.value = true
-    const endpoint = legolandStore.isLegoland ? 'external-prize/user-prizes' : 'prize-redeemed'
-    const { data } = await useFetchApi('GET', endpoint, {
-      params: { page, per_page: redeemPerPage.value },
-    })
+    const { getExternalUserPrizes, getPrizeRedeemedList } = usePrizeService()
+    
+    let response
+    if (legolandStore.isLegoland) {
+      response = await getExternalUserPrizes({ page, per_page: redeemPerPage.value })
+    } else {
+      response = await getPrizeRedeemedList({ page, per_page: redeemPerPage.value })
+    }
+    const { data } = response
     redeems.value = data?.data || []
     redeemPage.value = data?.meta?.current_page ?? page
     redeemLastPage.value = data?.meta?.last_page ?? 1

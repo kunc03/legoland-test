@@ -69,14 +69,13 @@ const saveSpin = async () => {
   const slugStorageName = `${slug}_GACHA`
   const slugStorage = decryptData(localStorage.getItem(slugStorageName))
   try {
-    await useFetchApi('POST', 'gacha/save/temp', {
-      body: {
-        point_id: slugStorage?.point_id,
-        location_id: slugStorage?.location_id,
-        temporary_user_id: localStorage.getItem('USER_ID'),
-        character_id: slugStorage?.character_id,
-        log_id: slugStorage?.log_id,
-      },
+    const { saveTempData } = useGachaService()
+    await saveTempData({
+      point_id: slugStorage?.point_id,
+      location_id: slugStorage?.location_id,
+      temporary_user_id: localStorage.getItem('USER_ID'),
+      character_id: slugStorage?.character_id,
+      log_id: slugStorage?.log_id,
     })
   } catch (error) {
     console.log("Error: Can't save spin result")

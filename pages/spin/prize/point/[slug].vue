@@ -212,9 +212,8 @@ const continueToSpin = async () => {
 
 const continueToMyPage = async () => {
   const id = spinResultData.value?.user_point?.id
+  
   const redirect = legolandStore.isLegoland ? '/redeem/' + id : '/dashboard'
-
-  modalSpinWarning.value = false
 
   await navigateTo(redirect)
 }
@@ -258,11 +257,11 @@ const fetchImageFromApi = async () => {
     const slugStorageName = `${slug}_GACHA`
 
     if (TOKEN.value && USER.value) {
-      const endpoint = legolandStore.isLegoland ? 'external-prize/spin-only' : 'external-prize/spin'
       if (isExternal) {
-        const { data: prizeData } = await useFetchApi('POST', endpoint, {
-          body: { external_gacha_slug: spinSlug.value, prize_id: route.query.prize_id },
-        })
+        const prizeService = usePrizeService()
+        const { data: prizeData } = legolandStore.isLegoland
+          ? await prizeService.spinExternalPrizeOnly(spinSlug.value, route.query.prize_id)
+          : await prizeService.spinExternalPrize(spinSlug.value, route.query.prize_id)
 
         spinResultData.value = prizeData
         const externalPrize = prizeData?.external_prize
@@ -335,10 +334,9 @@ const fetchImageFromApi = async () => {
           popupButton.value = t('formHere')
         }
       } else {
+        const gachaService = useGachaService()
         const payload = decryptData(storedData.value) || {}
-        const { data: spinData } = await useFetchApi('POST', 'gacha/spin', {
-          body: { ...payload },
-        })
+        const { data: spinData } = await gachaService.postSpinGacha({ ...payload })
 
         spinResultData.value = spinData
 
@@ -494,11 +492,10 @@ const fetchImageFromApi = async () => {
       }
       if (isExternal) return
 
-      const { data, error } = await useFetchApi('GET', 'gacha/spin', {
-        params: {
-          slug: parsedData.slug,
-          password: parsedData.password,
-        },
+      const gachaService = useGachaService()
+      const { data, error } = await gachaService.getSpinGacha({
+        slug: parsedData.slug,
+        password: parsedData.password,
       })
 
       const storage = {
@@ -596,9 +593,8 @@ const fetchImageFromApi = async () => {
 
 const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
   try {
-    const response = await useFetchApi('POST', 'gacha/report', {
-      body: { gift_id, character_id, location_id },
-    })
+    const gachaService = useGachaService()
+    const response = await gachaService.reportGacha({ gift_id, character_id, location_id })
   } catch (error) {
     console.log('Error report multiple spin', error)
   }

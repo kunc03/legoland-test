@@ -7,7 +7,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   try {
     const settings = useState<any>('settings', () => null)
     if (!settings.value) {
-      const { data } = await useFetchApi('GET', 'settings')
+      const settingsService = useSettingsService()
+      const { data } = await settingsService.getSettings()
       if (!data) return navigateTo('/not-found')
       settings.value = data
     }

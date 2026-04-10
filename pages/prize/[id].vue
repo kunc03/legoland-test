@@ -322,10 +322,9 @@ const fetchRedeem = async () => {
   try {
     errorMessage.value = null
     disableSwipe.value = true
-    const { message, status } = await useFetchApi('POST', 'prizes/redeem', {
-      body: {
-        prize_id: id,
-      },
+    const { redeemPrize } = usePrizeService()
+    const { message, status } = await redeemPrize({
+      prize_id: id,
     })
 
     if (status) {
@@ -352,11 +351,10 @@ const handleSwipe = async () => {
       externalGachaSlug.value
     ) {
       try {
-        await useFetchApi('POST', 'external-prize/validate', {
-          body: {
-            external_gacha_slug: externalGachaSlug.value,
-            prize_id: id,
-          },
+        const { validateExternalPrize } = usePrizeService()
+        await validateExternalPrize({
+          external_gacha_slug: externalGachaSlug.value,
+          prize_id: id,
         })
       } catch (error) {
         showPrizeValidationMessage.value = true
@@ -414,7 +412,8 @@ const fetchingPrizeData = async () => {
   try {
     disableRedeem.value = true
     isFetching.value = true
-    const { data } = await useFetchApi('GET', 'prizes/' + id)
+    const { getPrizeDetail } = usePrizeService()
+    const { data } = await getPrizeDetail(id)
   
     prizeDetailData.value = data
     externalGachaSlug.value = data?.external_gacha_slug ?? externalGachaData?.slug ?? null
@@ -527,11 +526,10 @@ onMounted(async () => {
       externalGachaSlug.value
     ) {
       try {
-        await useFetchApi('POST', 'external-prize/validate', {
-          body: {
-            external_gacha_slug: externalGachaSlug.value,
-            prize_id: id,
-          },
+        const { validateExternalPrize } = usePrizeService()
+        await validateExternalPrize({
+          external_gacha_slug: externalGachaSlug.value,
+          prize_id: id,
         })
       } catch (error) {
         disableRedeem.value = true

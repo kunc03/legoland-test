@@ -223,6 +223,8 @@ const prizeTypeText = ref(null)
 const colorBg = ref('')
 const showPrizeValidationMessage = ref(false)
 
+const redeemDetailData = ref({})
+
 const step2Data = computed(
   () => settings.value?.prize?.step_2?.swipe_exchange?.data || {}
 )
@@ -248,13 +250,9 @@ const fetchRedeem = async () => {
   try {
     errorMessage.value = null
     disableSwipe.value = true
-    const { message, status } = await useFetchApi('POST', 'prizes/redeem', {
-      // params: {
-      //   user_point_id: prizeDetailData.value?.id,
-      // },
-      body: {
-        prize_id: id,
-      },
+    const { redeemPrize } = usePrizeService()
+    const { message, status } = await redeemPrize({
+      prize_id: id,
     })
 
     if (status) {
@@ -280,18 +278,13 @@ const handleSwipe = async () => {
     if (legolandStore.isLegoland) {
       try {
         const body = {
-          external_gacha_slug: prizeDetailData.value?.external_gacha_slug,
-          prize_id: prizeDetailData.value?.prize_id,
-          external_prize_id: prizeDetailData.value?.external_prize_id,
+          external_gacha_slug: redeemDetailData.value?.external_gacha_slug,
+          prize_id: redeemDetailData.value?.prize_id,
+          external_prize_id: redeemDetailData.value?.external_prize_id,
         }
 
-        const { status, message } = await useFetchApi(
-          'POST',
-          'external-prize/redeem',
-          {
-            body,
-          }
-        )
+        const { redeemExternalPrize } = usePrizeService()
+        const { status, message } = await redeemExternalPrize(body)
 
         if (status) {
           redeemMessage.value = t('giftExchangeComplete')
@@ -329,11 +322,10 @@ const handleSwipe = async () => {
       externalGachaSlug.value
     ) {
       try {
-        await useFetchApi('POST', 'external-prize/validate', {
-          body: {
-            external_gacha_slug: externalGachaSlug.value,
-            prize_id: id,
-          },
+        const { validateExternalPrize } = usePrizeService()
+        await validateExternalPrize({
+          external_gacha_slug: externalGachaSlug.value,
+          prize_id: id,
         })
       } catch (error) {
         showPrizeValidationMessage.value = true
@@ -374,14 +366,24 @@ const id = route.params.id
 const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
-    const endpoint = legolandStore.isLegoland ? 'external-prize/' + id : 'prizes/' + id
-    const { data } = await useFetchApi('GET', endpoint)
+    const { getExternalPrizeDetail, getPrizeDetail } = usePrizeService()
+    const response = legolandStore.isLegoland 
+      ? await getExternalPrizeDetail(id)
+      : await getPrizeDetail(id)
+    const data = response.data
 
-    prizeDetailData.value = data
+    redeemDetailData.value = data
+
+    const dataRedeem = legolandStore.isLegoland ? data.external_prize : data
+
+    prizeDetailData.value = dataRedeem
+    
     externalGachaSlug.value = data?.external_gacha_slug ?? null
 
+    const prizeName = legolandStore.isLegoland ? data.external_prize.name : data.name
+
     if (data) {
-      localStorage.setItem('prize_name', data.name)
+      localStorage.setItem('prize_name', prizeName)
     }
   } catch (error) {
     console.log(error)

@@ -417,7 +417,8 @@ definePageMeta({
   middleware: async (to, from) => {
     try {
       const location = to.params.randomCode
-      const { data } = await useFetchApi('GET', '/location/password/' + location)
+      const locationService = useLocationService()
+      const { data } = await locationService.getLocationPassword(location)
 
       if (data && data.before_spin_type === 1) {
         return navigateTo(`/spin/${location}`)
@@ -448,9 +449,8 @@ const checkPassword = async (params) => {
   isLoading.value = true 
 
   try {
-    const { data, status } = await useFetchApi('GET', 'gacha/check', {
-      params,
-    })
+    const gachaService = useGachaService()
+    const { data, status } = await gachaService.checkGacha(params)
 
     const validPassword = useCookie('VALID_PASSWORD')
     validPassword.value = encryptData(params)
@@ -514,8 +514,9 @@ const goToScan = async () => {
 const getPassword = async (id) => {
   try {
     isLoading.value = true
+    const locationService = useLocationService()
 
-    const { data } = await useFetchApi('GET', '/location/password/' + id)
+    const { data } = await locationService.getLocationPassword(id)
 
     if (data) {
       description.value = data.description
@@ -544,12 +545,11 @@ const radiusCheck = async () => {
   const location = route.params.randomCode
   isLoading.value = true
   try {
-    const { data } = await useFetchApi('POST', 'radius-check', {
-      body: {
-        lat: latitude.value,
-        long: longitude.value,
-        slug: location,
-      },
+    const gachaService = useGachaService()
+    const { data } = await gachaService.radiusCheck({
+      lat: latitude.value,
+      long: longitude.value,
+      slug: location,
     })
     radiusCheckResult.value = data
   } catch (error) {

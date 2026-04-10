@@ -526,8 +526,9 @@ definePageMeta({
         return
       }
       const validPassword = useCookie('VALID_PASSWORD')
+      const locationService = useLocationService()
 
-      const { data } = await useFetchApi('GET', '/location/password/' + location)
+      const { data } = await locationService.getLocationPassword(location)
 
       if (data) {
         const beforeSpinType = useState('before_spin_type', () => 1)
@@ -566,11 +567,10 @@ const nextToSpin = async () => {
 
   if (isPrizeSpinRoute.value) {
     try {
-      await useFetchApi('POST', 'external-prize/validate', {
-        body: {
-          external_gacha_slug: spinSlug.value,
-          prize_id: route.query.prize_id,
-        },
+      const prizeService = usePrizeService()
+      await prizeService.validateExternalPrize({
+        external_gacha_slug: spinSlug.value,
+        prize_id: route.query.prize_id,
       })
     } catch (error) {
       if (error?.status === 400) {
@@ -656,8 +656,9 @@ const getPassword = async (id) => {
   if (isPrizeSpinRoute.value) return
   try {
     isLoading.value = true
+    const locationService = useLocationService()
 
-    const { data } = await useFetchApi('GET', '/location/password/' + id)
+    const { data } = await locationService.getLocationPassword(id)
 
     if (!data.not_required_radius) {
       await checkingLocation()
@@ -777,12 +778,11 @@ const radiusCheck = async () => {
   const location = spinSlug.value
   isLoading.value = true
   try {
-    const { data } = await useFetchApi('POST', 'radius-check', {
-      body: {
-        lat: latitude.value,
-        long: longitude.value,
-        slug: location,
-      },
+    const gachaService = useGachaService()
+    const { data } = await gachaService.radiusCheck({
+      lat: latitude.value,
+      long: longitude.value,
+      slug: location,
     })
     radiusCheckResult.value = data
   } catch (error) {

@@ -19,12 +19,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const validPassword = useCookie('VALID_PASSWORD')
   const { decryptData } = useEncryption()
 
-  const randomCode = to.params?.randomCode || from.params?.randomCode
-  if (!randomCode) return
-  const { data }: any = await useFetchApi(
-    'GET',
-    '/location/password/' + randomCode
-  )
+  const randomCodeParam = to.params?.randomCode || from.params?.randomCode
+  if (!randomCodeParam) return
+  
+  const randomCode = Array.isArray(randomCodeParam) ? randomCodeParam[0] : randomCodeParam
+
+  const locationService = useLocationService()
+  const { data }: any = await locationService.getLocationPassword(randomCode)
 
   const validSlug = decryptData(validPassword.value || '{}')
 

@@ -78,7 +78,7 @@
               ? settings?.user_dashboard?.gacha_collections?.background.value
               : `url(${settings?.user_dashboard?.gacha_collections?.background.value})`,
         }"
-        @click="handleGoToPrize"
+        @click="handleGoToRedeem"
       >
         <div class="flex items-center justify-center h-[60px]">
           <img
@@ -374,6 +374,29 @@ const handleGoToCamera = () => {
   navigateTo('/camera')
 }
 
+const LOCALE = useCookie('LOCALE')
+
+const handleGoToRedeem = async () => {
+  try {
+    const { getNextRedeemId } = usePrizeService()
+    const response = await getNextRedeemId({ lang: LOCALE.value || 'en' })
+
+    if (response?.status && response?.data?.user_point_id) {
+      navigateTo(`/redeem/${response.data.user_point_id}`)
+    } else if (response?.message) {
+      errorMessages.value = response.message
+      isNotAllowed.value = true
+    }
+  } catch (error) {
+    console.error(error)
+    const errMessage = error?._data?.message || error?.response?.data?.message || error?.message
+    if (errMessage) {
+      errorMessages.value = errMessage
+      isNotAllowed.value = true
+    }
+  }
+}
+
 const settings = useState('settings')
 
 const TOKEN = useCookie('TOKEN')
@@ -472,6 +495,7 @@ const handleClose = () => {
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
   sessionStorage.removeItem('IS_QUOTA_AVAILABLE')
   sessionStorage.removeItem('LOCATION_SLUG')
+  sessionStorage.removeItem('PRIZE_NOT_FOUND')
 }
 
 const clearLocalStorageExcept = (whitelist) => {
@@ -488,7 +512,8 @@ const clearLocalStorageExcept = (whitelist) => {
 
 const logout = async () => {
   try {
-    const { data, status } = await useFetchApi('POST', 'logout')
+    const authService = useAuthService()
+    const { data, status } = await authService.logout()
     const WHITELIST_LOCAL = ['loginForm']
 
     clearLocalStorageExcept(WHITELIST_LOCAL)
@@ -540,6 +565,12 @@ const checkSpinEligibility = async () => {
 
   if (isAlreadySpin == 'true' && spinType === '3') {
     errorMessages.value = t('eligibilityMessageType3')
+    isNotAllowed.value = true
+  }
+
+  const prizeNotFound = sessionStorage.getItem('PRIZE_NOT_FOUND')
+  if (prizeNotFound === 'true') {
+    errorMessages.value = t('cannotClaim')
     isNotAllowed.value = true
   }
 

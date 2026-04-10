@@ -194,9 +194,9 @@ const fetchImageFromApi = async () => {
     const spinType = useState('spin_type').value
     let storage = getStoredResult(slug)
 
-    // If not eligible for a new spin, we must use the existing storage if it exists.
-    // Otherwise, we perform a new spin.
-    if (isEligibleForSpin(slug, spinType)) {
+    // Jika belum ada data dari gacha sebelumnya, ATAU dia memang layak spin lagi DAN tiket scan dari /camera masih ada,
+    // maka kita jalankan gacha baru. Jika tiketnya sudah dipakai oleh halaman sebelumnya, kita cukup pakai `storage` lama.
+    if (!storage || (isEligibleForSpin(slug, spinType) && isScanVerified(slug))) {
       storage = await performSpin(slug, payload)
     }
 
@@ -231,9 +231,8 @@ const fetchImageFromApi = async () => {
 
 const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
   try {
-    const response = await useFetchApi('POST', 'gacha/report', {
-      body: { gift_id, character_id, location_id },
-    })
+    const gachaService = useGachaService()
+    const response = await gachaService.reportGacha({ gift_id, character_id, location_id })
   } catch (error) {
     console.log('Error report multiple spin', error)
   }

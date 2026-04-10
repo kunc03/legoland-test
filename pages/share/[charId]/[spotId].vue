@@ -300,8 +300,9 @@ const fetchingShareData = async () => {
       location_id: spotId,
     }
 
+    const shareService = useShareService()
     const { data, error } = await useAsyncData(() =>
-      useFetchApi('POST', 'share', { body: payload })
+      shareService.submitShare(payload)
     )
 
     if (data.value) {
