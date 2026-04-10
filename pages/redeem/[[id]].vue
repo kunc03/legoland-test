@@ -743,7 +743,10 @@ const fetchingPrizeData = async () => {
     const { data } = response
     sessionStorage.setItem('type', data.type)
     type.value = data.type
-    prizeDetailData.value = data
+
+    const dataRedeem = legolandStore.isLegoland ? data.external_prize : data
+
+    prizeDetailData.value = dataRedeem
 
     redeemFields.value = redeemData.value || []
 

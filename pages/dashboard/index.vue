@@ -78,7 +78,7 @@
               ? settings?.user_dashboard?.gacha_collections?.background.value
               : `url(${settings?.user_dashboard?.gacha_collections?.background.value})`,
         }"
-        @click="handleGoToPrize"
+        @click="handleGoToRedeem"
       >
         <div class="flex items-center justify-center h-[60px]">
           <img
@@ -372,6 +372,19 @@ const handleGoToPrize = () => router.push('/prize')
 const profile = () => router.push('/profile')
 const handleGoToCamera = () => {
   navigateTo('/camera')
+}
+
+const handleGoToRedeem = async () => {
+  try {
+    const { getNextRedeemId } = usePrizeService()
+    const { data, status } = await getNextRedeemId({ lang: 'en' })
+
+    if (status && data?.user_point_id) {
+      navigateTo(`/redeem/${data.user_point_id}`)
+    }
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 const settings = useState('settings')

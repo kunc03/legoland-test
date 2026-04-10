@@ -23,6 +23,10 @@ export const usePrizeService = () => {
     return useFetchApi('GET', 'external-prize/' + id)
   }
 
+  const getNextRedeemId = (params: any = {}) => {
+    return useFetchApi('GET', 'external-prize/next-redeem-id', { params })
+  }
+
   const validateExternalPrize = (payload: any) => {
     return useFetchApi('POST', 'external-prize/validate', { body: payload })
   }
@@ -54,5 +58,6 @@ export const usePrizeService = () => {
     redeemExternalPrize,
     spinExternalPrize,
     spinExternalPrizeOnly,
+    getNextRedeemId,
   }
 }
