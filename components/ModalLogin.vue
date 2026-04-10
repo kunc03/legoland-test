@@ -45,6 +45,11 @@
                   ? true
                   : false
               "
+              :autoUppercase="
+                legolandStore.isLegoland &&
+                item.text_type !== 'number' &&
+                item.text_type !== 'tel'
+              "
               :type="item.text_type"
               :model="form[item.name]"
               :placeholder="item.placeholder"
