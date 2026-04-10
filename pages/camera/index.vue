@@ -273,11 +273,20 @@ const paintOutline = (detectedCodes, ctx) => {
 // Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
   const base = {
-    width: { min: 640, ideal: 1280, max: 1920 },
-    height: { min: 480, ideal: 720, max: 1080 },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
     aspectRatio: { ideal: 16 / 9 },
     frameRate: { ideal: 30, max: 60 },
+    resizeMode: 'none',
   }
+
+  // Best effort for hardware features
+  const advanced = [
+    { focusMode: 'continuous' },
+    { exposureMode: 'continuous' },
+    { whiteBalanceMode: 'continuous' },
+    { sharpness: 100 },
+  ]
 
   if (selectedDeviceId.value) {
     return {
@@ -289,6 +298,7 @@ const selectedConstraints = computed(() => {
   return {
     ...base,
     facingMode: isFrontCamera.value ? 'user' : 'environment',
+    advanced,
   }
 })
 
@@ -534,6 +544,10 @@ watch(drawerVisible, (value) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Viewfinder Overlay */
@@ -593,6 +607,7 @@ watch(drawerVisible, (value) => {
 /* Scan line animation */
 .viewfinder-scan-line {
   position: absolute;
+  top: 0;
   left: 8px;
   right: 8px;
   height: 2px;
@@ -605,19 +620,20 @@ watch(drawerVisible, (value) => {
   );
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
   animation: scan-line 2.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes scan-line {
   0%,
   100% {
-    top: 8px;
+    transform: translateY(8px);
     opacity: 0;
   }
   10% {
     opacity: 1;
   }
   50% {
-    top: calc(100% - 10px);
+    transform: translateY(250px);
     opacity: 1;
   }
   60% {
