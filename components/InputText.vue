@@ -38,6 +38,8 @@
         :value="modelValue"
         v-only-numeric="onlyNumeric"
         @keydown="preventInvalidInput"
+        @compositionstart="isComposing = true"
+        @compositionend="handleCompositionEnd"
         @input="updateValue($event.target.value)"
         @blur="validate"
         @paste="handlePaste"
@@ -46,6 +48,7 @@
         :placeholder="placeholder"
         :disabled="disabled"
         :autocomplete="autocomplete"
+        :style="autoUppercase ? { textTransform: 'uppercase' } : {}"
         :class="[
           'grow w-full bg-gray-100 focus:!border-none focus:!outline-none selection:!rounded-none rounded-none selection:!bg-gray-300 !border-none font-normal',
           disabled && '!text-gray-400',
@@ -186,7 +189,11 @@ const props = defineProps({
   autocomplete: {
     type: String,
     default: 'off',
-  }
+  },
+  autoUppercase: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const { t } = useI18n()
@@ -194,6 +201,7 @@ const { t } = useI18n()
 const emit = defineEmits(['update:model', 'validate'])
 
 const isValid = ref(true)
+const isComposing = ref(false)
 
 const modelValue = computed({
   get: () => props.model,
@@ -293,7 +301,20 @@ const formatZipCode = (value) => {
   return value.slice(0, 8)
 }
 
+const handleCompositionEnd = (event) => {
+  isComposing.value = false
+  // Flush the final composed value to model (with uppercase if needed)
+  updateValue(event.target.value)
+}
+
 const updateValue = (value) => {
+  // Skip model update during mobile IME composition to prevent value replacement
+  if (isComposing.value) return
+
+  if (props.autoUppercase && typeof value === 'string') {
+    value = value.toUpperCase()
+  }
+
   if (props.onlyZipCode) {
     // Apply masking format for zip code
     value = formatZipCode(value)
