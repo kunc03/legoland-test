@@ -196,7 +196,7 @@ import Skeleton from 'primevue/skeleton'
 import Dialog from 'primevue/dialog'
 import close from '~/assets/images/close.svg'
 import { useI18n } from 'vue-i18n'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 definePageMeta({
   middleware: 'auth',
@@ -209,7 +209,7 @@ const router = useRouter()
 const settings = useState('settings')
 
 const { t } = useI18n()
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 const isClicked = ref(false)
 const isRedeemDialogVisible = ref(false)
@@ -275,7 +275,7 @@ const fetchRedeem = async () => {
 const handleSwipe = async () => {
   isClicked.value = true
   if (isClicked.value) {
-    if (legolandStore.isLegoland) {
+    if (externalRedeemStore.isExternalRedeem) {
       try {
         const body = {
           external_gacha_slug: redeemDetailData.value?.external_gacha_slug,
@@ -367,20 +367,20 @@ const fetchingPrizeData = async () => {
   isFetching.value = true
   try {
     const { getExternalPrizeDetail, getPrizeDetail } = usePrizeService()
-    const response = legolandStore.isLegoland 
+    const response = externalRedeemStore.isExternalRedeem 
       ? await getExternalPrizeDetail(id)
       : await getPrizeDetail(id)
     const data = response.data
 
     redeemDetailData.value = data
 
-    const dataRedeem = legolandStore.isLegoland ? data.external_prize : data
+    const dataRedeem = externalRedeemStore.isExternalRedeem ? data.external_prize : data
 
     prizeDetailData.value = dataRedeem
     
     externalGachaSlug.value = data?.external_gacha_slug ?? null
 
-    const prizeName = legolandStore.isLegoland ? data.external_prize.name : data.name
+    const prizeName = externalRedeemStore.isExternalRedeem ? data.external_prize.name : data.name
 
     if (data) {
       localStorage.setItem('prize_name', prizeName)

@@ -139,12 +139,12 @@
 <script setup>
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 import close from '~/assets/images/close.svg'
 
 const router = useRouter()
 const route = useRoute()
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 const apiPoint = ref(null)
 const USER = useCookie('USER')
@@ -213,7 +213,7 @@ const continueToSpin = async () => {
 const continueToMyPage = async () => {
   const id = spinResultData.value?.user_point?.id
   
-  const redirect = legolandStore.isLegoland ? '/redeem/' + id : '/dashboard'
+  const redirect = externalRedeemStore.isExternalRedeem ? '/redeem/' + id : '/dashboard'
 
   await navigateTo(redirect)
 }
@@ -259,7 +259,7 @@ const fetchImageFromApi = async () => {
     if (TOKEN.value && USER.value) {
       if (isExternal) {
         const prizeService = usePrizeService()
-        const { data: prizeData } = legolandStore.isLegoland
+        const { data: prizeData } = externalRedeemStore.isExternalRedeem
           ? await prizeService.spinExternalPrizeOnly(spinSlug.value, route.query.prize_id)
           : await prizeService.spinExternalPrize(spinSlug.value, route.query.prize_id)
 

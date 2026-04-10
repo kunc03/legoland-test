@@ -12,7 +12,7 @@
   </HeaderBar>
 
   <RedeemExternalSpin
-    v-if="legolandStore.isLegoland === true"
+    v-if="externalRedeemStore.isExternalRedeem === true"
     :prize-detail-data="prizeDetailData"
     :is-fetching="isFetching"
     :visible-redeem-fields="visibleRedeemFields"
@@ -500,7 +500,7 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
 import { store } from '~/stores/dashboard.js'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 import JapanPostalCode from 'japan-postal-code'
 import Dropdown from '~/components/Dropdown.vue'
@@ -532,7 +532,7 @@ const validateOnSubmit = ref(false)
 const isLoadingPostalCode = ref(false)
 const insufficientDialogVisible = ref(false)
 const settings = useState('settings')
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 const prizeDetailData = ref({})
 
 const handleToggleModal = () => {
@@ -731,20 +731,20 @@ const validateForm = () => {
 }
 
 const fetchingPrizeData = async () => {
-  if (!legolandStore.isLegoland && !id) {
+  if (!externalRedeemStore.isExternalRedeem && !id) {
     return navigateTo('/dashboard')
   }
 
   try {
     const { getExternalPrizeDetail, getPrizeDetail } = usePrizeService()
-    const response = legolandStore.isLegoland 
+    const response = externalRedeemStore.isExternalRedeem 
       ? await getExternalPrizeDetail(id) 
       : await getPrizeDetail(id)
     const { data } = response
     sessionStorage.setItem('type', data.type)
     type.value = data.type
 
-    const dataRedeem = legolandStore.isLegoland ? data.external_prize : data
+    const dataRedeem = externalRedeemStore.isExternalRedeem ? data.external_prize : data
 
     prizeDetailData.value = dataRedeem
 
@@ -762,7 +762,7 @@ const fetchingPrizeData = async () => {
 const checkPoint = (point) => {
   try {
     const currentPoint = parseInt(store.point)
-    if (!legolandStore.isLegoland) {
+    if (!externalRedeemStore.isExternalRedeem) {
       if (currentPoint < point) {
         disableRedeem.value = true
       }

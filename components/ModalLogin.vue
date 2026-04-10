@@ -46,7 +46,7 @@
                   : false
               "
               :autoUppercase="
-                legolandStore.isLegoland &&
+                externalRedeemStore.isExternalRedeem &&
                 item.text_type !== 'number' &&
                 item.text_type !== 'tel'
               "
@@ -200,10 +200,10 @@ import close from '~/assets/images/close.svg'
 import InputText from '~/components/InputText.vue'
 import InputDate from '~/components/InputDate.vue'
 import useRegister from '~/composables/useRegister'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const register = useRegister()
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 const { isSpin } = storeToRefs(register)
 const settings = useState('settings')
 const loginType =
@@ -275,7 +275,7 @@ const updateModel = (field, type, value, textType) => {
   const isNumeric = textType === 'number' || textType === 'tel'
 
   if (
-    legolandStore.isLegoland &&
+    externalRedeemStore.isExternalRedeem &&
     typeof value === 'string' &&
     type !== 'date' &&
     !isNumeric
