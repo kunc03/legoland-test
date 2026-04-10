@@ -133,7 +133,7 @@
     </div>
   </div>
 
-  <div class="absolute bottom-[15%] right-0 flex flex-col items-end">
+  <div v-if="!externalRedeemStore.isExternalRedeem" class="absolute bottom-[15%] right-0 flex flex-col items-end">
     <div class="menu-item" @click="handleScrollUp">
       <div class="flex items-center gap-2 btn-click">
         <img
