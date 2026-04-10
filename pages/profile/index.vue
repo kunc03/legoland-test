@@ -419,7 +419,7 @@
         </div>
 
         <div class="inline-flex items-center justify-center w-full gap-2 mt-7">
-          <Checkbox v-model="form.checked" :binary="true" />
+          <Checkbox v-model="form.checked" :binary="true" :disabled="externalRedeemStore.isExternalRedeem" />
           <p class="font-bold text-exd-gray-scorpion text-exd-1424">
             {{ $t('acceptTerm') }}
           </p>
@@ -517,12 +517,14 @@ import InputText from '~/components/InputText.vue'
 import InputDate from '~/components/InputDate.vue'
 import RadioButton from '~/components/RadioButton.vue'
 import InputTextArea from '~/components/InputTextArea.vue'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 import InputMultipleSelect from '~/components/InputMultipleSelect.vue'
 import JapanPostalCode from 'japan-postal-code'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const authService = useAuthService()
+const externalRedeemStore = useExternalRedeemStore()
 
 const validateOnSubmit = ref(false)
 const config = useRuntimeConfig()
