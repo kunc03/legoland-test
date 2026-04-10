@@ -211,8 +211,11 @@ const continueToSpin = async () => {
 }
 
 const continueToMyPage = async () => {
-  modalSpinWarning.value = false
-  await navigateTo(`/redeem/${spinResultData.value?.external_prize?.id || prizeId.value}`)
+  const id = spinResultData.value?.user_point?.id
+  
+  const redirect = legolandStore.isLegoland ? '/redeem/' + id : '/dashboard'
+
+  await navigateTo(redirect)
 }
 
 const handleSpinWarningAction = async () => {
