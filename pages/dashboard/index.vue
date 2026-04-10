@@ -27,7 +27,7 @@
     </div>
 
     <div
-      v-if="legolandStore.isLegoland"
+      v-if="externalRedeemStore.isExternalRedeem"
       class="relative items-center justify-center gap-5 mb-5 w-full"
       :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
     >
@@ -96,7 +96,7 @@
       </div>
 
       <div
-        v-if="legolandStore.isLegoland"
+        v-if="externalRedeemStore.isExternalRedeem"
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :class="[
           dashboardBg, layoutClass
@@ -127,7 +127,7 @@
       </div>
 
       <div
-        v-if="legolandStore.isLegoland"
+        v-if="externalRedeemStore.isExternalRedeem"
         class="flex items-center justify-center w-full p-6 bg-white cursor-pointer rounded-xl h-exd-130"
         :class="[
           dashboardBg, layoutClass
@@ -159,7 +159,7 @@
     </div>
 
     <div
-      v-if="!legolandStore.isLegoland"
+      v-if="!externalRedeemStore.isExternalRedeem"
       class="relative items-center justify-center gap-5 mb-5 w-full"
       :class="isGrid ? 'grid grid-cols-2' : 'flex flex-col'"
     >
@@ -345,7 +345,7 @@ import step5 from '~/assets/images/step-5.png'
 import step6 from '~/assets/images/step-6.png'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 import close from '~/assets/images/close.svg'
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -357,7 +357,7 @@ import 'swiper/css/navigation'
 import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 
 const config = useRuntimeConfig()
@@ -430,13 +430,13 @@ const menuItemCount = computed(() => {
     settings.value?.flow?.screens?.user_dashboard_screen?.show_gacha_collections
   )
     count++
-  if (legolandStore.isLegoland) count += 2
+  if (externalRedeemStore.isExternalRedeem) count += 2
 
   return count
 })
 
 const isGrid = computed(() => {
-  return menuItemCount.value > 2 || legolandStore.isLegoland
+  return menuItemCount.value > 2 || externalRedeemStore.isExternalRedeem
 
 })
 

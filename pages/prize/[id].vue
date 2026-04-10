@@ -238,7 +238,7 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
 import { store } from '~/stores/dashboard.js'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 definePageMeta({
   middleware: 'auth',
@@ -270,7 +270,7 @@ const LOCALE = useCookie('LOCALE')
 const settings = useState('settings')
 
 const redeemType = ref('form')
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 const handleToggleModal = () => {
   if (disableRedeem.value) return
@@ -285,7 +285,7 @@ const handleClose = () => {
 const handleGoToRedeem = async () => {
   if (disableRedeem.value) return
 
-  if (legolandStore.isLegoland) {
+  if (externalRedeemStore.isExternalRedeem) {
     if (
       prizeDetailData.value.type === 'external_prize' &&
       externalGachaSlug.value
@@ -520,7 +520,7 @@ onMounted(async () => {
     disableRedeem.value = true
   }
 
-  if (legolandStore.isLegoland) {
+  if (externalRedeemStore.isExternalRedeem) {
     if (
       prizeDetailData.value.type === 'external_prize' &&
       externalGachaSlug.value

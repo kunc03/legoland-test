@@ -167,7 +167,7 @@
 
 <script setup>
 import { store } from '~/stores/dashboard.js'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 definePageMeta({
   middleware: 'auth',
@@ -188,7 +188,7 @@ const redeemPage = ref(1)
 const redeemPerPage = ref(10)
 const redeemLastPage = ref(1)
 const redeemTotal = ref(0)
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 const redeemFrom = computed(() => {
   if (!redeemTotal.value) return 0
@@ -220,7 +220,7 @@ const fetchingRedeemsData = async (page = redeemPage.value) => {
     const { getExternalUserPrizes, getPrizeRedeemedList } = usePrizeService()
     
     let response
-    if (legolandStore.isLegoland) {
+    if (externalRedeemStore.isExternalRedeem) {
       response = await getExternalUserPrizes({ page, per_page: redeemPerPage.value })
     } else {
       response = await getPrizeRedeemedList({ page, per_page: redeemPerPage.value })

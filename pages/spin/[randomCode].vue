@@ -330,7 +330,7 @@
   </Modal>
 
   <Dialog
-    v-if="legolandStore.isLegoland"
+    v-if="externalRedeemStore.isExternalRedeem"
     v-model:visible="modalSpinWarning"
     modal
     class="!w-11/12 !max-w-sm border border-exd-gray-44"
@@ -420,9 +420,9 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import close from '~/assets/images/close.svg'
-import { useLegolandStore } from '~/stores/legoland'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
-const legolandStore = useLegolandStore()
+const externalRedeemStore = useExternalRedeemStore()
 
 const gachaType = computed(() => {
   return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
