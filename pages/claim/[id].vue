@@ -223,6 +223,8 @@ const prizeTypeText = ref(null)
 const colorBg = ref('')
 const showPrizeValidationMessage = ref(false)
 
+const redeemDetailData = ref({})
+
 const step2Data = computed(
   () => settings.value?.prize?.step_2?.swipe_exchange?.data || {}
 )
@@ -276,9 +278,9 @@ const handleSwipe = async () => {
     if (legolandStore.isLegoland) {
       try {
         const body = {
-          external_gacha_slug: prizeDetailData.value?.external_gacha_slug,
-          prize_id: prizeDetailData.value?.prize_id,
-          external_prize_id: prizeDetailData.value?.external_prize_id,
+          external_gacha_slug: redeemDetailData.value?.external_gacha_slug,
+          prize_id: redeemDetailData.value?.prize_id,
+          external_prize_id: redeemDetailData.value?.external_prize_id,
         }
 
         const { redeemExternalPrize } = usePrizeService()
@@ -370,11 +372,18 @@ const fetchingPrizeData = async () => {
       : await getPrizeDetail(id)
     const data = response.data
 
-    prizeDetailData.value = data
+    redeemDetailData.value = data
+
+    const dataRedeem = legolandStore.isLegoland ? data.external_prize : data
+
+    prizeDetailData.value = dataRedeem
+    
     externalGachaSlug.value = data?.external_gacha_slug ?? null
 
+    const prizeName = legolandStore.isLegoland ? data.external_prize.name : data.name
+
     if (data) {
-      localStorage.setItem('prize_name', data.name)
+      localStorage.setItem('prize_name', prizeName)
     }
   } catch (error) {
     console.log(error)

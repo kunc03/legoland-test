@@ -212,7 +212,7 @@ const continueToSpin = async () => {
 
 const continueToMyPage = async () => {
   modalSpinWarning.value = false
-  await navigateTo(`/claim/${spinResultData.value?.external_prize?.id || prizeId.value}`)
+  await navigateTo(`/redeem/${spinResultData.value?.external_prize?.id || prizeId.value}`)
 }
 
 const handleSpinWarningAction = async () => {
