@@ -48,7 +48,7 @@
               :type="item.text_type"
               :model="form[item.name]"
               :placeholder="item.placeholder"
-              @update:model="updateModel(item.name, item.type, $event)"
+              @update:model="updateModel(item.name, item.type, $event, item.text_type)"
               @validate="validateInput(item.name, $event)"
               :error="
                 handleError(
@@ -195,8 +195,10 @@ import close from '~/assets/images/close.svg'
 import InputText from '~/components/InputText.vue'
 import InputDate from '~/components/InputDate.vue'
 import useRegister from '~/composables/useRegister'
+import { useLegolandStore } from '~/stores/legoland'
 
 const register = useRegister()
+const legolandStore = useLegolandStore()
 const { isSpin } = storeToRefs(register)
 const settings = useState('settings')
 const loginType =
@@ -264,8 +266,19 @@ const formatDate = (date) => {
   })
 }
 
-const updateModel = (field, type, value) => {
-  form.value[field] = value
+const updateModel = (field, type, value, textType) => {
+  const isNumeric = textType === 'number' || textType === 'tel'
+
+  if (
+    legolandStore.isLegoland &&
+    typeof value === 'string' &&
+    type !== 'date' &&
+    !isNumeric
+  ) {
+    form.value[field] = value.toUpperCase()
+  } else {
+    form.value[field] = value
+  }
 
   if (type === 'date') {
     form.value[field] = formatDate(value)
