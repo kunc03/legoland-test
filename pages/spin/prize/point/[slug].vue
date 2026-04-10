@@ -211,8 +211,12 @@ const continueToSpin = async () => {
 }
 
 const continueToMyPage = async () => {
+  const id = spinResultData.value?.user_point?.id
+  const redirect = legolandStore.isLegoland ? '/redeem/' + id : '/dashboard'
+
   modalSpinWarning.value = false
-  await navigateTo('/dashboard')
+
+  await navigateTo(redirect)
 }
 
 const handleSpinWarningAction = async () => {
