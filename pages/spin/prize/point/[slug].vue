@@ -255,9 +255,37 @@ const fetchImageFromApi = async () => {
     const slug = (isExternal ? spinSlug.value : parsedData?.slug)?.toUpperCase?.()
     if (!slug) return
     const slugStorageName = `${slug}_GACHA`
+    const spinKey = `SPIN_RESULT_${slug}_${prizeId.value || 'default'}`
 
     if (TOKEN.value && USER.value) {
       if (isExternal) {
+        // Check for cached result to prevent multiple point deductions
+        const cachedResult = sessionStorage.getItem(spinKey)
+        if (cachedResult) {
+          try {
+            const storage = JSON.parse(cachedResult)
+            pointImageUrl.value = storage.point_image
+            categoryImageUrl.value = storage.popup_image || ''
+            pointName.value = storage.point_name || ''
+            hideCharacter.value = storage.hide_character
+            hideStoreDetail.value = storage.hide_store_details
+            isRedirect.value = storage.is_redirect
+            popupLink.value = storage.redirect_link
+            popupDescription.value = storage.popup_description
+            popupImage.value = storage.popup_image
+            pointCategoryIsFail.value = storage.point_category_is_fail
+
+            if (storage.point_category_is_fail) {
+              popupButton.value = t('playAgain')
+            } else {
+              popupButton.value = t('formHere')
+            }
+            return
+          } catch (e) {
+            console.error('Error parsing cached spin result:', e)
+          }
+        }
+
         const prizeService = usePrizeService()
         const { data: prizeData } = externalRedeemStore.isExternalRedeem
           ? await prizeService.spinExternalPrizeOnly(spinSlug.value, route.query.prize_id)
@@ -316,6 +344,7 @@ const fetchImageFromApi = async () => {
         }
 
         localStorage.setItem(slugStorageName, encryptData(storage))
+        sessionStorage.setItem(spinKey, JSON.stringify(storage))
 
         pointImageUrl.value = storage.point_image
         categoryImageUrl.value = storage.popup_image || ''
