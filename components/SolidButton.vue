@@ -94,7 +94,7 @@ const variantClass = computed(() => {
 
 const bottomClass = computed(() => {
   return props.hasBottom
-    ? 'inset-x-1/2 z-50 -translate-x-1/2 -translate-y-1/4 !absolute !bottom-1'
+    ? 'inset-x-1/2 z-50 -translate-x-1/2 !absolute !bottom-6'
     : ''
 })
 
