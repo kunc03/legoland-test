@@ -30,7 +30,7 @@
         class="grow w-full flex flex-col items-center justify-center relative mb-4 mt-[15%]"
       >
         <img
-          v-if="!externalRedeemStore.isExternalRedeem"
+          v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
           :src="settings?.global?.gacha_machine_image"
           alt="gacha2"
           class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
@@ -38,7 +38,7 @@
         />
 
         <div
-          v-else
+          v-else-if="!isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
           class="grid grid-cols-12 w-full grow pt-[20%]"
         >
           <div class="col-start-2 col-span-10 flex flex-col items-center justify-center gap-3 relative">
@@ -60,6 +60,14 @@
             />
           </div>
         </div>
+
+        <img
+          v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
+          :src="gachaTom"
+          alt="gacha2"
+          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
+          preload
+        />
       </div>
 
       <div
@@ -447,6 +455,7 @@ import moment from 'moment'
 import close from '~/assets/images/close.svg'
 import eventTitle from '~/assets/images/event-title.png'
 import instruction from '~/assets/images/instruction.png'
+import gachaTom from '~/public/images/gacha-tom.png'
 import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const externalRedeemStore = useExternalRedeemStore()
