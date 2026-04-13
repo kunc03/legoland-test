@@ -48,7 +48,8 @@
     <img
       :src="settings?.global?.gacha_machine_image"
       alt="gacha2"
-      class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none h-auto max-h-[96svh] object-contain"
+      class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
+      :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
       loading="eager"
       decoding="async"
       fetchpriority="high"
@@ -308,6 +309,8 @@ const { decryptData } = useEncryption()
 const { t } = useI18n()
 
 const handleCloseModalLogin = () => (modalLogin.value = false)
+
+const externalRedeemStore = useExternalRedeemStore()
 
 const handleButton = async () => {
   const afterGacha = gacha.value?.after_gacha_screen
