@@ -330,6 +330,14 @@
   <StepWalkthrough
     v-model="hasWalkthrough"
     :steps="walkthroughSteps"
+    :bgColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.background
+    "
+    :textColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.color
+    "
   />
 </template>
 
@@ -343,6 +351,7 @@ import step3 from '~/assets/images/step-3.png'
 import step4 from '~/assets/images/step-4.png'
 import step5 from '~/assets/images/step-5.png'
 import step6 from '~/assets/images/step-6.png'
+import city from '~/assets/images/city.png'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
 import { useExternalRedeemStore } from '~/stores/external-redeem'
@@ -412,10 +421,10 @@ const { t } = useI18n()
 const hasWalkthrough = ref(false)
 
 const walkthroughSteps = computed(() => [
-  { image: step1, text: t('step1'), category: t('category1') },
-  { image: step2, text: t('step2'), category: t('category1') },
+  { image: city, text: t('step1') },
+  { image: city, text: t('step2') },
   { image: step3, text: t('step3') },
-  { image: step4, text: t('step4'), category: t('category2') },
+  { image: step4, text: t('step4') },
   { image: step5, text: t('step5') },
   { image: step6, text: t('step6') },
 ])
@@ -651,17 +660,15 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+  hidePoint.value = !settings.value?.flow?.screens?.show_current_point
+  await nextTick()
+  checkSpinEligibility()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
-})
-
-onMounted(() => {
-  checkSpinEligibility()
-  hidePoint.value = !settings.value?.flow?.screens?.show_current_point
 })
 </script>
 
