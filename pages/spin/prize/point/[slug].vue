@@ -213,7 +213,8 @@ const continueToSpin = async () => {
 const continueToMyPage = async () => {
   const id = spinResultData.value?.user_point?.id
   
-  const redirect = externalRedeemStore.isExternalRedeem ? '/redeem/' + id : '/dashboard'
+  // const redirect = externalRedeemStore.isExternalRedeem ? '/redeem/' + id : '/dashboard'
+  const redirect = '/dashboard'
 
   await navigateTo(redirect)
 }

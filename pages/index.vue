@@ -85,6 +85,7 @@ import { useI18n } from 'vue-i18n'
 import WarningPopUp from '~/components/WarningPopUp.vue'
 import step1 from '~/assets/images/step-1.png'
 import step2 from '~/assets/images/step-2.png'
+import city from '~/assets/images/city.png'
 import step3 from '~/assets/images/step-3.png'
 import step4 from '~/assets/images/step-4.png'
 import step5 from '~/assets/images/step-5.png'
@@ -103,10 +104,10 @@ const { t } = useI18n()
 const authService = useAuthService()
 
 const walkthroughSteps = computed(() => [
-  { image: step1, text: t('step1'), category: t('category1') },
-  { image: step2, text: t('step2'), category: t('category1') },
+  { image: city, text: t('step1') },
+  { image: city, text: t('step2') },
   { image: step3, text: t('step3') },
-  { image: step4, text: t('step4'), category: t('category2') },
+  { image: step4, text: t('step4') },
   { image: step5, text: t('step5') },
   { image: step6, text: t('step6') },
 ])
