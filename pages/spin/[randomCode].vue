@@ -11,7 +11,7 @@
         settings?.flow?.screens?.show_before_gacha_screen ||
         isSplashComplete)
     "
-    class="flex flex-col h-[100dvh] overflow-hidden"
+    class="flex flex-col h-[100svh] overflow-hidden"
   >
     <HeaderBar withLogo />
 
@@ -70,7 +70,7 @@
         />
       </div>
 
-      <div class="flex flex-col items-center justify-center w-full pb-6 sm:pb-8 pb-[safe-area-inset-bottom] bg-transparent shrink-0">
+      <div class="flex flex-col items-center justify-center w-full pb-10 sm:pb-8 pb-[safe-area-inset-bottom] bg-transparent shrink-0 z-10 relative">
         <div
           v-if="
             gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
