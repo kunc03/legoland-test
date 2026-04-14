@@ -13,9 +13,10 @@
     <SparkleStart className="top-3 z-30" />
 
     <img
-      :src="settings?.global?.gacha_machine_image"
+      :src="externalRedeemStore.isExternalRedeem ? gachaTom : settings?.global?.gacha_machine_image"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none h-auto max-h-[96svh] object-contain"
+      :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
       loading="eager"
       decoding="async"
       fetchpriority="high"
@@ -255,9 +256,37 @@ const fetchImageFromApi = async () => {
     const slug = (isExternal ? spinSlug.value : parsedData?.slug)?.toUpperCase?.()
     if (!slug) return
     const slugStorageName = `${slug}_GACHA`
+    const spinKey = `SPIN_RESULT_${slug}_${prizeId.value || 'default'}`
 
     if (TOKEN.value && USER.value) {
       if (isExternal) {
+        // Check for cached result to prevent multiple point deductions
+        const cachedResult = sessionStorage.getItem(spinKey)
+        if (cachedResult) {
+          try {
+            const storage = JSON.parse(cachedResult)
+            pointImageUrl.value = storage.point_image
+            categoryImageUrl.value = storage.popup_image || ''
+            pointName.value = storage.point_name || ''
+            hideCharacter.value = storage.hide_character
+            hideStoreDetail.value = storage.hide_store_details
+            isRedirect.value = storage.is_redirect
+            popupLink.value = storage.redirect_link
+            popupDescription.value = storage.popup_description
+            popupImage.value = storage.popup_image
+            pointCategoryIsFail.value = storage.point_category_is_fail
+
+            if (storage.point_category_is_fail) {
+              popupButton.value = t('playAgain')
+            } else {
+              popupButton.value = t('formHere')
+            }
+            return
+          } catch (e) {
+            console.error('Error parsing cached spin result:', e)
+          }
+        }
+
         const prizeService = usePrizeService()
         const { data: prizeData } = externalRedeemStore.isExternalRedeem
           ? await prizeService.spinExternalPrizeOnly(spinSlug.value, route.query.prize_id)
@@ -316,6 +345,7 @@ const fetchImageFromApi = async () => {
         }
 
         localStorage.setItem(slugStorageName, encryptData(storage))
+        sessionStorage.setItem(spinKey, JSON.stringify(storage))
 
         pointImageUrl.value = storage.point_image
         categoryImageUrl.value = storage.popup_image || ''

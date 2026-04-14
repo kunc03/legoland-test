@@ -50,6 +50,7 @@ import { useI18n } from 'vue-i18n'
 const route = useRoute()
 const { t } = useI18n()
 const settings = useState('settings')
+const { decryptFromURL } = useEncryption()
 
 const insufficientDialogVisible = ref(false)
 const errorMessage = ref('')
@@ -83,6 +84,28 @@ onMounted(async () => {
   setTimeout(resetScroll, 100)
 
   if (!prizeId.value) {
+    errorMessage.value = t('otherGachaNotAccessible')
+    insufficientDialogVisible.value = true
+    return
+  }
+
+  const handshake = route.query.h;
+  if (!handshake) {
+    errorMessage.value = t('otherGachaNotAccessible')
+    insufficientDialogVisible.value = true
+    return
+  }
+
+  const decrypted = decryptFromURL(handshake)
+  const fiveMinutes = 5 * 60 * 1000
+  const now = Date.now()
+
+  if (
+    !decrypted ||
+    decrypted.prize_id !== prizeId.value ||
+    decrypted.slug !== externalGachaSlug.value ||
+    (now - decrypted.ts) > fiveMinutes
+  ) {
     errorMessage.value = t('otherGachaNotAccessible')
     insufficientDialogVisible.value = true
     return

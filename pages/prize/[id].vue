@@ -268,6 +268,7 @@ const config = useRuntimeConfig()
 const { t } = useI18n()
 const LOCALE = useCookie('LOCALE')
 const settings = useState('settings')
+const { encryptForURL } = useEncryption()
 
 const redeemType = ref('form')
 const externalRedeemStore = useExternalRedeemStore()
@@ -298,10 +299,17 @@ const handleGoToRedeem = async () => {
       // Wait for scroll settle before navigation
       await new Promise(resolve => requestAnimationFrame(resolve))
       
+      const handshake = encryptForURL({
+        prize_id: id,
+        slug: externalGachaSlug.value,
+        ts: Date.now(),
+      })
+
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
         query: {
           prize_id: id,
+          h: handshake,
         },
       })
       return;
@@ -370,10 +378,17 @@ const handleSwipe = async () => {
       // Wait for scroll settle before navigation
       await new Promise(resolve => requestAnimationFrame(resolve))
 
+      const handshake = encryptForURL({
+        prize_id: id,
+        slug: externalGachaSlug.value,
+        ts: Date.now(),
+      })
+
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
         query: {
           prize_id: id,
+          h: handshake,
         },
       })
     } else {
