@@ -33,7 +33,7 @@
           v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
           :src="settings?.global?.gacha_machine_image"
           alt="gacha2"
-          class="absolute left-1/2 top-[50%] sm:top-[53%] transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[65%] sm:max-h-[80%] object-contain"
+          class="absolute left-1/2 top-[50%] sm:top-[53%] transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[55%] sm:max-h-[80%] object-contain"
           preload
         />
 
@@ -45,18 +45,18 @@
             <img
               :src="eventTitle"
               alt="event-title"
-              class="w-full h-auto max-h-[15%] object-contain shrink"
+              class="w-full h-auto max-h-[12%] object-contain shrink"
             />
             <img
               :src="settings?.global?.gacha_machine_image"
               alt="gacha2"
-              class="w-full h-auto max-h-[50%] object-contain shrink"
+              class="w-full h-auto max-h-[40%] object-contain shrink"
               preload
             />
             <img
               :src="instruction"
               alt="instruction"
-              class="w-full h-auto max-h-[15%] object-contain shrink"
+              class="w-full h-auto max-h-[12%] object-contain shrink"
             />
           </div>
         </div>
@@ -65,7 +65,7 @@
           v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
           :src="gachaTom"
           alt="gacha2"
-          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[65%] sm:max-h-[80%] object-contain"
+          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[55%] sm:max-h-[80%] object-contain"
           preload
         />
       </div>
