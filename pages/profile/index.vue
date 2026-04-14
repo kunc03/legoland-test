@@ -986,14 +986,6 @@ const checkPostalCode = async (code) => {
   }
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
 watch(
   () => form,
   (newValue, oldValue) => {
@@ -1010,21 +1002,15 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+  getTerms()
+  await fetchGetUserData()
+  checkPostalCode(form.postCode)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
-})
-
-onMounted(() => {
-  getTerms()
-})
-
-onMounted(async () => {
-  await fetchGetUserData()
-  checkPostalCode(form.postCode)
 })
 </script>
 

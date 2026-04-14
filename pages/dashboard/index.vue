@@ -330,6 +330,14 @@
   <StepWalkthrough
     v-model="hasWalkthrough"
     :steps="walkthroughSteps"
+    :bgColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.background
+    "
+    :textColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.color
+    "
   />
 </template>
 
@@ -651,17 +659,15 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+  hidePoint.value = !settings.value?.flow?.screens?.show_current_point
+  await nextTick()
+  checkSpinEligibility()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
-})
-
-onMounted(() => {
-  checkSpinEligibility()
-  hidePoint.value = !settings.value?.flow?.screens?.show_current_point
 })
 </script>
 

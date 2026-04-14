@@ -8,6 +8,8 @@
     :button-text="$t('next')"
     :on-button-tap="handleNext"
     :on-close="handleClose"
+    :bgColor="bgColor"
+    :textColor="textColor"
   />
 </template>
 
@@ -21,6 +23,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
     // Each step: { image: String, text: String, category: String }
+  },
+  bgColor: {
+    type: String,
+    default: '#fff',
+  },
+  textColor: {
+    type: String,
+    default: '#fff',
   },
 })
 
@@ -36,13 +46,15 @@ const isOpen = computed({
 const currentStep = computed(() => props.steps[currentIndex.value] ?? {})
 
 const handleNext = () => {
-  if (currentIndex.value < props.steps.length - 1) {
-    currentIndex.value++
-    isOpen.value = true
-  } else {
-    isOpen.value = false
-    emits('done')
-  }
+  nextTick(() => { // Tambahkan ini
+    if (currentIndex.value < props.steps.length - 1) {
+      currentIndex.value++
+      isOpen.value = true
+    } else {
+      isOpen.value = false
+      emits('done')
+    }
+  })
 }
 
 const handleClose = () => {

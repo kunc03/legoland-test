@@ -37,6 +37,14 @@
   <StepWalkthrough
     v-model="hasWalkthrough"
     :steps="walkthroughSteps"
+    :bgColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.background
+    "
+    :textColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.color
+    "
     @done="onWalkthroughDone"
   />
 
@@ -179,15 +187,9 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
 onMounted(async () => {
+  window.addEventListener('keydown', handleKeydown)
+
   const { verified, token } = route.query
   const hash = window.location.hash
 
@@ -215,6 +217,10 @@ onMounted(async () => {
     console.error(err)
     navigateTo('/')
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 watchEffect(() => {
