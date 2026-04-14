@@ -121,7 +121,7 @@ const preCacheDuringLoading = async () => {
 
   const startedAt = Date.now()
   const minWaitMs = 2000
-  const cacheName = `gacharary-v2 - ${window.location.origin}`
+  const cacheName = `gacharary-v3 - ${window.location.origin}`
   const urlsToCache = buildUrlsToCache()
   const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
   const videoUrlsToCache = urlsToCache.filter((url) => isMp4Url(url))
@@ -206,11 +206,21 @@ onUnmounted(() => {
   <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
+      <video
+        v-if="isMp4Url(gacha.loading_screen.gif)"
+        :src="gacha.loading_screen.gif"
+        autoplay
+        muted
+        loop
+        playsinline
+        class="w-[100px] h-[100px] object-contain"
+      ></video>
       <img
+        v-else
         :src="gacha.loading_screen.gif || ''"
-        class="w-[100px] h-[100px]"
+        class="w-[100px] h-[100px] object-contain"
       />
-      <h3 class="ml-5 text-xl font-bold" :style="{ color: gacha.loading_screen.text_color }">LOADING...</h3>
+      <h3 class="mt-4 text-xl font-bold" :style="{ color: gacha.loading_screen.text_color }">LOADING...</h3>
       <!-- <img
         src="~/assets/images/loading.png"
         class="mt-6 ml-5 w-[126px] h-[24px]"

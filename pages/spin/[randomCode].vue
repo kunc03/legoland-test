@@ -16,7 +16,7 @@
     <HeaderBar withLogo />
 
     <div
-      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[102px]"
+      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[74px] sm:pt-[102px]"
       :style="{
         background:
           gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
@@ -27,13 +27,13 @@
       }"
     >
       <div
-        class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4"
+        class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4 overflow-hidden"
       >
         <img
           v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
           :src="settings?.global?.gacha_machine_image"
           alt="gacha2"
-          class="absolute left-1/2 top-[55%] sm:top-[53%] transform -translate-x-1/2 -translate-y-[45%] w-full h-auto max-h-[90%] object-contain"
+          class="absolute left-1/2 top-[50%] sm:top-[53%] transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[65%] sm:max-h-[80%] object-contain"
           preload
         />
 
@@ -65,12 +65,12 @@
           v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
           :src="gachaTom"
           alt="gacha2"
-          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
+          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[65%] sm:max-h-[80%] object-contain"
           preload
         />
       </div>
 
-      <div class="flex flex-col items-center justify-center w-full pb-6 bg-transparent">
+      <div class="flex flex-col items-center justify-center w-full pb-6 sm:pb-8 pb-[safe-area-inset-bottom] bg-transparent shrink-0">
         <div
           v-if="
             gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup

@@ -1,6 +1,6 @@
 <template>
   <header
-    class="h-[102px] flex justify-between items-center top-0 left-0 right-0 z-40 fixed w-full max-w-md mx-auto "
+    class="h-[74px] sm:h-[102px] flex justify-between items-center top-0 left-0 right-0 z-40 fixed w-full max-w-md mx-auto "
     :style="{ 'box-shadow': '0px 3px 3px 0px rgba(0, 0, 0, 0.1608)', 'background': settings.global?.global_header_footer_color }"
     @touchmove="(e) => e.preventDefault()"
   >
