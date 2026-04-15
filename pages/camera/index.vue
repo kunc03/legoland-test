@@ -414,12 +414,15 @@ const isValidLink = (url) => {
 const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
-  const secureTicket = encryptData({
-    verified: true,
-    timestamp: Date.now()
-  })
-  sessionStorage.setItem('GACHA_SCAN_TICKET_', secureTicket)
-  window.location.href = url
+  // 1. Ambil slug dari URL (tergantung struktur URL kamu)
+  // Contoh simpel: ambil kata terakhir setelah garis miring
+  const slug = url.split('/').pop() 
+
+  // 2. Set verifikasi berdasarkan slug tersebut
+  setScanVerified(slug) 
+
+  // 3. Pindah halaman
+  navigateTo(url)
 }
 
 watch(drawerVisible, (value) => {
