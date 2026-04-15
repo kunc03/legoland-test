@@ -16,7 +16,7 @@
     <HeaderBar withLogo />
 
     <div
-      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[10%] sm:pt-[13%]"
+      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[10%] sm:pt-[13%] pb-[20%] sm:pb-[8%]"
       :style="{
         background:
           gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
@@ -70,7 +70,7 @@
         />
       </div>
 
-      <div class="flex flex-col items-center justify-center w-full bg-transparent z-10 relative mb-[20%] sm:mb-[8%] shrink-0">
+      <div class="flex flex-col items-center justify-center w-full bg-transparent z-10 relative shrink-0">
         <div
           v-if="
             gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
