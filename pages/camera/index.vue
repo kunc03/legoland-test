@@ -164,7 +164,10 @@
     }"
   >
     <template #container>
-      <p>Loading...</p>
+      <div class="flex flex-col items-center justify-center gap-3 py-6">
+        <LoadingIcon />
+        <p class="text-exd-gray-scorpion font-semibold">{{ $t('pleaseWaitMoment') }}</p>
+      </div>
     </template>
   </Dialog>
 </template>
