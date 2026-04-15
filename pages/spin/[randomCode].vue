@@ -70,7 +70,7 @@
         />
       </div>
 
-      <div class="flex flex-col items-center justify-center w-full pb-10 sm:pb-8 pb-[safe-area-inset-bottom] bg-transparent shrink-0 z-10 relative">
+      <div class="flex flex-col items-center justify-center w-full pb-16 sm:pb-10 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-transparent shrink-0 z-10 relative">
         <div
           v-if="
             gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
