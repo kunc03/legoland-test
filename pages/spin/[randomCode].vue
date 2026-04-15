@@ -622,7 +622,9 @@ const nextToSpin = async () => {
 
   await checkSpinEligibility()
 
-  await triggerGachaSpin()
+  if (!isPrizeSpinRoute.value) {
+    await triggerGachaSpin()
+  }
 
   if (beforeSpinType.value) {
     const validPassword = useCookie('VALID_PASSWORD')

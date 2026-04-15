@@ -422,7 +422,7 @@ const handleRedirect = (url) => {
   setScanVerified(slug) 
 
   // 3. Pindah halaman
-  navigateTo(url)
+  window.location.href = url
 }
 
 watch(drawerVisible, (value) => {
