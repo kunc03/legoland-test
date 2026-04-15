@@ -280,6 +280,18 @@
         </SwiperSlide>
       </Swiper>
     </div>
+
+    <div
+      class="relative inline-flex flex-col w-full mx-auto mt-5"
+    >
+      <p 
+        class="text-center text-gray-500 text-sm cursor-pointer hover:text-gray-700 transition-colors"
+        @click="showVersionDialog"
+      >
+        v{{ packageJson.version || '1.0.0' }}
+      </p>
+      <VersionDetector ref="versionDetector" />
+    </div>
   </div>
 
   <Dialog
@@ -355,6 +367,7 @@ import city from '~/assets/images/city.png'
 import { useRouter } from 'vue-router'
 import { store } from '~/stores/dashboard.js'
 import { useExternalRedeemStore } from '~/stores/external-redeem'
+import packageJson from '~/package.json'
 
 import close from '~/assets/images/close.svg'
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -368,6 +381,15 @@ import { useI18n } from 'vue-i18n'
 const router = useRouter()
 const externalRedeemStore = useExternalRedeemStore()
 
+// Version detector reference
+const versionDetector = ref(null)
+
+// Show version dialog
+const showVersionDialog = () => {
+  if (versionDetector.value) {
+    versionDetector.value.handleTripleClick()
+  }
+}
 
 const config = useRuntimeConfig()
 
