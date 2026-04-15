@@ -622,6 +622,8 @@ const nextToSpin = async () => {
 
   await checkSpinEligibility()
 
+  await triggerGachaSpin()
+
   if (beforeSpinType.value) {
     const validPassword = useCookie('VALID_PASSWORD')
     validPassword.value = encryptData({ slug: spinSlug.value })
@@ -714,13 +716,19 @@ const triggerGachaSpin = async () => {
   try {
     const slug = String(spinSlug.value).toUpperCase()
     const storedData = useCookie('VALID_PASSWORD')
-    const payload = storedData.value ? (decryptData(storedData.value) || {}) : { slug: slug.toLowerCase(), password: '' }
+    const payload = storedData.value 
+      ? (decryptData(storedData.value) || {}) 
+      : { slug: slug.toLowerCase(), password: '' }
 
     await performSpin(slug, payload)
+    
+    return true
   } catch (error) {
     errorMessages.value = error.data?.message || error._data?.message || t('no_available_data')
     modalSpinWarning.value = true
     console.error('[ERROR] triggerGachaSpin failed:', error)
+    
+    return false 
   }
 }
 
@@ -978,7 +986,6 @@ onMounted(() => {
 
   if (!isPrizeSpinRoute.value) {
     getPassword(location)
-    triggerGachaSpin()
   }
 
   if (import.meta.client) {
