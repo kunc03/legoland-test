@@ -58,6 +58,51 @@
       </div>
     </div>
   </div>
+
+  <Dialog
+    v-model:visible="isNotAllowed"
+    modal
+    class="!w-11/12 !max-w-sm border border-exd-gray-44"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
+  >
+    <template #container>
+      <img
+        :src="close"
+        alt="close"
+        width="30"
+        height="30"
+        preload
+        class="absolute z-50 cursor-pointer right-1 top-1"
+        @click="handleClose"
+      />
+      <div
+        class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
+      >
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
+        <div class="w-10/12 text-center">
+          <p
+            class="font-bold text-exd-1424"
+            :style="{
+              color: settings?.global?.modal?.text_color,
+            }"
+          >
+            {{ errorMessages }}
+          </p>
+        </div>
+        <SolidButton
+          v-if="redirectLink"
+          :label="$t('gacha')"
+          variant="red-coral"
+          :on-click="() => goToSpin(redirectLink)"
+        />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -67,11 +112,15 @@ import collection from '~/assets/images/collection.png'
 import iconPerson from '~/assets/images/icon-person.png'
 import { store } from '~/stores/dashboard.js'
 import { useRouter } from 'vue-router'
+import close from '~/assets/images/close.svg'
 
 const router = useRouter()
 const settings = useState('settings')
 
 const dynamicItems = ref([])
+const isNotAllowed = ref(false)
+const errorMessages = ref('')
+const redirectLink = ref('')
 
 const handleItems = () => {
   const footers = settings.value?.user_dashboard?.footers
@@ -79,27 +128,14 @@ const handleItems = () => {
 
   const items = footers.menus || []
 
-  dynamicItems.value = items.map((item) => {
-    const isExternal = item.link_type === 'external'
+  dynamicItems.value = items.map((item, index) => {
     const label = item.footer_title_name?.value || ''
-    const key = item.footer_title_name?.key
 
-    const onClick = () => {
-      if (isExternal) {
-        window.open(item.external_url, '_blank')
-        return
-      }
-
-      const normalizedKey = key.toLowerCase()
-
-      if (normalizedKey.includes('character', 'point') || normalizedKey.includes('collection')) {
-        router.push('/history')
-      } else if (normalizedKey.includes('prize')) {
-        router.push('/prize')
-      } else if (normalizedKey.includes('page')) {
-        router.push('/dashboard')
-      }
-    }
+    const onClick = index === 0
+      ? () => router.push('/prize')
+      : index === 1
+        ? handleGoToRedeem
+        : () => {}
 
     return {
       icon: item.icon_image || iconStar,
@@ -107,6 +143,38 @@ const handleItems = () => {
       onClick,
     }
   })
+}
+
+const handleClose = () => {
+  isNotAllowed.value = false
+  sessionStorage.removeItem('IS_ALREADY_SPIN')
+  sessionStorage.removeItem('SPIN_TYPE')
+  sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
+  sessionStorage.removeItem('IS_QUOTA_AVAILABLE')
+  sessionStorage.removeItem('LOCATION_SLUG')
+  sessionStorage.removeItem('PRIZE_NOT_FOUND')
+}
+
+const LOCALE = useCookie('LOCALE')
+
+const handleGoToRedeem = async () => {
+  try {
+    const { getNextRedeemId } = usePrizeService()
+    const response = await getNextRedeemId({ lang: LOCALE.value || 'en' })
+
+    if (response?.status && response?.data?.user_point_id) {
+      navigateTo(`/redeem/${response.data.user_point_id}`)
+    } else if (response?.message) {
+      errorMessages.value = response.message
+      isNotAllowed.value = true
+    }
+  } catch (error) {
+    const errMessage = error?._data?.message || error?.response?.data?.message || error?.message
+    if (errMessage) {
+      errorMessages.value = errMessage
+      isNotAllowed.value = true
+    }
+  }
 }
 
 onMounted(() => {
