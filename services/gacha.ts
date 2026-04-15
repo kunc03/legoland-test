@@ -64,16 +64,21 @@ export const useGachaService = () => {
     const endpoint = 'gacha/spin'
     
     // 2. Prepare request options
+    // Ensure payload.slug always uses the current slug parameter (not stale cookie data)
+    const normalizedPayload = {
+      ...payload,
+      slug: slug.toLowerCase(),
+    }
     const fetchOptions: any = {}
     if (method === 'POST') {
       fetchOptions.body = {
-        ...payload,
+        ...normalizedPayload,
         scan_verified: isScanVerified(slug)
       }
     } else {
       fetchOptions.params = {
-        slug: payload.slug,
-        password: payload.password,
+        slug: normalizedPayload.slug,
+        password: normalizedPayload.password,
         scan_verified: isScanVerified(slug)
       }
     }
