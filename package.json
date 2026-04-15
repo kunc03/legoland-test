@@ -1,6 +1,7 @@
 {
   "name": "legoland",
   "version": "1.0.1",
+  "updated": "15-04-2026",
   "private": true,
   "type": "module",
   "scripts": {

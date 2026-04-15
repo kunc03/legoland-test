@@ -10,30 +10,32 @@
         <div class="version-content">
           <div class="version-item">
             <strong>Application:</strong>
-            <span>{{ appName }}</span>
+            <span>{{ packageJson.name }}</span>
           </div>
           <div class="version-item">
             <strong>Version:</strong>
-            <span>{{ version }}</span>
+            <span>{{ packageJson.version }}</span>
           </div>
           <div class="version-item">
             <strong>Build Date:</strong>
-            <span>{{ buildDate }}</span>
+            <span>{{ packageJson.updated }}</span>
           </div>
-          <div class="version-item">
+          <!-- <div class="version-item">
             <strong>Environment:</strong>
             <span>{{ environment }}</span>
-          </div>
+          </div> -->
         </div>
-        <div class="version-modal-footer">
+        <!-- <div class="version-modal-footer">
           <button @click="closeVersionDialog" class="close-button">Close</button>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import packageJson from '~/package.json'
+
 const showVersionDialog = ref(false)
 const clickCount = ref(0)
 const clickTimer = ref(null)
@@ -50,10 +52,9 @@ onMounted(async () => {
     const { $fetch } = useNuxtApp()
     const versionData = await $fetch('/api/version.json')
     
-    version.value = versionData.version || '1.0.0'
-    appName.value = versionData.appName || 'Gacharary App'
+    version.value = packageJson.version || '1.0.0'
+    appName.value = packageJson.name || 'Gacharary App'
     buildDate.value = versionData.buildDate || new Date().toISOString().split('T')[0]
-    environment.value = versionData.environment || 'development'
   } catch (error) {
     console.warn('Could not load version from /api/version.json:', error)
     // Fallback to hardcoded values
