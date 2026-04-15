@@ -16,7 +16,7 @@
     <HeaderBar withLogo />
 
     <div
-      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[10%] sm:pt-[15%] pb-[15%] sm:pb-[7%]"
+      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[10%] sm:pt-[13%] pb-[15%] sm:pb-[6%]"
       :style="{
         background:
           gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
