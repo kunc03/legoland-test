@@ -88,6 +88,11 @@
         <p class="camera-loading-text">Memuat kamera...</p>
       </div>
 
+      <div v-if="isLoading" class="camera-loading">
+        <LoadingIcon />
+        <p class="camera-loading-text">Loading...</p>
+      </div>
+
       <!-- Viewfinder Overlay -->
       <div class="viewfinder-overlay" v-if="!paused">
         <div class="viewfinder-frame">
@@ -154,22 +159,6 @@
       </div>
     </Drawer>
   </div>
-
-  <Dialog
-    v-model:visible="isLoading"
-    modal
-    class="!w-11/12 !max-w-sm border border-exd-gray-44"
-    :style="{
-      background: settings?.global?.modal?.background_color,
-    }"
-  >
-    <template #container>
-      <div class="flex flex-col items-center justify-center gap-3 py-6">
-        <LoadingIcon />
-        <p class="text-exd-gray-scorpion font-semibold">{{ $t('pleaseWaitMoment') }}</p>
-      </div>
-    </template>
-  </Dialog>
 </template>
 
 <script setup>
@@ -177,9 +166,8 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
-const { setScanVerified } = useGachaVerification()
+const { setScanVerified, clearScanVerified } = useGachaVerification()
 const config = useRuntimeConfig()
-const settings = useState('settings')
 
 const refQrcodeStream = ref(null)
 const paused = ref(false)
@@ -197,6 +185,8 @@ const selectedDeviceId = ref(null)
 const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
+
+const settings = useState('settings')
 const isLoading = ref(false)
 
 const getQrcodeVideoTrack = () => {
@@ -433,15 +423,15 @@ const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
   isLoading.value = true
-  // 1. Ambil slug dari URL (tergantung struktur URL kamu)
-  // Contoh simpel: ambil kata terakhir setelah garis miring
+  clearScanVerified()
+  sessionStorage.removeItem('IS_ALREADY_SPIN')
+  sessionStorage.removeItem('SPIN_TYPE')
+  sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
   const slug = url.split('/').pop() 
-
-  // 2. Set verifikasi berdasarkan slug tersebut
   setScanVerified(slug) 
 
-  // 3. Pindah halaman
   setTimeout(() => {
+    isLoading.value = false
     window.location.href = url
     isLoading.value = false
   }, 1000)
@@ -741,4 +731,4 @@ watch(drawerVisible, (value) => {
   opacity: 0;
   transform: translateY(8px);
 }
-</style>
+</style>  
