@@ -154,6 +154,19 @@
       </div>
     </Drawer>
   </div>
+
+  <Dialog
+    v-model:visible="isLoading"
+    modal
+    class="!w-11/12 !max-w-sm border border-exd-gray-44"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
+  >
+    <template #container>
+      <p>Loading...</p>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -163,6 +176,7 @@ import arrow from '~/assets/images/arrow.svg'
 
 const { setScanVerified } = useGachaVerification()
 const config = useRuntimeConfig()
+const settings = useState('settings')
 
 const refQrcodeStream = ref(null)
 const paused = ref(false)
@@ -180,6 +194,7 @@ const selectedDeviceId = ref(null)
 const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
+const isLoading = ref(false)
 
 const getQrcodeVideoTrack = () => {
   if (typeof window === 'undefined') return null
@@ -414,6 +429,7 @@ const isValidLink = (url) => {
 const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
+  isLoading.value = true
   // 1. Ambil slug dari URL (tergantung struktur URL kamu)
   // Contoh simpel: ambil kata terakhir setelah garis miring
   const slug = url.split('/').pop() 
@@ -422,7 +438,10 @@ const handleRedirect = (url) => {
   setScanVerified(slug) 
 
   // 3. Pindah halaman
-  window.location.href = url
+  setTimeout(() => {
+    window.location.href = url
+    isLoading.value = false
+  }, 1000)
 }
 
 watch(drawerVisible, (value) => {
