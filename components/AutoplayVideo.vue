@@ -10,6 +10,7 @@
       @ended="handleVideoEnded"
       @play="onVideoPlay"
       @loadeddata="onVideoLoaded"
+      @canplaythrough="onCanPlayThrough"
       @error="onVideoError"
     >
     </video>
@@ -69,7 +70,7 @@ const getCachedVideo = async () => {
   if (!('caches' in window)) return null
   
   try {
-    const cacheName = `gacharary-v2 - ${window.location.origin}`
+    const cacheName = `gacharary-v3 - ${window.location.origin}`
     const cache = await caches.open(cacheName)
     const cachedResponse = await cache.match(getVideoUrl())
     
@@ -116,14 +117,21 @@ const fetchVideoAsBlob = async () => {
   }
 }
 
-// Called when video data has loaded
+// Called when video data has loaded (first frame ready)
 const onVideoLoaded = () => {
   isVideoLoaded.value = true
-  if (props.triggerPlay) {
-     loadingStatus.value = 'Starting...'
-  } else {
+  // Don't hide loading yet - wait for canplaythrough for smooth playback
+  if (!props.triggerPlay) {
      loadingStatus.value = 'Ready'
      showLoading.value = false
+  }
+}
+
+// Called when video can play through without buffering
+const onCanPlayThrough = () => {
+  if (props.triggerPlay && isVideoLoaded.value) {
+    loadingStatus.value = 'Starting...'
+    // Video is fully buffered, safe to hide loading and play
   }
 }
 
@@ -138,6 +146,19 @@ const onVideoPlay = () => {
   hasPlayed.value = true
   showLoading.value = false
   startButtonDelay()
+}
+
+// Check if video has enough buffer to play smoothly
+const hasEnoughBuffer = () => {
+  if (!videoRef.value) return false
+  const video = videoRef.value
+  if (video.buffered.length === 0) return false
+  
+  const bufferedEnd = video.buffered.end(video.buffered.length - 1)
+  const duration = video.duration
+  
+  // Consider buffered if we have at least 1 second or 10% of video
+  return (bufferedEnd >= 1) || (duration > 0 && bufferedEnd >= duration * 0.1)
 }
 
 // Handle tap on the video area to play
@@ -199,10 +220,23 @@ const attemptPlay = async () => {
     if (!videoRef.value) return
 
     showLoading.value = true
+    loadingStatus.value = 'Buffering...'
+
+    const video = videoRef.value
+
+    // Wait for enough buffer before playing to avoid stuttering
+    let waitCount = 0
+    const maxWait = 50 // Max 5 seconds (50 * 100ms)
+    
+    while (!hasEnoughBuffer() && waitCount < maxWait) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      waitCount++
+    }
+
     loadingStatus.value = 'Starting...'
 
     try {
-        await videoRef.value.play()
+        await video.play()
         hasPlayed.value = true
         showLoading.value = false
     } catch (e) {

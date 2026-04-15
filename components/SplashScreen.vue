@@ -112,50 +112,24 @@ const buildUrlsToCache = () => {
   return unique([...base, ...fromGacha].filter(isCacheableUrl))
 }
 
-const preCacheDuringLoading = async () => {
-  if (!import.meta.client) return
-  if (!('caches' in window)) {
-    completeLoading()
-    return
-  }
-
-  const startedAt = Date.now()
-  const minWaitMs = 2000
+const cacheVideosInBackground = async (videoUrls) => {
+  if (!import.meta.client || !('caches' in window)) return
   const cacheName = `gacharary-v3 - ${window.location.origin}`
-  const urlsToCache = buildUrlsToCache()
-  const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
-  const videoUrlsToCache = urlsToCache.filter((url) => isMp4Url(url))
-
-  const maxWaitMs = 5000
-  maxWaitTimeout = setTimeout(() => {
-    completeLoading()
-  }, maxWaitMs)
 
   try {
     const cache = await caches.open(cacheName)
 
+    // Kirim ke service worker untuk cache
     if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage({
-        type: 'CACHE_IMAGES',
-        payload: imageUrlsToCache,
-      })
-      navigator.serviceWorker.controller.postMessage({
         type: 'CACHE_VIDEOS',
-        payload: videoUrlsToCache,
+        payload: videoUrls,
       })
     }
 
-    const tasks = [
-      ...imageUrlsToCache.map(async (url) => {
-        try {
-          const cached = await cache.match(url)
-          if (cached) return
-          const response = await fetch(url, { mode: 'no-cors' })
-          await cache.put(url, response.clone())
-        } catch {
-        }
-      }),
-      ...videoUrlsToCache.map(async (url) => {
+    // Cache di main thread juga (background, non-blocking)
+    await Promise.allSettled(
+      videoUrls.map(async (url) => {
         try {
           const cached = await cache.match(url)
           if (cached) return
@@ -165,25 +139,85 @@ const preCacheDuringLoading = async () => {
           } catch {
             response = await fetch(url, { mode: 'no-cors' })
           }
-          await cache.put(url, response.clone())
+          if (response.ok || response.type === 'opaque') {
+            await cache.put(url, response.clone())
+          }
         } catch {
+          // Silent fail - video akan di-fetch on-demand saat diputar
         }
-      }),
-    ]
+      })
+    )
+  } catch {
+    // Silent fail
+  }
+}
+
+const preCacheDuringLoading = async () => {
+  if (!import.meta.client) return
+  if (!('caches' in window)) {
+    completeLoading()
+    return
+  }
+
+  const startedAt = Date.now()
+  const minWaitMs = 800 // ⬇️ Turunkan dari 2000ms ke 800ms
+  const cacheName = `gacharary-v3 - ${window.location.origin}`
+  const urlsToCache = buildUrlsToCache()
+  const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
+  const videoUrlsToCache = urlsToCache.filter((url) => isMp4Url(url))
+
+  const maxWaitMs = 3000 // ⬇️ Turunkan dari 5000ms ke 3000ms
+  maxWaitTimeout = setTimeout(() => {
+    completeLoading()
+  }, maxWaitMs)
+
+  try {
+    const cache = await caches.open(cacheName)
+
+    // Hanya kirim gambar ke SW, video di-cache background nanti
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CACHE_IMAGES',
+        payload: imageUrlsToCache,
+      })
+    }
+
+    // Pre-cache gambar saja (cepat)
+    const imageTasks = imageUrlsToCache.map(async (url) => {
+      try {
+        const cached = await cache.match(url)
+        if (cached) return
+        const response = await fetch(url, { mode: 'no-cors' })
+        if (response.ok || response.type === 'opaque') {
+          await cache.put(url, response.clone())
+        }
+      } catch {
+        // Silent fail
+      }
+    })
 
     await Promise.race([
-      Promise.allSettled(tasks),
+      Promise.allSettled(imageTasks),
       new Promise((resolve) => setTimeout(resolve, maxWaitMs - 250)),
     ])
   } catch {
+    // Silent fail
   } finally {
     if (maxWaitTimeout) clearTimeout(maxWaitTimeout)
     const elapsed = Date.now() - startedAt
     const remaining = minWaitMs - elapsed
+
+    // Complete loading screen
     if (remaining > 0) {
       await new Promise((resolve) => setTimeout(resolve, remaining))
     }
     completeLoading()
+
+    // 🎬 Cache video di BACKGROUND setelah splash screen selesai
+    // Ini tidak block user experience
+    setTimeout(() => {
+      cacheVideosInBackground(videoUrlsToCache)
+    }, 100)
   }
 }
 
