@@ -599,6 +599,7 @@ definePageMeta({
 })
 
 const nextToSpin = async () => {
+  isLoading.value = true
   const beforeSpinType = useState('before_spin_type')
   const notRequiredRadius = useState('not_required_radius')
 
