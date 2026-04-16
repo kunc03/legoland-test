@@ -2,6 +2,16 @@
 
 import type { Plugin } from 'vite'
 import Aura from '@primevue/themes/aura'
+import { execSync } from 'child_process'
+
+// Put 7 first character of commit hash
+const getCommitHash = () => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch (e) {
+    return 'unknown'
+  }
+}
 
 const ensureSsrEntryHasSemicolon = (): Plugin => {
   return {
@@ -101,6 +111,10 @@ export default defineNuxtConfig({
       GOOGLE_SITE_VERIFICATION: process.env.GOOGLE_SITE_VERIFICATION,
       NODE_ENV: process.env.NODE_ENV,
       TIME_ZONE: process.env.TIME_ZONE,
+      V_APP_NAME: process.env.npm_package_name,
+      VERSION: process.env.npm_package_version,
+      BUILD_TIME: new Date().toISOString(),
+      COMMIT_HASH: getCommitHash(),
     },
   },
 
