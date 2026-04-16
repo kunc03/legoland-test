@@ -125,6 +125,7 @@
             : settings?.prize?.step_1?.button_text
         "
         :disabled="disableRedeem || isFetching"
+        :has-loading="disableRedeem"
         :on-click="handleSwipe"
         :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
         :textColor="settings?.prize?.step_1?.button_and_text_color?.color"
@@ -344,6 +345,7 @@ const fetchRedeem = async () => {
 
 const handleSwipe = async () => {
   isClicked.value = true
+  disableRedeem.value = true
   
   if (isClicked.value) {
     if (
