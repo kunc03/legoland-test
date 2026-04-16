@@ -123,27 +123,39 @@ const errorMessages = ref('')
 const redirectLink = ref('')
 
 const handleItems = () => {
-  const footers = settings.value?.user_dashboard?.footers
-  if (!footers) return
+  const footers = settings.value?.user_dashboard?.footers;
+  if (!footers) return;
 
-  const items = footers.menus || []
+  const items = footers.menus || [];
 
   dynamicItems.value = items.map((item, index) => {
-    const label = item.footer_title_name?.value || ''
+    const label = item.footer_title_name?.value || '';
+    const key = (item.footer_title_name?.key || '').toLowerCase();
+    console.log(key)
 
-    const onClick = index === 0
-      ? () => router.push('/prize')
-      : index === 1
-        ? handleGoToRedeem
-        : () => {}
+    // Mapping routing berdasarkan key agar lebih stabil
+    const getRouteHandler = () => {
+      if (index === 0) return () => router.push('/prize');
+      if (index === 1) return handleGoToRedeem;
+
+      // Logika berdasarkan key
+      if (['history', 'character'].includes(key)) {
+        return () => router.push('/history');
+      }
+      if (['page', 'my page', 'dashboard'].includes(key)) {
+        return () => router.push('/dashboard');
+      }
+      
+      return () => {};
+    };
 
     return {
       icon: item.icon_image || iconStar,
       label,
-      onClick,
-    }
-  })
-}
+      onClick: getRouteHandler(),
+    };
+  });
+};
 
 const handleClose = () => {
   isNotAllowed.value = false
