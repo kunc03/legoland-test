@@ -1,5 +1,6 @@
 <template>
   <ImageTextCard
+    v-if="isFetching || characterImage"
     :on-click="() => handleGoToDetailHistory()"
     :image-card="characterImage"
     :has-rounded="true"
@@ -77,7 +78,7 @@ const props = defineProps({
   }
 })
 
-const characterImage = props.data.image || noImage
+const characterImage = computed(() => props.data?.image)
 
 const router = useRouter()
 const raritySrc = ref('')
