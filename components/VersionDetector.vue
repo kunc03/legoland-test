@@ -49,7 +49,6 @@ const environment = ref(process.env.NODE_ENV || 'development')
 // Load version from /version.json endpoint
 onMounted(async () => {
   try {
-    const { $fetch } = useNuxtApp()
     const versionData = await $fetch('/api/version.json')
     
     version.value = packageJson.version || '1.0.0'
