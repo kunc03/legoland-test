@@ -233,8 +233,16 @@ const syncStreamSettings = async () => {
   await nextTick()
   const track = getQrcodeVideoTrack()
   const settings = track?.getSettings?.()
+  const capabilities = track?.getCapabilities?.()
 
-  streamFacingMode.value = settings?.facingMode ?? null
+  // Prefer facingMode from settings; fallback to label heuristics
+  let facing = settings?.facingMode ?? null
+  if (!facing && track?.label) {
+    const label = track.label
+    if (/front|user|selfie|facetime/i.test(label)) facing = 'user'
+    else if (/back|rear|environment/i.test(label)) facing = 'environment'
+  }
+  streamFacingMode.value = facing
 
   const deviceId = settings?.deviceId ?? null
   if (deviceId && cameraDevices.value.some((d) => d.deviceId === deviceId)) {
@@ -343,14 +351,27 @@ const selectedConstraints = computed(() => {
 
 const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
+
+// Detect if running on a desktop/laptop (no multi-touch = likely no back camera)
+const isDesktopDevice = typeof navigator !== 'undefined'
+  ? navigator.maxTouchPoints === 0
+  : false
+
 const shouldUnmirror = computed(() => {
+  // Explicit facing mode from stream (most reliable)
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
+
+  // Label-based detection
   const label =
     cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
       ?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
+
+  // On desktop/laptop: webcam is always front-facing → unmirror
+  if (isDesktopDevice) return true
+
   return isFrontCamera.value
 })
 
