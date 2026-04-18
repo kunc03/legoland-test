@@ -312,8 +312,6 @@ const { t } = useI18n()
 
 const handleCloseModalLogin = () => (modalLogin.value = false)
 
-const externalRedeemStore = useExternalRedeemStore()
-
 const handleButton = async () => {
   const afterGacha = gacha.value?.after_gacha_screen
 
