@@ -302,6 +302,8 @@ const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
 const hasClicked = ref(false)
 
+const externalRedeemStore = useExternalRedeemStore()
+
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
 const handleCloseDialog = () => (hasModal.value = false)

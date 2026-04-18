@@ -11,12 +11,12 @@
         settings?.flow?.screens?.show_before_gacha_screen ||
         isSplashComplete)
     "
-    class="flex flex-col grow"
+    class="flex flex-col h-[100dvh] overflow-hidden"
   >
     <HeaderBar withLogo />
 
     <div
-      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow"
+      class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[102px]"
       :style="{
         background:
           gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
@@ -27,36 +27,36 @@
       }"
     >
       <div
-        class="grow w-full flex flex-col items-center justify-center relative mb-4 mt-[15%]"
+        class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4"
       >
         <img
           v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
           :src="settings?.global?.gacha_machine_image"
           alt="gacha2"
-          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
+          class="absolute left-1/2 top-[55%] sm:top-[53%] transform -translate-x-1/2 -translate-y-[45%] w-full h-auto max-h-[90%] object-contain"
           preload
         />
 
         <div
           v-else-if="!isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
-          class="grid grid-cols-12 w-full grow pt-[20%]"
+          class="grid grid-cols-12 w-full h-full pb-4"
         >
-          <div class="col-start-2 col-span-10 flex flex-col items-center justify-center gap-3 relative">
+          <div class="col-start-2 col-span-10 flex flex-col items-center justify-center gap-3 relative min-h-0">
             <img
               :src="eventTitle"
               alt="event-title"
-              class="w-full h-auto max-h-[20%] object-contain"
+              class="w-full h-auto max-h-[15%] object-contain shrink"
             />
             <img
               :src="settings?.global?.gacha_machine_image"
               alt="gacha2"
-              class="w-full h-auto max-h-[75%] object-contain"
+              class="w-full h-auto max-h-[50%] object-contain shrink"
               preload
             />
             <img
               :src="instruction"
               alt="instruction"
-              class="w-full h-auto max-h-[20%] object-contain"
+              class="w-full h-auto max-h-[15%] object-contain shrink"
             />
           </div>
         </div>
@@ -70,41 +70,42 @@
         />
       </div>
 
-      <div
-        v-if="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-            ?.popup_needed == '1' ||
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-            ?.popup_needed === true
-        "
-        class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6 mb-8"
-      >
-        <p
-          class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
-          @click="handleAboutSpin"
-          :style="{ color: settings?.global?.text_colors?.tertiary }"
+      <div class="flex flex-col items-center justify-center w-full pb-6 bg-transparent">
+        <div
+          v-if="
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+              ?.popup_needed == '1' ||
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+              ?.popup_needed === true
+          "
+          class="flex flex-col items-center justify-center w-full gap-4 px-6 mb-4"
         >
-          {{
-            gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
-          }}
-        </p>
-      </div>
+          <p
+            class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
+            @click="handleAboutSpin"
+            :style="{ color: settings?.global?.text_colors?.tertiary }"
+          >
+            {{
+              gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
+            }}
+          </p>
+        </div>
 
-      <SolidButton
-        :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
-        :bgColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.background
-        "
-        :textColor="
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-            ?.button_and_text_color?.color
-        "
-        :disabled="isLoading"
-        :has-loading="isLoading"
-        :on-click="() => nextToSpin()"
-        has-bottom
-      />
+        <SolidButton
+          :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
+          :bgColor="
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+              ?.button_and_text_color?.background
+          "
+          :textColor="
+            gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+              ?.button_and_text_color?.color
+          "
+          :disabled="isLoading"
+          :has-loading="isLoading"
+          :on-click="() => nextToSpin()"
+        />
+      </div>
     </div>
   </div>
 
@@ -598,6 +599,7 @@ definePageMeta({
 })
 
 const nextToSpin = async () => {
+  isLoading.value = true
   const beforeSpinType = useState('before_spin_type')
   const notRequiredRadius = useState('not_required_radius')
 
@@ -620,6 +622,10 @@ const nextToSpin = async () => {
   }
 
   await checkSpinEligibility()
+
+  if (!isPrizeSpinRoute.value) {
+    await triggerGachaSpin()
+  }
 
   if (beforeSpinType.value) {
     const validPassword = useCookie('VALID_PASSWORD')
@@ -713,13 +719,19 @@ const triggerGachaSpin = async () => {
   try {
     const slug = String(spinSlug.value).toUpperCase()
     const storedData = useCookie('VALID_PASSWORD')
-    const payload = storedData.value ? (decryptData(storedData.value) || {}) : { slug: slug.toLowerCase(), password: '' }
+    const payload = storedData.value 
+      ? (decryptData(storedData.value) || {}) 
+      : { slug: slug.toLowerCase(), password: '' }
 
     await performSpin(slug, payload)
+    
+    return true
   } catch (error) {
     errorMessages.value = error.data?.message || error._data?.message || t('no_available_data')
     modalSpinWarning.value = true
     console.error('[ERROR] triggerGachaSpin failed:', error)
+    
+    return false 
   }
 }
 
@@ -977,7 +989,6 @@ onMounted(() => {
 
   if (!isPrizeSpinRoute.value) {
     getPassword(location)
-    triggerGachaSpin()
   }
 
   if (import.meta.client) {

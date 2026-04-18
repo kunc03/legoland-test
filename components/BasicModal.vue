@@ -50,8 +50,8 @@
         <SolidButton
           v-if="buttonText"
           :label="buttonText"
-          :bgColor="settings?.global?.button?.background_color"
-          :textColor="settings?.global?.button?.text_color"
+          :bgColor="bgColor"
+          :textColor="textColor"
           :onClick="handleButtonTap"
         />
       </div>
@@ -60,6 +60,7 @@
 </template>
 
 <script setup>
+import { nextTick } from 'vue'
 import close from '~/assets/images/close.svg'
 
 const settings = useState('settings')
@@ -93,6 +94,14 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  bgColor: {
+    type: String,
+    default: '#fff',
+  },
+  textColor: {
+    type: String,
+    default: '#fff',
+  },
 })
 
 const emits = defineEmits(['update:modelValue'])
@@ -106,10 +115,12 @@ const handleClose = () => {
 }
 
 const handleButtonTap = () => {
-  if (props.onButtonTap) {
-    props.onButtonTap()
-  } else {
-    emits('update:modelValue', false)
-  }
+  nextTick(() => {
+    if (props.onButtonTap) {
+      props.onButtonTap()
+    } else {
+      emits('update:modelValue', false)
+    }
+  })
 }
 </script>

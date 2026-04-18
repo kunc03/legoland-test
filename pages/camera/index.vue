@@ -83,7 +83,7 @@
         }"
       />
 
-      <div v-if="!cameraReady && !paused && !error" class="camera-loading">
+      <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
         <p class="camera-loading-text">Memuat kamera...</p>
       </div>
@@ -104,7 +104,7 @@
     <!-- Low-light Tip Banner -->
     <Transition name="fade">
       <div
-        v-if="showLowLightTip && torchSupported && !torchActive"
+        v-if="showLowLightTip && torchSupported && !torchActive && !isLoading"
         class="low-light-tip"
       >
         <span>💡 {{ $t('lowLightTip') }}</span>
@@ -126,15 +126,44 @@
       :header="$t('scanResults')"
       position="bottom"
       :modal="false"
+      :dismissable="!isLoading"
+      :closable="!isLoading"
       style="height: auto; max-height: 30vh"
       pt:root:class="camera-drawer bg-white text-exd-dark-grey"
+      :pt="{
+        closeButton: {
+          class: isLoading ? 'pointer-events-none opacity-90' : '',
+          disabled: isLoading
+        },
+        header: {
+          style: isLoading ? 'pointer-events: none;' : ''
+        },
+        root: {
+          style: isLoading ? 'pointer-events: none;' : ''
+        }
+      }"
     >
-      <div class="flex flex-col gap-3 overflow-hidden">
+      <div 
+        class="flex flex-col gap-3 overflow-hidden relative"
+        :class="{ 'pointer-events-none select-none': isLoading }"
+      >
+        
+        <div 
+          v-if="isLoading" 
+          class="absolute inset-0 z-[999] bg-white/60 cursor-wait"
+          @click.stop.prevent
+          @mousedown.stop.prevent
+          @touchstart.stop.prevent
+        ></div>
+
         <div
           v-for="(result, index) in scanResult"
           :key="index"
-          @click="handleRedirect(result)"
-          class="rounded-lg border bg-white p-3 inline-flex gap-2 border-b border-b-exd-light-grey w-100 relative cursor-pointer overflow-hidden pr-6"
+          @click="!isLoading && handleRedirect(result)"
+          class="rounded-lg border bg-white p-3 inline-flex gap-2 border-b border-b-exd-light-grey w-100 relative overflow-hidden pr-6"
+          :class="[
+            isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
+          ]"
         >
           <p class="text-exd-gray-scorpion font-semibold truncate">
             {{ result }}
@@ -146,13 +175,20 @@
               alt="arrow"
               width="10"
               height="10"
-              preload=""
               class="invert"
             />
           </div>
         </div>
       </div>
     </Drawer>
+
+    <div 
+        v-if="isLoading" 
+        class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
+      >
+        <LoadingIcon />
+        <p class="text-white font-semibold">Loading...</p>
+      </div>
   </div>
 </template>
 
@@ -161,7 +197,7 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
-const { setScanVerified } = useGachaVerification()
+const { setScanVerified, clearScanVerified } = useGachaVerification()
 const config = useRuntimeConfig()
 
 const refQrcodeStream = ref(null)
@@ -180,6 +216,9 @@ const selectedDeviceId = ref(null)
 const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
+
+const settings = useState('settings')
+const isLoading = ref(false)
 
 const getQrcodeVideoTrack = () => {
   if (typeof window === 'undefined') return null
@@ -414,12 +453,18 @@ const isValidLink = (url) => {
 const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
-  const secureTicket = encryptData({
-    verified: true,
-    timestamp: Date.now()
-  })
-  sessionStorage.setItem('GACHA_SCAN_TICKET_', secureTicket)
+  isLoading.value = true
+  clearScanVerified()
+  sessionStorage.removeItem('IS_ALREADY_SPIN')
+  sessionStorage.removeItem('SPIN_TYPE')
+  sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
+  const slug = url.split('/').pop() 
+  setScanVerified(slug) 
+
   window.location.href = url
+  // setTimeout(() => {
+  //   window.location.href = url
+  // }, 1000)
 }
 
 watch(drawerVisible, (value) => {
@@ -716,4 +761,4 @@ watch(drawerVisible, (value) => {
   opacity: 0;
   transform: translateY(8px);
 }
-</style>
+</style>  
