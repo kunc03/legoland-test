@@ -65,23 +65,31 @@
 
     <!-- Camera Stream -->
     <div class="camera-stream-wrapper">
-      <QrcodeStream
-        ref="refQrcodeStream"
-        :constraints="selectedConstraints"
-        :track="trackFunctionSelected.value"
-        :formats="selectedBarcodeFormats"
-        :paused="paused"
-        :torch="torchActive"
-        @detect="onDetect"
-        @error="onError"
-        @camera-on="onCameraReady"
-        @camera-off="onCameraOff"
-        :style="{
-          transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          transformOrigin: 'center center',
-        }"
-      />
+      <ClientOnly>
+        <QrcodeStream
+          ref="refQrcodeStream"
+          :constraints="selectedConstraints"
+          :track="trackFunctionSelected.value"
+          :formats="selectedBarcodeFormats"
+          :paused="paused"
+          :torch="torchActive"
+          @detect="onDetect"
+          @error="onError"
+          @camera-on="onCameraReady"
+          @camera-off="onCameraOff"
+          :style="{
+            transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
+            WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
+            transformOrigin: 'center center',
+          }"
+        />
+        <template #fallback>
+          <div class="camera-loading z-6">
+            <LoadingIcon />
+            <p class="camera-loading-text">Memuat kamera...</p>
+          </div>
+        </template>
+      </ClientOnly>
 
       <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
@@ -297,6 +305,7 @@ const error = ref('')
 
 definePageMeta({
   middleware: 'auth',
+  ssr: false,
 })
 
 const paintOutline = (detectedCodes, ctx) => {
