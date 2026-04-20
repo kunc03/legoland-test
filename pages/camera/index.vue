@@ -85,9 +85,11 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-            WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
+            transform: `scale(${zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
+            transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'transform'
           }"
         />
         <template #fallback>
@@ -261,6 +263,7 @@ const zoomMin = ref(1)
 const zoomMax = ref(1)
 const zoomStep = ref(0.1)
 const zoomSupported = ref(false)
+const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 
@@ -286,8 +289,16 @@ const onCameraClick = async (e) => {
 
     // Calculate normalized point based on client click vs element dimensions rect
     const rect = e.currentTarget.getBoundingClientRect()
-    const normX = (e.clientX - rect.left) / rect.width
-    const normY = (e.clientY - rect.top) / rect.height
+    let normX = (e.clientX - rect.left) / rect.width
+    let normY = (e.clientY - rect.top) / rect.height
+
+    // Coordinate Mapping for Digital Zoom
+    // If zoomed in, the visible area is only a central crop. 
+    // Mapping: P_frame = (0.5 - 0.5/Z) + P_screen/Z
+    if (!hasNativeZoom.value && zoom.value > 1) {
+      normX = (0.5 - 0.5 / zoom.value) + (normX / zoom.value)
+      normY = (0.5 - 0.5 / zoom.value) + (normY / zoom.value)
+    }
 
     if (caps.focusMode.includes('single-shot')) {
       try {
@@ -328,13 +339,19 @@ const syncStreamSettings = async () => {
 
   // Zoom Handling
   if (capabilities?.zoom) {
+    hasNativeZoom.value = true
     zoomSupported.value = true
     zoomMin.value = capabilities.zoom.min || 1
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = settings?.zoom || capabilities.zoom.min || 1
   } else {
-    zoomSupported.value = false
+    hasNativeZoom.value = false
+    // Fallback for Safari/iOS: Enable digital zoom
+    zoomSupported.value = true
+    zoomMin.value = 1
+    zoomMax.value = 5 // Reasonable limit for digital zoom
+    zoomStep.value = 0.1
   }
 
   // Prefer facingMode from settings; fallback to label heuristics
@@ -354,13 +371,13 @@ const syncStreamSettings = async () => {
 
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
-  if (!track || !zoomSupported.value) return
+  if (!track || !hasNativeZoom.value) return // Only apply constraints if native zoom exists
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
   } catch (err) {
-    console.error('Failed to apply zoom constraints:', err)
+    console.error('Failed to apply native zoom constraints:', err)
   }
 }
 
@@ -536,8 +553,8 @@ const paintOutline = (detectedCodes, ctx) => {
 // Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
   const base = {
-    width: { min: 1280, ideal: 1920 },
-    height: { min: 720, ideal: 1080 },
+    width: { min: 1280, ideal: 3840 },
+    height: { min: 720, ideal: 2160 },
     aspectRatio: { ideal: 16 / 9 },
     frameRate: { ideal: 30, max: 60 },
     resizeMode: 'none',
@@ -792,6 +809,7 @@ watch(drawerVisible, (value) => {
   height: 100%;
   position: relative;
   touch-action: none;
+  overflow: hidden;
 }
 
 /* Focus Ring */
