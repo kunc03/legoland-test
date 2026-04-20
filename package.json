@@ -1,5 +1,7 @@
 {
-  "name": "gacharary-app",
+  "name": "legoland",
+  "version": "1.0.4",
+  "updated": "15-04-2026",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +19,8 @@
     "@nuxtjs/tailwindcss": "^6.12.1",
     "@pinia/nuxt": "^0.5.1",
     "@primevue/themes": "4.0.1",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.7.2",
     "babel-eslint": "^10.1.0",
     "crypto-js": "^4.2.0",

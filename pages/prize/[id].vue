@@ -125,6 +125,7 @@
             : settings?.prize?.step_1?.button_text
         "
         :disabled="disableRedeem || isFetching"
+        :has-loading="disableRedeem"
         :on-click="handleSwipe"
         :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
         :textColor="settings?.prize?.step_1?.button_and_text_color?.color"
@@ -268,6 +269,7 @@ const config = useRuntimeConfig()
 const { t } = useI18n()
 const LOCALE = useCookie('LOCALE')
 const settings = useState('settings')
+const { encryptForURL } = useEncryption()
 
 const redeemType = ref('form')
 const externalRedeemStore = useExternalRedeemStore()
@@ -298,10 +300,17 @@ const handleGoToRedeem = async () => {
       // Wait for scroll settle before navigation
       await new Promise(resolve => requestAnimationFrame(resolve))
       
+      const handshake = encryptForURL({
+        prize_id: id,
+        slug: externalGachaSlug.value,
+        ts: Date.now(),
+      })
+
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
         query: {
           prize_id: id,
+          h: handshake,
         },
       })
       return;
@@ -344,6 +353,7 @@ const fetchRedeem = async () => {
 
 const handleSwipe = async () => {
   isClicked.value = true
+  disableRedeem.value = true
   
   if (isClicked.value) {
     if (
@@ -370,10 +380,17 @@ const handleSwipe = async () => {
       // Wait for scroll settle before navigation
       await new Promise(resolve => requestAnimationFrame(resolve))
 
+      const handshake = encryptForURL({
+        prize_id: id,
+        slug: externalGachaSlug.value,
+        ts: Date.now(),
+      })
+
       router.push({
         path: `/spin/prize/${externalGachaSlug.value}`,
         query: {
           prize_id: id,
+          h: handshake,
         },
       })
     } else {

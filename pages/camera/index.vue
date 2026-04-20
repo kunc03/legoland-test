@@ -64,26 +64,48 @@
     </div>
 
     <!-- Camera Stream -->
-    <div class="camera-stream-wrapper">
-      <QrcodeStream
-        ref="refQrcodeStream"
-        :constraints="selectedConstraints"
-        :track="trackFunctionSelected.value"
-        :formats="selectedBarcodeFormats"
-        :paused="paused"
-        :torch="torchActive"
-        @detect="onDetect"
-        @error="onError"
-        @camera-on="onCameraReady"
-        @camera-off="onCameraOff"
-        :style="{
-          transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          transformOrigin: 'center center',
-        }"
-      />
+    <div 
+      class="camera-stream-wrapper"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+      @touchcancel="onTouchEnd"
+      @click="onCameraClick"
+    >
+      <ClientOnly>
+        <QrcodeStream
+          ref="refQrcodeStream"
+          :constraints="selectedConstraints"
+          :track="trackFunctionSelected.value"
+          :formats="selectedBarcodeFormats"
+          :paused="paused"
+          :torch="torchActive"
+          @detect="onDetect"
+          @error="onError"
+          @camera-on="onCameraReady"
+          @camera-off="onCameraOff"
+          :style="{
+            transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
+            WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
+            transformOrigin: 'center center',
+          }"
+        />
+        <template #fallback>
+          <div class="camera-loading z-6">
+            <LoadingIcon />
+            <p class="camera-loading-text">Memuat kamera...</p>
+          </div>
+        </template>
+      </ClientOnly>
 
-      <div v-if="!cameraReady && !paused && !error" class="camera-loading">
+      <!-- Focus Ring UI -->
+      <div 
+        v-if="focusPoint.visible" 
+        class="focus-ring"
+        :style="{ left: focusPoint.x + 'px', top: focusPoint.y + 'px' }"
+      ></div>
+
+      <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
         <p class="camera-loading-text">Memuat kamera...</p>
       </div>
@@ -101,10 +123,23 @@
       </div>
     </div>
 
+    <!-- Zoom Slider UI -->
+    <div v-if="zoomSupported && !paused && cameraReady" class="zoom-slider-container">
+      <input 
+        type="range" 
+        class="zoom-slider" 
+        :min="zoomMin" 
+        :max="zoomMax" 
+        :step="zoomStep" 
+        v-model.number="zoom" 
+      />
+      <div class="zoom-text">{{ Number(zoom).toFixed(1) }}x</div>
+    </div>
+
     <!-- Low-light Tip Banner -->
     <Transition name="fade">
       <div
-        v-if="showLowLightTip && torchSupported && !torchActive"
+        v-if="showLowLightTip && torchSupported && !torchActive && !isLoading"
         class="low-light-tip"
       >
         <span>💡 {{ $t('lowLightTip') }}</span>
@@ -126,17 +161,46 @@
       :header="$t('scanResults')"
       position="bottom"
       :modal="false"
+      :dismissable="!isLoading"
+      :closable="!isLoading"
       style="height: auto; max-height: 30vh"
       pt:root:class="camera-drawer bg-white text-exd-dark-grey"
+      :pt="{
+        closeButton: {
+          class: isLoading ? 'pointer-events-none opacity-90' : '',
+          disabled: isLoading
+        },
+        header: {
+          style: isLoading ? 'pointer-events: none;' : ''
+        },
+        root: {
+          style: isLoading ? 'pointer-events: none;' : ''
+        }
+      }"
     >
-      <div class="flex flex-col gap-3 overflow-hidden">
+      <div 
+        class="flex flex-col gap-3 overflow-hidden relative"
+        :class="{ 'pointer-events-none select-none': isLoading }"
+      >
+        
+        <div 
+          v-if="isLoading" 
+          class="absolute inset-0 z-[999] bg-white/60 cursor-wait"
+          @click.stop.prevent
+          @mousedown.stop.prevent
+          @touchstart.stop.prevent
+        ></div>
+
         <div
           v-for="(result, index) in scanResult"
           :key="index"
-          @click="handleRedirect(result)"
-          class="rounded-lg border bg-white p-3 inline-flex gap-2 border-b border-b-exd-light-grey w-100 relative cursor-pointer overflow-hidden pr-6"
+          @click="!isLoading && handleRedirect(result)"
+          class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
+          :class="[
+            isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
+          ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate">
+          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -146,13 +210,20 @@
               alt="arrow"
               width="10"
               height="10"
-              preload=""
               class="invert"
             />
           </div>
         </div>
       </div>
     </Drawer>
+
+    <div 
+        v-if="isLoading" 
+        class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
+      >
+        <LoadingIcon />
+        <p class="text-white font-semibold">Loading...</p>
+      </div>
   </div>
 </template>
 
@@ -161,7 +232,7 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
-const { setScanVerified } = useGachaVerification()
+const { setScanVerified, clearScanVerified } = useGachaVerification()
 const config = useRuntimeConfig()
 
 const refQrcodeStream = ref(null)
@@ -181,6 +252,65 @@ const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
 
+const settings = useState('settings')
+const isLoading = ref(false)
+
+// Zoom Management
+const zoom = ref(1)
+const zoomMin = ref(1)
+const zoomMax = ref(1)
+const zoomStep = ref(0.1)
+const zoomSupported = ref(false)
+const initialPinchDistance = ref(null)
+const initialZoomAtPinchStart = ref(1)
+
+// Click-to-focus
+const focusPoint = ref({ x: 0, y: 0, visible: false })
+let focusTimeout = null
+
+const onCameraClick = async (e) => {
+  // Show UI focus ring
+  focusPoint.value = { x: e.clientX, y: e.clientY, visible: true }
+  if (focusTimeout) clearTimeout(focusTimeout)
+  focusTimeout = setTimeout(() => {
+    focusPoint.value.visible = false
+  }, 1000)
+
+  // Apply native autofocus hunt
+  const track = getQrcodeVideoTrack()
+  if (!track) return
+
+  try {
+    const caps = track.getCapabilities ? track.getCapabilities() : {}
+    if (!caps.focusMode) return
+
+    // Calculate normalized point based on client click vs element dimensions rect
+    const rect = e.currentTarget.getBoundingClientRect()
+    const normX = (e.clientX - rect.left) / rect.width
+    const normY = (e.clientY - rect.top) / rect.height
+
+    if (caps.focusMode.includes('single-shot')) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x: normX, y: normY }] }]
+        })
+      } catch (e1) {
+        // Fallback without pointsOfInterest
+        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+      }
+
+      // Restore to continuous focus after hunting completes
+      setTimeout(async () => {
+        if (caps.focusMode.includes('continuous')) {
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+        }
+      }, 2000)
+    }
+  } catch (err) {
+    console.warn('Click-to-focus error:', err)
+  }
+}
+
 const getQrcodeVideoTrack = () => {
   if (typeof window === 'undefined') return null
   const rootEl = refQrcodeStream.value?.$el ?? refQrcodeStream.value
@@ -194,12 +324,77 @@ const syncStreamSettings = async () => {
   await nextTick()
   const track = getQrcodeVideoTrack()
   const settings = track?.getSettings?.()
+  const capabilities = track?.getCapabilities?.()
 
-  streamFacingMode.value = settings?.facingMode ?? null
+  // Zoom Handling
+  if (capabilities?.zoom) {
+    zoomSupported.value = true
+    zoomMin.value = capabilities.zoom.min || 1
+    zoomMax.value = capabilities.zoom.max || 10
+    zoomStep.value = capabilities.zoom.step || 0.1
+    zoom.value = settings?.zoom || capabilities.zoom.min || 1
+  } else {
+    zoomSupported.value = false
+  }
+
+  // Prefer facingMode from settings; fallback to label heuristics
+  let facing = settings?.facingMode ?? null
+  if (!facing && track?.label) {
+    const label = track.label
+    if (/front|user|selfie|facetime/i.test(label)) facing = 'user'
+    else if (/back|rear|environment/i.test(label)) facing = 'environment'
+  }
+  streamFacingMode.value = facing
 
   const deviceId = settings?.deviceId ?? null
   if (deviceId && cameraDevices.value.some((d) => d.deviceId === deviceId)) {
     selectedDeviceId.value = deviceId
+  }
+}
+
+const applyZoom = async (newZoom) => {
+  const track = getQrcodeVideoTrack()
+  if (!track || !zoomSupported.value) return
+  try {
+    await track.applyConstraints({
+      advanced: [{ zoom: newZoom }]
+    })
+  } catch (err) {
+    console.error('Failed to apply zoom constraints:', err)
+  }
+}
+
+watch(zoom, (newVal) => {
+  if (zoomSupported.value) {
+    applyZoom(newVal)
+  }
+})
+
+const onTouchStart = (e) => {
+  if (e.touches.length === 2 && zoomSupported.value) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    initialZoomAtPinchStart.value = zoom.value
+  }
+}
+
+const onTouchMove = (e) => {
+  if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    const ratio = distance / initialPinchDistance.value
+    
+    let newZoom = initialZoomAtPinchStart.value * ratio
+    newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
+    zoom.value = Number(newZoom.toFixed(1))
+  }
+}
+
+const onTouchEnd = (e) => {
+  if (e.touches.length < 2) {
+    initialPinchDistance.value = null
   }
 }
 
@@ -250,13 +445,15 @@ const error = ref('')
 
 definePageMeta({
   middleware: 'auth',
+  ssr: false,
 })
 
 const paintOutline = (detectedCodes, ctx) => {
   for (const detectedCode of detectedCodes) {
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
+    const rawValue = detectedCode.rawValue
 
-    ctx.strokeStyle = '#D7A237'
+    ctx.strokeStyle = '#fbbf24'
     ctx.lineWidth = 3
 
     ctx.beginPath()
@@ -267,14 +464,80 @@ const paintOutline = (detectedCodes, ctx) => {
     ctx.lineTo(firstPoint.x, firstPoint.y)
     ctx.closePath()
     ctx.stroke()
+
+    // Draw text url exactly below the detected barcode
+    if (rawValue) {
+      const minX = Math.min(firstPoint.x, ...otherPoints.map(p => p.x))
+      const maxX = Math.max(firstPoint.x, ...otherPoints.map(p => p.x))
+      const minY = Math.min(firstPoint.y, ...otherPoints.map(p => p.y))
+      const maxY = Math.max(firstPoint.y, ...otherPoints.map(p => p.y))
+      
+      const centerX = minX + (maxX - minX) / 2
+      const centerY = minY + (maxY - minY) / 2
+
+      ctx.save()
+      // Translate to the center of the text so we can flip it horizontally
+      ctx.translate(centerX, centerY)
+      // Un-mirror text if the stream is currently mirrored
+      if (shouldUnmirror.value) {
+        ctx.scale(-1, 1)
+      }
+
+      ctx.font = '600 16px "Inter", "Segoe UI", sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      
+      const barcodeWidth = maxX - minX
+      const paddingX = 10
+      const paddingY = 15
+      
+      // Limit the width and ensure it doesn't span beyond the barcode box
+      const maxWidth = Math.max(barcodeWidth - (paddingX * 2) - 8, 30)
+      
+      let displayText = rawValue
+      if (ctx.measureText(displayText).width > maxWidth) {
+        let ellipsis = '...'
+        // Find maximum characters that fit along with ellipsis
+        while (displayText.length > 0 && ctx.measureText(displayText + ellipsis).width > maxWidth) {
+          displayText = displayText.slice(0, -1)
+        }
+        if (displayText.length > 0) displayText += ellipsis
+      }
+
+      const textWidth = ctx.measureText(displayText).width
+      
+      const rectHeight = 16 + paddingY * 2
+      const rectRadius = rectHeight / 2
+      
+      // Draw modern background capsule in pure white
+      ctx.fillStyle = '#ffffff'
+      if (ctx.roundRect) {
+        ctx.beginPath()
+        ctx.roundRect(-textWidth / 2 - paddingX, -8 - paddingY, textWidth + paddingX * 2, rectHeight, rectRadius)
+        
+        // Add a subtle border instead of shadows for better performance
+        ctx.lineWidth = 1
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'
+        ctx.stroke()
+        ctx.fill()
+      } else {
+        ctx.fillRect(-textWidth / 2 - paddingX, -8 - paddingY, textWidth + paddingX * 2, rectHeight)
+      }
+      
+      // Draw crisp text (dark for white background)
+      ctx.fillStyle = '#374151' // gray-700
+      ctx.fillText(displayText, 0, 0)
+
+      ctx.restore()
+    }
   }
 }
 
 // Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
   const base = {
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
+    width: { min: 1280, ideal: 1920 },
+    height: { min: 720, ideal: 1080 },
     aspectRatio: { ideal: 16 / 9 },
     frameRate: { ideal: 30, max: 60 },
     resizeMode: 'none',
@@ -304,14 +567,27 @@ const selectedConstraints = computed(() => {
 
 const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
+
+// Detect if running on a desktop/laptop (no multi-touch = likely no back camera)
+const isDesktopDevice = typeof navigator !== 'undefined'
+  ? navigator.maxTouchPoints === 0
+  : false
+
 const shouldUnmirror = computed(() => {
+  // Explicit facing mode from stream (most reliable)
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
+
+  // Label-based detection
   const label =
     cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
       ?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
+
+  // On desktop/laptop: webcam is always front-facing → unmirror
+  if (isDesktopDevice) return true
+
   return isFrontCamera.value
 })
 
@@ -371,9 +647,15 @@ const onDetect = (data) => {
     navigator.vibrate(200)
   }
 
-  scanResult.value = data.map((i) => i.rawValue)
+  // Handle only the first detected code to avoid multiple redirect attempts
+    const url = data[0].rawValue
+    if (url) {
+      handleRedirect(url)
+    }
+    
+    scanResult.value = data.map((i) => i.rawValue)
   paused.value = true
-  drawerVisible.value = true
+  // drawerVisible.value = true
 }
 
 function onError(err) {
@@ -414,12 +696,18 @@ const isValidLink = (url) => {
 const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
-  const secureTicket = encryptData({
-    verified: true,
-    timestamp: Date.now()
-  })
-  sessionStorage.setItem('GACHA_SCAN_TICKET_', secureTicket)
+  isLoading.value = true
+  clearScanVerified()
+  sessionStorage.removeItem('IS_ALREADY_SPIN')
+  sessionStorage.removeItem('SPIN_TYPE')
+  sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
+  const slug = url.split('/').pop() 
+  setScanVerified(slug) 
+
   window.location.href = url
+  // setTimeout(() => {
+  //   window.location.href = url
+  // }, 1000)
 }
 
 watch(drawerVisible, (value) => {
@@ -503,6 +791,84 @@ watch(drawerVisible, (value) => {
   width: 100%;
   height: 100%;
   position: relative;
+  touch-action: none;
+}
+
+/* Focus Ring */
+.focus-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #fbbf24;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  animation: focus-pulse 1s ease-out forwards;
+}
+
+@keyframes focus-pulse {
+  0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; border-width: 1px; }
+  20% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; border-width: 1px; }
+}
+
+/* Zoom Slider UI */
+.zoom-slider-container {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 16px 8px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.zoom-slider {
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  appearance: slider-vertical;
+  width: 8px;
+  height: 150px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fbbf24;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.zoom-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fbbf24;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+  border: none;
+}
+
+.zoom-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 :global(.camera-drawer.p-drawer) {
@@ -716,4 +1082,4 @@ watch(drawerVisible, (value) => {
   opacity: 0;
   transform: translateY(8px);
 }
-</style>
+</style>  
