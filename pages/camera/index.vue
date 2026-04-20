@@ -64,24 +64,48 @@
     </div>
 
     <!-- Camera Stream -->
-    <div class="camera-stream-wrapper">
-      <QrcodeStream
-        ref="refQrcodeStream"
-        :constraints="selectedConstraints"
-        :track="trackFunctionSelected.value"
-        :formats="selectedBarcodeFormats"
-        :paused="paused"
-        :torch="torchActive"
-        @detect="onDetect"
-        @error="onError"
-        @camera-on="onCameraReady"
-        @camera-off="onCameraOff"
-        :style="{
-          transform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          WebkitTransform: shouldUnmirror ? 'scaleX(-1)' : 'none',
-          transformOrigin: 'center center',
-        }"
-      />
+    <div 
+      class="camera-stream-wrapper"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+      @touchcancel="onTouchEnd"
+      @click="onCameraClick"
+    >
+      <ClientOnly>
+        <QrcodeStream
+          ref="refQrcodeStream"
+          :constraints="selectedConstraints"
+          :track="trackFunctionSelected.value"
+          :formats="selectedBarcodeFormats"
+          :paused="paused"
+          :torch="torchActive"
+          @detect="onDetect"
+          @error="onError"
+          @camera-on="onCameraReady"
+          @camera-off="onCameraOff"
+          :style="{
+            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'transform'
+          }"
+        />
+        <template #fallback>
+          <div class="camera-loading z-6">
+            <LoadingIcon />
+            <p class="camera-loading-text">Memuat kamera...</p>
+          </div>
+        </template>
+      </ClientOnly>
+
+      <!-- Focus Ring UI -->
+      <div 
+        v-if="focusPoint.visible" 
+        class="focus-ring"
+        :style="{ left: focusPoint.x + 'px', top: focusPoint.y + 'px' }"
+      ></div>
 
       <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
@@ -99,6 +123,19 @@
         </div>
         <p class="viewfinder-hint">{{ $t('scanQRCode') }}</p>
       </div>
+    </div>
+
+    <!-- Zoom Slider UI -->
+    <div v-if="zoomSupported && !paused && cameraReady" class="zoom-slider-container">
+      <input 
+        type="range" 
+        class="zoom-slider" 
+        :min="zoomMin" 
+        :max="zoomMax" 
+        :step="zoomStep" 
+        v-model.number="zoom" 
+      />
+      <div class="zoom-text">{{ Number(zoom).toFixed(1) }}x</div>
     </div>
 
     <!-- Low-light Tip Banner -->
@@ -160,12 +197,12 @@
           v-for="(result, index) in scanResult"
           :key="index"
           @click="!isLoading && handleRedirect(result)"
-          class="rounded-lg border bg-white p-3 inline-flex gap-2 border-b border-b-exd-light-grey w-100 relative overflow-hidden pr-6"
+          class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
           :class="[
             isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
           ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate">
+          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -193,23 +230,40 @@
 </template>
 
 <script setup>
+import { ref, computed, watch, nextTick } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
-const { setScanVerified, clearScanVerified } = useGachaVerification()
-const config = useRuntimeConfig()
+// Device Detection
+const isAndroid = typeof navigator !== 'undefined'
+  ? /Android/i.test(navigator.userAgent)
+  : false
 
+const isIOS = typeof navigator !== 'undefined'
+  ? /iPhone|iPad|iPod/.test(navigator.userAgent)
+  : false
+
+const isDesktopDevice = typeof navigator !== 'undefined'
+  ? navigator.maxTouchPoints === 0
+  : false
+
+// Hooks & Composables
+const { setScanVerified, clearScanVerified } = useGachaVerification()
+
+// Component State
 const refQrcodeStream = ref(null)
 const paused = ref(false)
 const drawerVisible = ref(false)
 const scanResult = ref([])
+const isLoading = ref(false)
+const error = ref('')
 
 // Torch / Flashlight
 const torchActive = ref(false)
-const torchSupported = ref(true) // assume supported, hide if error
+const torchSupported = ref(true)
 
-// Camera facing
+// Camera States
 const isFrontCamera = ref(false)
 const cameraDevices = ref([])
 const selectedDeviceId = ref(null)
@@ -217,8 +271,62 @@ const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
 
-const settings = useState('settings')
-const isLoading = ref(false)
+// Zoom Management
+const zoom = ref(1)
+const zoomMin = ref(1)
+const zoomMax = ref(1)
+const zoomStep = ref(0.1)
+const zoomSupported = ref(false)
+const hasNativeZoom = ref(false)
+const initialPinchDistance = ref(null)
+const initialZoomAtPinchStart = ref(1)
+
+// Click-to-focus UI
+const focusPoint = ref({ x: 0, y: 0, visible: false })
+let focusTimeout = null
+
+const onCameraClick = async (e) => {
+  focusPoint.value = { x: e.clientX, y: e.clientY, visible: true }
+  if (focusTimeout) clearTimeout(focusTimeout)
+  focusTimeout = setTimeout(() => {
+    focusPoint.value.visible = false
+  }, 1000)
+
+  const track = getQrcodeVideoTrack()
+  if (!track) return
+
+  try {
+    const caps = track.getCapabilities ? track.getCapabilities() : {}
+    if (!caps.focusMode) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    let normX = (e.clientX - rect.left) / rect.width
+    let normY = (e.clientY - rect.top) / rect.height
+
+    if (!hasNativeZoom.value && zoom.value > 1) {
+      normX = (0.5 - 0.5 / zoom.value) + (normX / zoom.value)
+      normY = (0.5 - 0.5 / zoom.value) + (normY / zoom.value)
+    }
+
+    if (caps.focusMode.includes('single-shot')) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x: normX, y: normY }] }]
+        })
+      } catch (e1) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+      }
+
+      setTimeout(async () => {
+        if (caps.focusMode.includes('continuous')) {
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+        }
+      }, 2000)
+    }
+  } catch (err) {
+    console.warn('Click-to-focus error:', err)
+  }
+}
 
 const getQrcodeVideoTrack = () => {
   if (typeof window === 'undefined') return null
@@ -232,13 +340,81 @@ const syncStreamSettings = async () => {
 
   await nextTick()
   const track = getQrcodeVideoTrack()
-  const settings = track?.getSettings?.()
+  const trackSettings = track?.getSettings?.()
+  const capabilities = track?.getCapabilities?.()
 
-  streamFacingMode.value = settings?.facingMode ?? null
+  if (capabilities?.zoom) {
+    hasNativeZoom.value = true
+    zoomSupported.value = true
+    zoomMin.value = capabilities.zoom.min || 1
+    zoomMax.value = capabilities.zoom.max || 10
+    zoomStep.value = capabilities.zoom.step || 0.1
+    zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
+  } else {
+    hasNativeZoom.value = false
+    zoomSupported.value = true
+    zoomMin.value = 1
+    zoomMax.value = 5 
+    zoomStep.value = 0.1
+  }
 
-  const deviceId = settings?.deviceId ?? null
+  let facing = trackSettings?.facingMode ?? null
+  if (!facing && track?.label) {
+    const label = track.label
+    if (/front|user|selfie|facetime/i.test(label)) facing = 'user'
+    else if (/back|rear|environment/i.test(label)) facing = 'environment'
+  }
+  streamFacingMode.value = facing
+
+  const deviceId = trackSettings?.deviceId ?? null
   if (deviceId && cameraDevices.value.some((d) => d.deviceId === deviceId)) {
     selectedDeviceId.value = deviceId
+  }
+}
+
+const applyZoom = async (newZoom) => {
+  const track = getQrcodeVideoTrack()
+  if (!track || !hasNativeZoom.value) return
+  try {
+    await track.applyConstraints({
+      advanced: [{ zoom: newZoom }]
+    })
+  } catch (err) {
+    console.error('Failed to apply native zoom constraints:', err)
+  }
+}
+
+watch(zoom, (newVal) => {
+  if (zoomSupported.value) {
+    applyZoom(newVal)
+  }
+})
+
+const onTouchStart = (e) => {
+  if (e.touches.length === 2 && zoomSupported.value) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    initialZoomAtPinchStart.value = zoom.value
+  }
+}
+
+const onTouchMove = (e) => {
+  if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    const ratio = distance / initialPinchDistance.value
+    
+    let newZoom = initialZoomAtPinchStart.value * ratio
+    newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
+    zoom.value = Number(newZoom.toFixed(1))
+  }
+}
+
+const onTouchEnd = (e) => {
+  if (e.touches.length < 2) {
+    initialPinchDistance.value = null
   }
 }
 
@@ -279,25 +455,18 @@ const refreshCameraDevices = async () => {
   }
 }
 
-// Low-light tip
 const showLowLightTip = ref(true)
-
-// Error display
-const error = ref('')
-
-
 
 definePageMeta({
   middleware: 'auth',
+  ssr: false,
 })
 
 const paintOutline = (detectedCodes, ctx) => {
   for (const detectedCode of detectedCodes) {
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
-
-    ctx.strokeStyle = '#D7A237'
+    ctx.strokeStyle = '#fbbf24'
     ctx.lineWidth = 3
-
     ctx.beginPath()
     ctx.moveTo(firstPoint.x, firstPoint.y)
     for (const { x, y } of otherPoints) {
@@ -309,28 +478,45 @@ const paintOutline = (detectedCodes, ctx) => {
   }
 }
 
-// Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
+  let width = { min: 1280, ideal: 1920 }
+  let height = { min: 720, ideal: 1080 }
+  let frameRate = { ideal: 30, max: 60 }
+
+  if (isIOS) {
+    width = { min: 1280, ideal: 3840 }
+    height = { min: 720, ideal: 2160 }
+  } else if (isAndroid) {
+    width = { min: 1280, ideal: 1280 }
+    height = { min: 720, ideal: 720 }
+    frameRate = { ideal: 30, max: 30 }
+  }
+
   const base = {
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
+    width,
+    height,
     aspectRatio: { ideal: 16 / 9 },
-    frameRate: { ideal: 30, max: 60 },
+    frameRate,
     resizeMode: 'none',
   }
 
-  // Best effort for hardware features
-  const advanced = [
-    { focusMode: 'continuous' },
-    { exposureMode: 'continuous' },
-    { whiteBalanceMode: 'continuous' },
-    { sharpness: 100 },
-  ]
+  const advanced = isAndroid 
+    ? [
+        { focusMode: 'continuous' },
+        { exposureMode: 'continuous' }
+      ]
+    : [
+        { focusMode: 'continuous' },
+        { exposureMode: 'continuous' },
+        { whiteBalanceMode: 'continuous' },
+        { sharpness: 100 },
+      ]
 
   if (selectedDeviceId.value) {
     return {
       ...base,
       deviceId: { exact: selectedDeviceId.value },
+      advanced,
     }
   }
 
@@ -343,6 +529,7 @@ const selectedConstraints = computed(() => {
 
 const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
+
 const shouldUnmirror = computed(() => {
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
@@ -351,18 +538,13 @@ const shouldUnmirror = computed(() => {
       ?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
+  if (isDesktopDevice) return true
   return isFrontCamera.value
 })
 
-// Camera ready handler — check torch support
 const onCameraReady = (capabilities) => {
-  // capabilities is the MediaTrackCapabilities object
   cameraReady.value = true
-  if (capabilities && capabilities.torch !== undefined) {
-    torchSupported.value = true
-  } else {
-    torchSupported.value = false
-  }
+  torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
   refreshCameraDevices().finally(() => {
     setTimeout(syncStreamSettings, 0)
   })
@@ -398,27 +580,25 @@ const switchCamera = () => {
     selectedDeviceId.value = null
     isFrontCamera.value = !isFrontCamera.value
   }
-
   setTimeout(syncStreamSettings, 0)
 }
 
 const onDetect = (data) => {
   if (!data || data.length === 0) return
-
-  // Haptic feedback on successful scan
   if (navigator.vibrate) {
     navigator.vibrate(200)
   }
-
+  const url = data[0].rawValue
+  if (url) {
+    handleRedirect(url)
+  }
   scanResult.value = data.map((i) => i.rawValue)
   paused.value = true
-  drawerVisible.value = true
 }
 
 function onError(err) {
   error.value = `[${err.name}]: `
   cameraReady.value = false
-
   if (err.name === 'NotAllowedError') {
     error.value += 'you need to grant camera access permission'
   } else if (err.name === 'NotFoundError') {
@@ -432,13 +612,10 @@ function onError(err) {
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
-    error.value +=
-      'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
+    error.value += 'Camera access is only permitted in secure context.'
   } else {
     error.value += err.message
   }
-
-  // If torch causes error, mark unsupported
   if (err.name === 'OverconstrainedError') {
     torchSupported.value = false
     torchActive.value = false
@@ -449,8 +626,6 @@ const isValidLink = (url) => {
   const regex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/
   return regex.test(url)
 }
-
-const { encryptData } = useEncryption()
 
 const handleRedirect = (url) => {
   isLoading.value = true
@@ -463,11 +638,7 @@ const handleRedirect = (url) => {
     localStorage.removeItem(`GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`)
   }
   setScanVerified(slug) 
-
   window.location.href = url
-  // setTimeout(() => {
-  //   window.location.href = url
-  // }, 1000)
 }
 
 watch(drawerVisible, (value) => {
@@ -487,7 +658,6 @@ watch(drawerVisible, (value) => {
   overflow: hidden;
 }
 
-/* Top Controls */
 .camera-controls-top {
   position: absolute;
   top: 0;
@@ -508,15 +678,6 @@ watch(drawerVisible, (value) => {
   align-items: center;
 }
 
-.camera-btn {
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(8px);
-  border: none;
-  border-radius: 12px;
-  padding: 4px;
-  cursor: pointer;
-}
-
 .camera-control-btn {
   width: 48px;
   height: 48px;
@@ -535,31 +696,65 @@ watch(drawerVisible, (value) => {
   transform: scale(0.9);
 }
 
-.camera-control-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .camera-control-btn.active {
   background: rgba(251, 191, 36, 0.3);
   border-color: #fbbf24;
   box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
 }
 
-/* Camera Stream */
 .camera-stream-wrapper {
   width: 100%;
   height: 100%;
   position: relative;
+  touch-action: none;
+  overflow: hidden;
 }
 
-:global(.camera-drawer.p-drawer) {
+.focus-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #fbbf24;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  animation: focus-pulse 1s ease-out forwards;
+}
+
+@keyframes focus-pulse {
+  0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; border-width: 1px; }
+  20% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; border-width: 1px; }
+}
+
+.zoom-slider-container {
+  position: absolute;
+  bottom: max(100px, env(safe-area-inset-bottom, 80px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+}
+
+.zoom-slider {
   width: 100%;
-  max-width: 28rem;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
+  accent-color: #fbbf24;
+}
+
+.zoom-text {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.5);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .camera-loading {
@@ -567,38 +762,17 @@ watch(drawerVisible, (value) => {
   inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
   align-items: center;
   justify-content: center;
-  z-index: 6;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
+  gap: 12px;
+  background: #000;
 }
 
 .camera-loading-text {
-  color: rgba(255, 255, 255, 0.9);
+  color: white;
   font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-:deep(.qrcode-stream) {
-  width: 100%;
-  height: 100%;
-}
-
-:deep(.qrcode-stream video),
-:deep(.qrcode-stream canvas) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-
-/* Viewfinder Overlay */
 .viewfinder-overlay {
   position: absolute;
   inset: 0;
@@ -652,90 +826,56 @@ watch(drawerVisible, (value) => {
   border-radius: 0 0 8px 0;
 }
 
-/* Scan line animation */
 .viewfinder-scan-line {
   position: absolute;
   top: 0;
   left: 8px;
   right: 8px;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #fbbf24,
-    #fbbf24,
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, #fbbf24, #fbbf24, transparent);
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
   animation: scan-line 2.5s ease-in-out infinite;
-  will-change: transform;
 }
 
 @keyframes scan-line {
-  0%,
-  100% {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(250px);
-    opacity: 1;
-  }
-  60% {
-    opacity: 0;
-  }
+  0%, 100% { transform: translateY(8px); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translateY(250px); opacity: 1; }
+  60% { opacity: 0; }
 }
 
 .viewfinder-hint {
   margin-top: 24px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
-  text-align: center;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  padding: 0 16px;
 }
 
-/* Low-light Tip */
+.low-light-tip, .error-banner {
+  position: absolute;
+  bottom: max(32px, env(safe-area-inset-bottom, 16px));
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
 .low-light-tip {
-  position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
-  left: 16px;
-  right: 16px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px;
   background: rgba(251, 191, 36, 0.2);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 12px;
   color: #fef3c7;
-  font-size: 14px;
 }
 
-/* Error Banner */
 .error-banner {
-  position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
-  left: 16px;
-  right: 16px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px;
   background: rgba(239, 68, 68, 0.2);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 12px;
   color: #fecaca;
-  font-size: 14px;
 }
 
 .tip-dismiss {
@@ -744,24 +884,13 @@ watch(drawerVisible, (value) => {
   color: inherit;
   font-size: 18px;
   cursor: pointer;
-  padding: 0 4px;
-  opacity: 0.7;
-  flex-shrink: 0;
 }
 
-.tip-dismiss:hover {
-  opacity: 1;
-}
-
-/* Transitions */
-.fade-enter-active,
-.fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
 }
-</style>  
+</style>
