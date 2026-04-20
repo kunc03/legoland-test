@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -553,8 +553,8 @@ const paintOutline = (detectedCodes, ctx) => {
 // Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
   const base = {
-    width: { min: 1280, ideal: 3840 },
-    height: { min: 720, ideal: 2160 },
+    width: isIOS ? { min: 1280, ideal: 3840 } : { min: 1280, ideal: 1920 },
+    height: isIOS ? { min: 720, ideal: 2160 } : { min: 720, ideal: 1080 },
     aspectRatio: { ideal: 16 / 9 },
     frameRate: { ideal: 30, max: 60 },
     resizeMode: 'none',
@@ -588,6 +588,10 @@ const selectedBarcodeFormats = ref(['qr_code'])
 // Detect if running on a desktop/laptop (no multi-touch = likely no back camera)
 const isDesktopDevice = typeof navigator !== 'undefined'
   ? navigator.maxTouchPoints === 0
+  : false
+
+const isIOS = typeof navigator !== 'undefined'
+  ? /iPhone|iPad|iPod/.test(navigator.userAgent)
   : false
 
 const shouldUnmirror = computed(() => {
