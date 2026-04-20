@@ -515,9 +515,10 @@ const paintOutline = (detectedCodes, ctx) => {
         ctx.beginPath()
         ctx.roundRect(-textWidth / 2 - paddingX, -8 - paddingY, textWidth + paddingX * 2, rectHeight, rectRadius)
         
-        ctx.shadowColor = 'rgba(0,0,0,0.15)'
-        ctx.shadowBlur = 10
-        ctx.shadowOffsetY = 4
+        // Add a subtle border instead of shadows for better performance
+        ctx.lineWidth = 1
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'
+        ctx.stroke()
         ctx.fill()
       } else {
         ctx.fillRect(-textWidth / 2 - paddingX, -8 - paddingY, textWidth + paddingX * 2, rectHeight)
@@ -525,9 +526,6 @@ const paintOutline = (detectedCodes, ctx) => {
       
       // Draw crisp text (dark for white background)
       ctx.fillStyle = '#374151' // gray-700
-      ctx.shadowColor = 'transparent'
-      ctx.shadowBlur = 0
-      ctx.shadowOffsetY = 0
       ctx.fillText(displayText, 0, 0)
 
       ctx.restore()
@@ -538,8 +536,8 @@ const paintOutline = (detectedCodes, ctx) => {
 // Higher resolution for better accuracy
 const selectedConstraints = computed(() => {
   const base = {
-    width: { min: 1280, ideal: 3840 },
-    height: { min: 720, ideal: 2160 },
+    width: { min: 1280, ideal: 1920 },
+    height: { min: 720, ideal: 1080 },
     aspectRatio: { ideal: 16 / 9 },
     frameRate: { ideal: 30, max: 60 },
     resizeMode: 'none',
@@ -649,10 +647,13 @@ const onDetect = (data) => {
     navigator.vibrate(200)
   }
 
-  scanResult.value = data.map((i) => {
-    const url = i.rawValue
-    handleRedirect(url)
-  })
+  // Handle only the first detected code to avoid multiple redirect attempts
+    const url = data[0].rawValue
+    if (url) {
+      handleRedirect(url)
+    }
+    
+    scanResult.value = data.map((i) => i.rawValue)
   paused.value = true
   // drawerVisible.value = true
 }
