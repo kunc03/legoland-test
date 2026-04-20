@@ -11,7 +11,7 @@
         settings?.flow?.screens?.show_before_gacha_screen ||
         isSplashComplete)
     "
-    class="flex flex-col h-[100dvh] overflow-hidden"
+    class="flex flex-col h-[100dvh] overflow-y-auto"
   >
     <HeaderBar withLogo />
 
@@ -70,7 +70,10 @@
         />
       </div>
 
-      <div class="flex flex-col items-center justify-center w-full pb-6 bg-transparent">
+      <div 
+        class="flex flex-col items-center justify-center w-full pb-10 bg-transparent"
+        :style="{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }"
+      >
         <div
           v-if="
             gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
@@ -549,6 +552,50 @@ const handleCloseModalSpinWarning = () => {
   modalSpinWarning.value = false
 }
 
+const getStoredSpinSession = () => {
+  if (!import.meta.client) return null
+
+  const slug = String(spinSlug.value || '').toUpperCase()
+  if (!slug) return null
+
+  const raw = localStorage.getItem(`${slug}_GACHA`)
+  if (!raw) return null
+
+  try {
+    return decryptData(raw)
+  } catch (error) {
+    return null
+  }
+}
+
+const isResumingCurrentSpinSession = () => {
+  const stored = getStoredSpinSession()
+  if (!stored) return false
+
+  const validPassword = useCookie('VALID_PASSWORD')
+  let parsed = {}
+  try {
+    parsed = decryptData(validPassword.value || '{}')
+  } catch (error) {
+    parsed = {}
+  }
+  const currentSlug = String(spinSlug.value || '').toLowerCase()
+  const cookieSlug = String(parsed?.slug || '').toLowerCase()
+
+  if (!currentSlug || cookieSlug !== currentSlug) return false
+  if (localStorage.getItem(`GACHA_FLOW_COMPLETED_${currentSlug.toUpperCase()}`) === 'true') {
+    return false
+  }
+
+  return !!(
+    stored.log_id ||
+    stored.point_id ||
+    stored.location_id ||
+    stored.point_image ||
+    stored.character_image
+  )
+}
+
 definePageMeta({
   layout: 'gacha-machine',
   middleware: async (to, from) => {
@@ -602,8 +649,9 @@ const nextToSpin = async () => {
   isLoading.value = true
   const beforeSpinType = useState('before_spin_type')
   const notRequiredRadius = useState('not_required_radius')
+  const isResumingSession = isResumingCurrentSpinSession()
 
-  if (isPrizeSpinRoute.value) {
+  if (isPrizeSpinRoute.value && !isResumingSession) {
     try {
       const prizeService = usePrizeService()
       await prizeService.validateExternalPrize({
@@ -632,7 +680,7 @@ const nextToSpin = async () => {
     validPassword.value = encryptData({ slug: spinSlug.value })
   }
 
-  if (!notRequiredRadius.value && !isPrizeSpinRoute.value) {
+  if (!isResumingSession && !notRequiredRadius.value && !isPrizeSpinRoute.value) {
     await checkingLocation()
   }
 
@@ -717,6 +765,10 @@ const getPassword = async (id) => {
 
 const triggerGachaSpin = async () => {
   try {
+    if (isResumingCurrentSpinSession()) {
+      return true
+    }
+
     const slug = String(spinSlug.value).toUpperCase()
     const storedData = useCookie('VALID_PASSWORD')
     const payload = storedData.value 
@@ -872,6 +924,10 @@ const getBrowserInfo = computed(() => {
 
 const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
+
+  if (isResumingCurrentSpinSession()) {
+    return
+  }
 
   const slug = String(spinSlug.value).toLocaleUpperCase()
   const slugStorageName = `${slug}_GACHA`

@@ -634,6 +634,9 @@ const handleRedirect = (url) => {
   sessionStorage.removeItem('SPIN_TYPE')
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
   const slug = url.split('/').pop() 
+  if (slug) {
+    localStorage.removeItem(`GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`)
+  }
   setScanVerified(slug) 
   window.location.href = url
 }

@@ -1,6 +1,9 @@
 <template>
   <div
-    v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_screen"
+    v-if="
+      settings?.flow?.screens?.spin_gacha_1_screen?.show_point_screen &&
+      showPointUi
+    "
     class="relative flex flex-col items-center justify-center !bg-no-repeat !bg-cover !bg-center grow"
     :style="{
       background:
@@ -116,8 +119,9 @@
   </div>
 
   <AutoplayVideo
-    v-if="playVideo"
-    :trigger-play="playVideo"
+    v-if="playVideo || shouldShowCharacterScreen"
+    :trigger-play="playVideo || shouldShowCharacterScreen"
+    :light-loading="true"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
     @ended="handleGoToCharacter"
@@ -160,6 +164,7 @@ const popupImage = ref('')
 const pointCategoryIsFail = ref(false)
 const modalLogin = ref(false)
 const showPointOnly = ref(false)
+const showPointUi = ref(false)
 
 const settings = useState('settings')
 const gachaType = computed(() => {
@@ -169,6 +174,9 @@ const gachaSettings = computed(() =>
   gachaType.value === 'external' ? settings.value?.external_gacha : settings.value?.gacha
 )
 const gacha = computed(() => gachaSettings.value)
+const shouldShowCharacterScreen = computed(
+  () => settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
+)
 const isInstagram = ref(false)
 const modalSpinWarning = ref(false)
 const errorMessages = ref('')
@@ -176,6 +184,26 @@ const errorMessages = ref('')
 const { t } = useI18n()
 
 const handleCloseModalLogin = () => (modalLogin.value = false)
+
+const getCurrentSlugUpper = () => {
+  const storedData = useCookie('VALID_PASSWORD')
+  if (storedData.value) {
+    try {
+      const payload = decryptData(storedData.value) || {}
+      if (payload?.slug) return String(payload.slug).toUpperCase()
+    } catch (error) {
+      // Fallback to route param
+    }
+  }
+
+  return String(route.params.randomCode || '').toUpperCase()
+}
+
+const markSpinFlowCompleted = () => {
+  const slugUpper = getCurrentSlugUpper()
+  if (!slugUpper) return
+  localStorage.setItem(`GACHA_FLOW_COMPLETED_${slugUpper}`, 'true')
+}
 
 definePageMeta({
   middleware: 'valid-password',
@@ -265,6 +293,7 @@ const handleGoToCharacter = async () => {
 
     await navigateTo(`/spin/character/${route.params.randomCode}`)
   } else {
+    markSpinFlowCompleted()
     navigateTo('/dashboard')
   }
 }
@@ -301,7 +330,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 
-onMounted(() => {
+onMounted(async () => {
   const screens = settings.value?.flow?.screens || {}
 
   const showVideo = screens.spin_gacha_2_screen?.show_spin_gacha_2_video
@@ -327,6 +356,8 @@ onMounted(() => {
   fetchImageFromApi()
 
   disabledButton.value = !(showTapScreen || showCharScreen)
+
+  await handleButton()
 })
 
 onMounted(() => {
