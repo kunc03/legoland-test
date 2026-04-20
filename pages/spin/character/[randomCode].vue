@@ -312,6 +312,30 @@ const { t } = useI18n()
 
 const handleCloseModalLogin = () => (modalLogin.value = false)
 
+const getCurrentSlugUpper = () => {
+  const storedData = useCookie('VALID_PASSWORD')
+  if (storedData.value) {
+    try {
+      const payload = decryptData(storedData.value) || {}
+      if (payload?.slug) return String(payload.slug).toUpperCase()
+    } catch (error) {
+      // Fallback to route param
+    }
+  }
+
+  return String(route.params.randomCode || '').toUpperCase()
+}
+
+const markSpinFlowCompleted = () => {
+  const slugUpper = getCurrentSlugUpper()
+  if (!slugUpper) return
+  localStorage.setItem(`GACHA_FLOW_COMPLETED_${slugUpper}`, 'true')
+}
+
+if (import.meta.client) {
+  markSpinFlowCompleted()
+}
+
 const handleButton = async () => {
   const afterGacha = gacha.value?.after_gacha_screen
 

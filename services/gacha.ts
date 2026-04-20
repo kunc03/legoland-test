@@ -58,6 +58,17 @@ export const useGachaService = () => {
   const performSpin = async (slug: string, payload: any = {}) => {
     const slugUpper = slug.toUpperCase()
     const slugStorageName = `${slugUpper}_GACHA`
+    const existingResult = getStoredResult(slug)
+    const spinTypeValue = Number(useState<number | string>('spin_type').value || 0)
+    const hasValidScanTicket = isScanVerified(slug)
+
+    if (
+      existingResult &&
+      !isEligibleForSpin(slug, spinTypeValue) &&
+      !hasValidScanTicket
+    ) {
+      return existingResult
+    }
     
     // 1. Determine method and endpoint
     const method = TOKEN.value && USER.value ? 'POST' : 'GET'
@@ -73,13 +84,13 @@ export const useGachaService = () => {
     if (method === 'POST') {
       fetchOptions.body = {
         ...normalizedPayload,
-        scan_verified: isScanVerified(slug)
+        scan_verified: hasValidScanTicket
       }
     } else {
       fetchOptions.params = {
         slug: normalizedPayload.slug,
         password: normalizedPayload.password,
-        scan_verified: isScanVerified(slug)
+        scan_verified: hasValidScanTicket
       }
     }
 

@@ -1,5 +1,11 @@
 <template>
-  <div tabindex="0" class="relative w-full h-full bg-black" @click="handleTapToPlay">
+  <div
+    tabindex="0"
+    class="relative w-full h-full"
+    :class="props.lightLoading ? 'bg-center bg-no-repeat bg-cover' : 'bg-black'"
+    :style="props.lightLoading ? { background: lightLoadingBackground } : undefined"
+    @click="handleTapToPlay"
+  >
     <video
       ref="videoRef"
       preload="auto"
@@ -17,11 +23,18 @@
     <!-- Loading overlay - shown while video is loading -->
     <div
       v-if="showLoading"
-      class="absolute z-[1201] inset-0 flex flex-col items-center justify-center bg-black"
+      class="absolute z-[1201] inset-0 flex flex-col items-center justify-center"
+      :class="props.lightLoading ? 'bg-center bg-no-repeat bg-cover' : 'bg-black'"
+      :style="props.lightLoading ? { background: lightLoadingBackground } : undefined"
     >
       <div class="flex flex-col items-center gap-4">
-        <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-        <p class="text-white/70 text-sm">{{ loadingStatus }}</p>
+        <div
+          class="w-12 h-12 border-4 rounded-full animate-spin"
+          :class="props.lightLoading ? 'border-gray-300 border-t-gray-700' : 'border-white/30 border-t-white'"
+        ></div>
+        <p class="text-sm" :class="props.lightLoading ? 'text-gray-600' : 'text-white/70'">
+          {{ loadingStatus }}
+        </p>
       </div>
     </div>
 
@@ -39,9 +52,11 @@
 const props = defineProps({
   src: { type: String, default: '' },
   triggerPlay: { type: Boolean, default: false },
+  lightLoading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['ended'])
+const settings = useState('settings')
 
 const videoRef = ref(null)
 const showButton = ref(false)
@@ -51,6 +66,15 @@ const isVideoLoaded = ref(false)
 const loadingStatus = ref('Loading...')
 const blobUrl = ref(null)
 let buttonDelayTimeout = null
+
+const resolveBackground = (bg) => {
+  if (!bg) return ''
+  return bg?.type === 'image' ? `url(${bg.value})` : bg.value
+}
+
+const lightLoadingBackground = computed(() => {
+  return resolveBackground(settings.value?.user_dashboard?.my_account_settings?.background) || '#fff'
+})
 
 // Check if we're in an in-app browser  
 const checkInAppBrowser = () => {
@@ -300,8 +324,6 @@ onBeforeUnmount(() => {
   }
 })
 </script>
-
-
 
 
 

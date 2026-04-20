@@ -8365,7 +8365,7 @@ vue-meta@^2.4.0:
   dependencies:
     deepmerge "^4.2.2"
 
-vue-qrcode-reader@^5.5.3:
+vue-qrcode-reader@^5.7.3:
   version "5.7.3"
   resolved "https://registry.yarnpkg.com/vue-qrcode-reader/-/vue-qrcode-reader-5.7.3.tgz#d9e9166981e2ac3aa697c64bde4a0e328f6d0ad4"
   integrity sha512-iSGko42FsEvdHyizBMBs/X+HMO9Z5ONDxjW+mQdoraOR5emRNedmjC5SEJdYzGz8ZP5ME3lwB4iHy3S7MOt5Qw==

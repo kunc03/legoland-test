@@ -37,7 +37,7 @@
                 settings.user_dashboard?.footers?.point_background_color?.color,
             }"
           >
-            {{ store.footer_point }}<span class="text-exd-1020">{{ settings.user_dashboard?.footers?.point_suffix != undefined ? settings.user_dashboard?.footers?.point_suffix : 'pt' }}</span>
+            {{ store.footer_point > 4 ? 4 : store.footer_point }}/4<span class="text-exd-1020">{{ settings.user_dashboard?.footers?.point_suffix != undefined ? settings.user_dashboard?.footers?.point_suffix : 'pt' }}</span>
           </p>
         </div>
       </div>
