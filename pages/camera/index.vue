@@ -230,32 +230,46 @@
 </template>
 
 <script setup>
+import { ref, computed, watch, nextTick } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 
-const { setScanVerified, clearScanVerified } = useGachaVerification()
-const config = useRuntimeConfig()
+// Device Detection
+const isAndroid = typeof navigator !== 'undefined'
+  ? /Android/i.test(navigator.userAgent)
+  : false
 
+const isIOS = typeof navigator !== 'undefined'
+  ? /iPhone|iPad|iPod/.test(navigator.userAgent)
+  : false
+
+const isDesktopDevice = typeof navigator !== 'undefined'
+  ? navigator.maxTouchPoints === 0
+  : false
+
+// Hooks & Composables
+const { setScanVerified, clearScanVerified } = useGachaVerification()
+
+// Component State
 const refQrcodeStream = ref(null)
 const paused = ref(false)
 const drawerVisible = ref(false)
 const scanResult = ref([])
+const isLoading = ref(false)
+const error = ref('')
 
 // Torch / Flashlight
 const torchActive = ref(false)
-const torchSupported = ref(true) // assume supported, hide if error
+const torchSupported = ref(true)
 
-// Camera facing
+// Camera States
 const isFrontCamera = ref(false)
 const cameraDevices = ref([])
 const selectedDeviceId = ref(null)
 const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
-
-const settings = useState('settings')
-const isLoading = ref(false)
 
 // Zoom Management
 const zoom = ref(1)
@@ -267,19 +281,17 @@ const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 
-// Click-to-focus
+// Click-to-focus UI
 const focusPoint = ref({ x: 0, y: 0, visible: false })
 let focusTimeout = null
 
 const onCameraClick = async (e) => {
-  // Show UI focus ring
   focusPoint.value = { x: e.clientX, y: e.clientY, visible: true }
   if (focusTimeout) clearTimeout(focusTimeout)
   focusTimeout = setTimeout(() => {
     focusPoint.value.visible = false
   }, 1000)
 
-  // Apply native autofocus hunt
   const track = getQrcodeVideoTrack()
   if (!track) return
 
@@ -287,14 +299,10 @@ const onCameraClick = async (e) => {
     const caps = track.getCapabilities ? track.getCapabilities() : {}
     if (!caps.focusMode) return
 
-    // Calculate normalized point based on client click vs element dimensions rect
     const rect = e.currentTarget.getBoundingClientRect()
     let normX = (e.clientX - rect.left) / rect.width
     let normY = (e.clientY - rect.top) / rect.height
 
-    // Coordinate Mapping for Digital Zoom
-    // If zoomed in, the visible area is only a central crop. 
-    // Mapping: P_frame = (0.5 - 0.5/Z) + P_screen/Z
     if (!hasNativeZoom.value && zoom.value > 1) {
       normX = (0.5 - 0.5 / zoom.value) + (normX / zoom.value)
       normY = (0.5 - 0.5 / zoom.value) + (normY / zoom.value)
@@ -306,11 +314,9 @@ const onCameraClick = async (e) => {
           advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x: normX, y: normY }] }]
         })
       } catch (e1) {
-        // Fallback without pointsOfInterest
         await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
       }
 
-      // Restore to continuous focus after hunting completes
       setTimeout(async () => {
         if (caps.focusMode.includes('continuous')) {
           await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
@@ -334,28 +340,25 @@ const syncStreamSettings = async () => {
 
   await nextTick()
   const track = getQrcodeVideoTrack()
-  const settings = track?.getSettings?.()
+  const trackSettings = track?.getSettings?.()
   const capabilities = track?.getCapabilities?.()
 
-  // Zoom Handling
   if (capabilities?.zoom) {
     hasNativeZoom.value = true
     zoomSupported.value = true
     zoomMin.value = capabilities.zoom.min || 1
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
-    zoom.value = settings?.zoom || capabilities.zoom.min || 1
+    zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
   } else {
     hasNativeZoom.value = false
-    // Fallback for Safari/iOS: Enable digital zoom
     zoomSupported.value = true
     zoomMin.value = 1
-    zoomMax.value = 5 // Reasonable limit for digital zoom
+    zoomMax.value = 5 
     zoomStep.value = 0.1
   }
 
-  // Prefer facingMode from settings; fallback to label heuristics
-  let facing = settings?.facingMode ?? null
+  let facing = trackSettings?.facingMode ?? null
   if (!facing && track?.label) {
     const label = track.label
     if (/front|user|selfie|facetime/i.test(label)) facing = 'user'
@@ -363,7 +366,7 @@ const syncStreamSettings = async () => {
   }
   streamFacingMode.value = facing
 
-  const deviceId = settings?.deviceId ?? null
+  const deviceId = trackSettings?.deviceId ?? null
   if (deviceId && cameraDevices.value.some((d) => d.deviceId === deviceId)) {
     selectedDeviceId.value = deviceId
   }
@@ -371,7 +374,7 @@ const syncStreamSettings = async () => {
 
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
-  if (!track || !hasNativeZoom.value) return // Only apply constraints if native zoom exists
+  if (!track || !hasNativeZoom.value) return
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
@@ -452,13 +455,7 @@ const refreshCameraDevices = async () => {
   }
 }
 
-// Low-light tip
 const showLowLightTip = ref(true)
-
-// Error display
-const error = ref('')
-
-
 
 definePageMeta({
   middleware: 'auth',
@@ -468,10 +465,8 @@ definePageMeta({
 const paintOutline = (detectedCodes, ctx) => {
   for (const detectedCode of detectedCodes) {
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
-
     ctx.strokeStyle = '#fbbf24'
     ctx.lineWidth = 3
-
     ctx.beginPath()
     ctx.moveTo(firstPoint.x, firstPoint.y)
     for (const { x, y } of otherPoints) {
@@ -483,18 +478,15 @@ const paintOutline = (detectedCodes, ctx) => {
   }
 }
 
-// Higher resolution for better accuracy, optimized for Android performance
 const selectedConstraints = computed(() => {
   let width = { min: 1280, ideal: 1920 }
   let height = { min: 720, ideal: 1080 }
   let frameRate = { ideal: 30, max: 60 }
 
   if (isIOS) {
-    // Keep 4K for iOS as it handles it well
     width = { min: 1280, ideal: 3840 }
     height = { min: 720, ideal: 2160 }
   } else if (isAndroid) {
-    // Optimize for Android to prevent lag: use 720p and cap framerate
     width = { min: 1280, ideal: 1280 }
     height = { min: 720, ideal: 720 }
     frameRate = { ideal: 30, max: 30 }
@@ -508,7 +500,6 @@ const selectedConstraints = computed(() => {
     resizeMode: 'none',
   }
 
-  // Simplified advanced constraints for Android to reduce processing overhead
   const advanced = isAndroid 
     ? [
         { focusMode: 'continuous' },
@@ -539,46 +530,21 @@ const selectedConstraints = computed(() => {
 const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
 
-// Detect if running on a desktop/laptop (no multi-touch = likely no back camera)
-const isDesktopDevice = typeof navigator !== 'undefined'
-  ? navigator.maxTouchPoints === 0
-  : false
-
-const isAndroid = typeof navigator !== 'undefined'
-  ? /Android/i.test(navigator.userAgent)
-  : false
-
-const isIOS = typeof navigator !== 'undefined'
-  ? /iPhone|iPad|iPod/.test(navigator.userAgent)
-  : false
-
 const shouldUnmirror = computed(() => {
-  // Explicit facing mode from stream (most reliable)
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
-
-  // Label-based detection
   const label =
     cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
       ?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
-
-  // On desktop/laptop: webcam is always front-facing → unmirror
   if (isDesktopDevice) return true
-
   return isFrontCamera.value
 })
 
-// Camera ready handler — check torch support
 const onCameraReady = (capabilities) => {
-  // capabilities is the MediaTrackCapabilities object
   cameraReady.value = true
-  if (capabilities && capabilities.torch !== undefined) {
-    torchSupported.value = true
-  } else {
-    torchSupported.value = false
-  }
+  torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
   refreshCameraDevices().finally(() => {
     setTimeout(syncStreamSettings, 0)
   })
@@ -614,33 +580,25 @@ const switchCamera = () => {
     selectedDeviceId.value = null
     isFrontCamera.value = !isFrontCamera.value
   }
-
   setTimeout(syncStreamSettings, 0)
 }
 
 const onDetect = (data) => {
   if (!data || data.length === 0) return
-
-  // Haptic feedback on successful scan
   if (navigator.vibrate) {
     navigator.vibrate(200)
   }
-
-  // Handle only the first detected code to avoid multiple redirect attempts
-    const url = data[0].rawValue
-    if (url) {
-      handleRedirect(url)
-    }
-    
-    scanResult.value = data.map((i) => i.rawValue)
+  const url = data[0].rawValue
+  if (url) {
+    handleRedirect(url)
+  }
+  scanResult.value = data.map((i) => i.rawValue)
   paused.value = true
-  // drawerVisible.value = true
 }
 
 function onError(err) {
   error.value = `[${err.name}]: `
   cameraReady.value = false
-
   if (err.name === 'NotAllowedError') {
     error.value += 'you need to grant camera access permission'
   } else if (err.name === 'NotFoundError') {
@@ -654,13 +612,10 @@ function onError(err) {
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
-    error.value +=
-      'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
+    error.value += 'Camera access is only permitted in secure context.'
   } else {
     error.value += err.message
   }
-
-  // If torch causes error, mark unsupported
   if (err.name === 'OverconstrainedError') {
     torchSupported.value = false
     torchActive.value = false
@@ -672,8 +627,6 @@ const isValidLink = (url) => {
   return regex.test(url)
 }
 
-const { encryptData } = useEncryption()
-
 const handleRedirect = (url) => {
   isLoading.value = true
   clearScanVerified()
@@ -682,11 +635,7 @@ const handleRedirect = (url) => {
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
   const slug = url.split('/').pop() 
   setScanVerified(slug) 
-
   window.location.href = url
-  // setTimeout(() => {
-  //   window.location.href = url
-  // }, 1000)
 }
 
 watch(drawerVisible, (value) => {
@@ -706,7 +655,6 @@ watch(drawerVisible, (value) => {
   overflow: hidden;
 }
 
-/* Top Controls */
 .camera-controls-top {
   position: absolute;
   top: 0;
@@ -727,15 +675,6 @@ watch(drawerVisible, (value) => {
   align-items: center;
 }
 
-.camera-btn {
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(8px);
-  border: none;
-  border-radius: 12px;
-  padding: 4px;
-  cursor: pointer;
-}
-
 .camera-control-btn {
   width: 48px;
   height: 48px;
@@ -754,18 +693,12 @@ watch(drawerVisible, (value) => {
   transform: scale(0.9);
 }
 
-.camera-control-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .camera-control-btn.active {
   background: rgba(251, 191, 36, 0.3);
   border-color: #fbbf24;
   box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
 }
 
-/* Camera Stream */
 .camera-stream-wrapper {
   width: 100%;
   height: 100%;
@@ -774,7 +707,6 @@ watch(drawerVisible, (value) => {
   overflow: hidden;
 }
 
-/* Focus Ring */
 .focus-ring {
   position: absolute;
   width: 60px;
@@ -795,69 +727,31 @@ watch(drawerVisible, (value) => {
   100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; border-width: 1px; }
 }
 
-/* Zoom Slider UI */
 .zoom-slider-container {
   position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
+  bottom: max(100px, env(safe-area-inset-bottom, 80px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 16px 8px;
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
+  gap: 8px;
+  width: 200px;
 }
 
 .zoom-slider {
-  writing-mode: bt-lr; /* IE */
-  -webkit-appearance: slider-vertical; /* WebKit */
-  appearance: slider-vertical;
-  width: 8px;
-  height: 150px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-
-.zoom-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #fbbf24;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-}
-
-.zoom-slider::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #fbbf24;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-  border: none;
+  width: 100%;
+  accent-color: #fbbf24;
 }
 
 .zoom-text {
   color: white;
-  font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-}
-
-:global(.camera-drawer.p-drawer) {
-  width: 100%;
-  max-width: 28rem;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.5);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .camera-loading {
@@ -865,38 +759,17 @@ watch(drawerVisible, (value) => {
   inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
   align-items: center;
   justify-content: center;
-  z-index: 6;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
+  gap: 12px;
+  background: #000;
 }
 
 .camera-loading-text {
-  color: rgba(255, 255, 255, 0.9);
+  color: white;
   font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-:deep(.qrcode-stream) {
-  width: 100%;
-  height: 100%;
-}
-
-:deep(.qrcode-stream video),
-:deep(.qrcode-stream canvas) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-
-/* Viewfinder Overlay */
 .viewfinder-overlay {
   position: absolute;
   inset: 0;
@@ -950,90 +823,56 @@ watch(drawerVisible, (value) => {
   border-radius: 0 0 8px 0;
 }
 
-/* Scan line animation */
 .viewfinder-scan-line {
   position: absolute;
   top: 0;
   left: 8px;
   right: 8px;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #fbbf24,
-    #fbbf24,
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, #fbbf24, #fbbf24, transparent);
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
   animation: scan-line 2.5s ease-in-out infinite;
-  will-change: transform;
 }
 
 @keyframes scan-line {
-  0%,
-  100% {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(250px);
-    opacity: 1;
-  }
-  60% {
-    opacity: 0;
-  }
+  0%, 100% { transform: translateY(8px); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translateY(250px); opacity: 1; }
+  60% { opacity: 0; }
 }
 
 .viewfinder-hint {
   margin-top: 24px;
   color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
-  text-align: center;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  padding: 0 16px;
 }
 
-/* Low-light Tip */
+.low-light-tip, .error-banner {
+  position: absolute;
+  bottom: max(32px, env(safe-area-inset-bottom, 16px));
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
 .low-light-tip {
-  position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
-  left: 16px;
-  right: 16px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px;
   background: rgba(251, 191, 36, 0.2);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 12px;
   color: #fef3c7;
-  font-size: 14px;
 }
 
-/* Error Banner */
 .error-banner {
-  position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
-  left: 16px;
-  right: 16px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px;
   background: rgba(239, 68, 68, 0.2);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 12px;
   color: #fecaca;
-  font-size: 14px;
 }
 
 .tip-dismiss {
@@ -1042,24 +881,13 @@ watch(drawerVisible, (value) => {
   color: inherit;
   font-size: 18px;
   cursor: pointer;
-  padding: 0 4px;
-  opacity: 0.7;
-  flex-shrink: 0;
 }
 
-.tip-dismiss:hover {
-  opacity: 1;
-}
-
-/* Transitions */
-.fade-enter-active,
-.fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
 }
-</style>  
+</style>
