@@ -483,28 +483,49 @@ const paintOutline = (detectedCodes, ctx) => {
   }
 }
 
-// Higher resolution for better accuracy
+// Higher resolution for better accuracy, optimized for Android performance
 const selectedConstraints = computed(() => {
+  let width = { min: 1280, ideal: 1920 }
+  let height = { min: 720, ideal: 1080 }
+  let frameRate = { ideal: 30, max: 60 }
+
+  if (isIOS) {
+    // Keep 4K for iOS as it handles it well
+    width = { min: 1280, ideal: 3840 }
+    height = { min: 720, ideal: 2160 }
+  } else if (isAndroid) {
+    // Optimize for Android to prevent lag: use 720p and cap framerate
+    width = { min: 1280, ideal: 1280 }
+    height = { min: 720, ideal: 720 }
+    frameRate = { ideal: 30, max: 30 }
+  }
+
   const base = {
-    width: isIOS ? { min: 1280, ideal: 3840 } : { min: 1280, ideal: 1920 },
-    height: isIOS ? { min: 720, ideal: 2160 } : { min: 720, ideal: 1080 },
+    width,
+    height,
     aspectRatio: { ideal: 16 / 9 },
-    frameRate: { ideal: 30, max: 60 },
+    frameRate,
     resizeMode: 'none',
   }
 
-  // Best effort for hardware features
-  const advanced = [
-    { focusMode: 'continuous' },
-    { exposureMode: 'continuous' },
-    { whiteBalanceMode: 'continuous' },
-    { sharpness: 100 },
-  ]
+  // Simplified advanced constraints for Android to reduce processing overhead
+  const advanced = isAndroid 
+    ? [
+        { focusMode: 'continuous' },
+        { exposureMode: 'continuous' }
+      ]
+    : [
+        { focusMode: 'continuous' },
+        { exposureMode: 'continuous' },
+        { whiteBalanceMode: 'continuous' },
+        { sharpness: 100 },
+      ]
 
   if (selectedDeviceId.value) {
     return {
       ...base,
       deviceId: { exact: selectedDeviceId.value },
+      advanced,
     }
   }
 
@@ -521,6 +542,10 @@ const selectedBarcodeFormats = ref(['qr_code'])
 // Detect if running on a desktop/laptop (no multi-touch = likely no back camera)
 const isDesktopDevice = typeof navigator !== 'undefined'
   ? navigator.maxTouchPoints === 0
+  : false
+
+const isAndroid = typeof navigator !== 'undefined'
+  ? /Android/i.test(navigator.userAgent)
   : false
 
 const isIOS = typeof navigator !== 'undefined'
