@@ -671,8 +671,17 @@ const nextToSpin = async () => {
 
   await checkSpinEligibility()
 
+  if (modalSpinWarning.value || isNotAllowed.value) {
+    isLoading.value = false
+    return
+  }
+
   if (!isPrizeSpinRoute.value) {
-    await triggerGachaSpin()
+    const success = await triggerGachaSpin()
+    if (!success) {
+      isLoading.value = false
+      return
+    }
   }
 
   if (beforeSpinType.value) {
@@ -925,7 +934,7 @@ const getBrowserInfo = computed(() => {
 const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 
-  if (isResumingCurrentSpinSession()) {
+  if (isResumingCurrentSpinSession() || isScanVerified(String(spinSlug.value).toLocaleUpperCase())) {
     return
   }
 
