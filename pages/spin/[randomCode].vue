@@ -938,7 +938,7 @@ const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 
   if (isResumingCurrentSpinSession() || isScanVerified(String(spinSlug.value).toLocaleUpperCase())) {
-    return
+    return true
   }
 
   try {
