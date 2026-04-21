@@ -281,6 +281,7 @@ import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 import close from '~/assets/images/close.svg'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 // Device Detection
 const isAndroid = typeof navigator !== 'undefined'
@@ -298,6 +299,7 @@ const isDesktopDevice = typeof navigator !== 'undefined'
 // Hooks & Composables
 const { setScanVerified, clearScanVerified } = useGachaVerification()
 const { t } = useI18n()
+const route = useRoute()
 
 // Settings & i18n
 const settings = useState('settings')
@@ -739,7 +741,7 @@ const doRedirect = (url) => {
 }
 
 const handleRedirect = async (url) => {
-  if (!url) return
+  if (!url || isLoading.value) return
   isLoading.value = true
 
   try {
@@ -767,7 +769,12 @@ const handleRedirect = async (url) => {
     }
 
     const { checkStatus } = useGachaService()
-    const response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+    let response = null
+    
+    // Only fetch status if on the camera page and have a valid statusPath (location)
+    if (route.path.startsWith('/camera') && statusPath) {
+      response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+    }
 
     if (response?.data?.can_spin === true) {
       doRedirect(redirectUrl)
