@@ -227,6 +227,51 @@
         <p class="text-white font-semibold">Loading...</p>
       </div>
   </div>
+
+  <Dialog
+    v-model:visible="isNotAllowed"
+    modal
+    class="!w-11/12 !max-w-sm border border-exd-gray-44"
+    :style="{
+      background: settings?.global?.modal?.background_color,
+    }"
+  >
+    <template #container>
+      <img
+        :src="close"
+        alt="close"
+        width="30"
+        height="30"
+        preload
+        class="absolute z-50 cursor-pointer right-1 top-1"
+        @click="handleClose"
+      />
+      <div
+        class="flex flex-col items-center justify-center w-full gap-4 px-6 py-6"
+      >
+        <IconsWarning
+          class="w-10 h-10"
+          :style="{ color: settings?.global?.icon_color?.background }"
+        />
+        <div class="w-10/12 text-center">
+          <p
+            class="font-bold text-exd-1424"
+            :style="{
+              color: settings?.global?.modal?.text_color,
+            }"
+          >
+            {{ errorMessages }}
+          </p>
+        </div>
+        <SolidButton
+          v-if="redirectLink"
+          :label="$t('gacha')"
+          variant="red-coral"
+          :on-click="() => goToSpin(redirectLink)"
+        />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -234,6 +279,8 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
+import close from '~/assets/images/close.svg'
+import { useI18n } from 'vue-i18n'
 
 // Device Detection
 const isAndroid = typeof navigator !== 'undefined'
@@ -250,6 +297,16 @@ const isDesktopDevice = typeof navigator !== 'undefined'
 
 // Hooks & Composables
 const { setScanVerified, clearScanVerified } = useGachaVerification()
+const { t } = useI18n()
+
+// Settings & i18n
+const settings = useState('settings')
+const LOCALE = useCookie('LOCALE')
+
+// Dialog State
+const isNotAllowed = ref(false)
+const errorMessages = ref('')
+const redirectLink = ref('')
 
 // Component State
 const refQrcodeStream = ref(null)
@@ -627,18 +684,62 @@ const isValidLink = (url) => {
   return regex.test(url)
 }
 
-const handleRedirect = (url) => {
-  isLoading.value = true
+const handleClose = () => {
+  isNotAllowed.value = false
+  redirectLink.value = ''
+  errorMessages.value = ''
+  paused.value = false
+}
+
+const goToSpin = (url) => {
+  handleClose()
+  doRedirect(url)
+}
+
+const doRedirect = (url) => {
   clearScanVerified()
   sessionStorage.removeItem('IS_ALREADY_SPIN')
   sessionStorage.removeItem('SPIN_TYPE')
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
-  const slug = url.split('/').pop() 
+  const slug = url.split('/').pop()
   if (slug) {
     localStorage.removeItem(`GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`)
   }
-  setScanVerified(slug) 
+  setScanVerified(slug)
   window.location.href = url
+}
+
+const handleRedirect = async (url) => {
+  if (!url) return
+  isLoading.value = true
+
+  try {
+    // Extract path segments to build check-status endpoint
+    // URL pattern: .../{randomCode} or .../{randomCode}/{location}
+    const urlObj = new URL(url)
+    const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
+    // Remove known prefixes like 'scan'
+    const filtered = segments.filter(s => s !== 'scan')
+    const statusPath = filtered.join('/')
+
+    const { checkStatus } = useGachaService()
+    const response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+
+    if (response?.data?.can_spin === true) {
+      doRedirect(url)
+    } else {
+      isLoading.value = false
+      errorMessages.value = response?.message || t('no_available_data')
+      redirectLink.value = ''
+      isNotAllowed.value = true
+    }
+  } catch (err) {
+    console.error('[Camera] check-status error:', err)
+    isLoading.value = false
+    errorMessages.value = err?._data?.message || err?.data?.message || t('no_available_data')
+    redirectLink.value = ''
+    isNotAllowed.value = true
+  }
 }
 
 watch(drawerVisible, (value) => {
