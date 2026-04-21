@@ -16,9 +16,9 @@
       <p class="font-bold text-exd-1424">{{ $t('characterCatalog') }}</p>
       <p class="font-bold leading-tight text-exd-1424">
         <span class="text-exd-2238">{{
-          store.footer_point > 4 ? 4 : store.footer_point
+          character_count > master_count ? master_count : character_count
         }}</span
-        >/4
+        >/{{ master_count }}
       </p>
     </div>
     <template v-if="isFetching">
