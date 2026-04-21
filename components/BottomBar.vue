@@ -26,7 +26,7 @@
         </p>
         <div class="absolute -ml-3 bottom-2">
           <div
-            v-if="!store.footer_point"
+            v-if="store.footer_point === null"
             class="!w-20 !h-7 bg-white mb-[6px] rounded-md"
           />
           <p

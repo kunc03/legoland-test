@@ -4,6 +4,8 @@ const POINT_TYPE = {
   POINT_COUNT: 'point_count',
 }
 export const store = reactive({
+  footer_point: null,
+  point: null,
   async fetchingDashboardData() {
     try {
       const settings = useState('settings')

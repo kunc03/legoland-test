@@ -14,7 +14,7 @@
           {{ $t('currentPoints') }}
         </p>
         <div
-          v-if="!store.point"
+          v-if="store.point === null"
           class="!w-32 !h-12 bg-white mb-[50%] rounded-md"
         />
         <p
