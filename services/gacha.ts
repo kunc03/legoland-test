@@ -193,6 +193,13 @@ export const useGachaService = () => {
   }
 
   /**
+   * Checks spin eligibility status by slug.
+   */
+  const checkSpinStatus = (slug: string) => {
+    return useFetchApi('GET', `gacha/check-status/${slug}`)
+  }
+
+  /**
    * Validates quiz response.
    */
   const validateQuiz = (payload: any) => {
@@ -236,6 +243,7 @@ export const useGachaService = () => {
     saveTempData,
     saveRegisteredData,
     checkGacha,
+    checkSpinStatus,
     validateQuiz,
     getQuiz,
     radiusCheck,
