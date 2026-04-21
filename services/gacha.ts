@@ -221,6 +221,14 @@ export const useGachaService = () => {
   }
 
   /**
+   * Checks if the user can spin for a given code/location path.
+   * Endpoint: GET gacha/check-status/{path}
+   */
+  const checkStatus = (path: string, params: any = {}) => {
+    return useFetchApi('GET', `gacha/check-status/${path}`, { params })
+  }
+
+  /**
    * Reports gacha spin multiple times logic.
    */
   const reportGacha = (payload: any) => {
@@ -243,6 +251,7 @@ export const useGachaService = () => {
     saveTempData,
     saveRegisteredData,
     checkGacha,
+    checkStatus,
     checkSpinStatus,
     validateQuiz,
     getQuiz,

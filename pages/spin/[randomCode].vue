@@ -926,7 +926,6 @@ const getBrowserInfo = computed(() => {
 })
 
 const checkSpinEligibility = async () => {
-  console.log('checkSpinEligibility', isResumingCurrentSpinSession())
   await new Promise((resolve) => setTimeout(resolve, 0))
 
   if (isResumingCurrentSpinSession()) {
@@ -936,7 +935,6 @@ const checkSpinEligibility = async () => {
   try {
     const slug = String(spinSlug.value).toLowerCase()
     const response = await checkSpinStatus(slug)
-    console.log('response', response)
     const statusData = response?.data || {}
     const canSpin = statusData?.can_spin !== false
 
