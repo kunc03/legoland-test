@@ -374,5 +374,6 @@
   "category1": "Dummy",
   "category2": "Menunggu Aset",
   "incorrectCode": "Kode yang Anda masukkan salah. Silakan coba lagi.",
-  "redeem": "Tukar"
+  "redeem": "Tukar",
+  "startingCamera": "Memulai kamera"
 }
