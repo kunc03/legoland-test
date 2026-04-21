@@ -943,8 +943,13 @@ const checkSpinEligibility = async () => {
 
   try {
     const slug = String(spinSlug.value).toLowerCase()
-    const response = await checkSpinStatus(slug)
-    const statusData = response?.data || {}
+    let statusData = {}
+
+    if (!externalRedeemStore.isExternalRedeem) {
+      const response = await checkSpinStatus(slug)
+      statusData = response?.data || {}
+    }
+
     const canSpin = statusData?.can_spin !== false
 
     if (canSpin) {
