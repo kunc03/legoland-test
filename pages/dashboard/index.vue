@@ -288,7 +288,7 @@
         class="text-center text-gray-500 text-sm cursor-pointer hover:text-gray-700 transition-colors"
         @click="showVersionDialog"
       >
-        v{{ packageJson.version || '1.0.0' }}
+        v{{ config.public.VERSION || '1.0.0' }}
       </p>
       <VersionDetector ref="versionDetector" />
     </div>
