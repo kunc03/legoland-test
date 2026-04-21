@@ -16,9 +16,9 @@
       <p class="font-bold text-exd-1424">{{ $t('characterCatalog') }}</p>
       <p class="font-bold leading-tight text-exd-1424">
         <span class="text-exd-2238">{{
-          String(character_count).padStart(3, '0')
+          store.footer_point > 4 ? 4 : store.footer_point
         }}</span
-        >/{{ String(master_count).padStart(3, '0') }}
+        >/4
       </p>
     </div>
     <template v-if="isFetching">
@@ -70,6 +70,8 @@
 </template>
 
 <script setup>
+import { store } from '~/stores/dashboard.js'
+
 definePageMeta({
   middleware: 'auth',
   layout: 'with-bottom-bar',

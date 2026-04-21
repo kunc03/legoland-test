@@ -455,7 +455,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import moment from 'moment'
 import close from '~/assets/images/close.svg'
 import eventTitle from '~/assets/images/event-title.png'
 import instruction from '~/assets/images/instruction.png'
@@ -521,8 +520,8 @@ const handleCloseDialog = () => (isNotAllowed.value = false)
 const handleAboutSpin = () => (showAboutSpin.value = true)
 
 const { encryptData, decryptData } = useEncryption()
-const { isScanVerified, clearScanVerified } = useGachaVerification()
-const { performSpin, isEligibleForSpin } = useGachaService()
+const { isScanVerified, clearScanVerified, setScanVerified } = useGachaVerification()
+const { performSpin, checkSpinStatus } = useGachaService()
 const { t, locale } = useI18n()
 const config = useRuntimeConfig()
 
@@ -669,7 +668,11 @@ const nextToSpin = async () => {
     }
   }
 
-  await checkSpinEligibility()
+  const isEligible = await checkSpinEligibility()
+  if (!isEligible) {
+    isLoading.value = false
+    return
+  }
 
   if (!isPrizeSpinRoute.value) {
     await triggerGachaSpin()
@@ -754,7 +757,7 @@ const getPassword = async (id) => {
       await checkingLocation()
     }
 
-    checkSpinEligibility()
+    await checkSpinEligibility()
 
     isLoading.value = false
   } catch (error) {
@@ -926,42 +929,46 @@ const checkSpinEligibility = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 
   if (isResumingCurrentSpinSession()) {
-    return
+    return true
   }
 
-  const slug = String(spinSlug.value).toLocaleUpperCase()
-  const slugStorageName = `${slug}_GACHA`
-  const slugData = localStorage.getItem(slugStorageName)
-  const parse = slugData && decryptData(slugData)
+  try {
+    const slug = String(spinSlug.value).toLowerCase()
+    let statusData = {}
 
-  const spinType = useState('spin_type').value
-  const readySpinAfterDate = parse?.spin_date_interval
-  const now = new Date().getTime()
-
-  if (slugData && spinType === 1) {
-    const expired_date = moment(new Date(parse.spin_date))
-      .add(1, 'days')
-      .startOf('day')
-      .valueOf()
-
-    if (now < expired_date) {
-      errorMessages.value = t('eligibilityMessageType1')
-      modalSpinWarning.value = true
+    if (!externalRedeemStore.isExternalRedeem) {
+      const response = await checkSpinStatus(slug)
+      statusData = response?.data || {}
     }
-  }
 
-  if (slugData && spinType === 3) {
-    errorMessages.value = t('eligibilityMessageType3')
+    const canSpin = statusData?.can_spin !== false
+
+    if (canSpin) {
+      return true
+    }
+
+    const spinType = Number(statusData?.spin_type || useState('spin_type').value || 0)
+    const readySpinAfterDate = statusData?.ready_spin_after_date
+
+    if ((spinType === 4 || spinType === 5) && readySpinAfterDate) {
+      await countdown(readySpinAfterDate)
+      return false
+    }
+
+    errorMessages.value =
+      response?.message ||
+      (spinType === 1
+        ? t('eligibilityMessageType1')
+        : spinType === 3
+          ? t('eligibilityMessageType3')
+          : t('no_available_data'))
     modalSpinWarning.value = true
-  }
-
-  if (
-    slugData &&
-    (spinType === 4 || spinType === 5) &&
-    readySpinAfterDate &&
-    new Date(readySpinAfterDate).getTime() > now
-  ) {
-    await countdown(readySpinAfterDate)
+    return false
+  } catch (error) {
+    errorMessages.value =
+      error?.data?.message || error?._data?.message || t('no_available_data')
+    modalSpinWarning.value = true
+    return false
   }
 }
 
@@ -1041,6 +1048,13 @@ watch(isNotAllowed, (newValue) => {
 })
 
 onMounted(() => {
+  const scanVerifiedFlag = String(route.query?.scan_verified || '').toLowerCase()
+  const shouldSetScanVerified = scanVerifiedFlag === '1' || scanVerifiedFlag === 'true'
+  const scanSlug = String(route.query?.scan_slug || spinSlug.value || '')
+  if (shouldSetScanVerified && scanSlug) {
+    setScanVerified(scanSlug)
+  }
+
   const location = spinSlug.value
 
   if (!isPrizeSpinRoute.value) {
