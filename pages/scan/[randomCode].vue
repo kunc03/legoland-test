@@ -400,6 +400,7 @@ const handleCloseDialog = () => {
 }
 
 const { t, locale } = useI18n()
+const { setScanVerified } = useGachaVerification()
 
 const wrongPassword = ref(false)
 
@@ -421,10 +422,16 @@ definePageMeta({
       const { data } = await locationService.getLocationPassword(location)
 
       if (data && data.before_spin_type === 1) {
-        return navigateTo(`/spin/${location}`)
+        return navigateTo({
+          path: `/spin/${location}`,
+          query: to.query,
+        })
       }
       if (data && data.before_spin_type === 3) {
-        return navigateTo(`/quiz/${location}`)
+        return navigateTo({
+          path: `/quiz/${location}`,
+          query: to.query,
+        })
       }
     } catch (error) {
       // Allow page to load so getPassword can show the dialog
@@ -704,6 +711,13 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   const location = route.params.randomCode
   const savedAnswer = localStorage.getItem('answer-password')
+  const scanVerifiedFlag = String(route.query?.scan_verified || '').toLowerCase()
+  const shouldSetScanVerified = scanVerifiedFlag === '1' || scanVerifiedFlag === 'true'
+  const scanSlug = String(route.query?.scan_slug || location || '')
+
+  if (shouldSetScanVerified && scanSlug) {
+    setScanVerified(scanSlug)
+  }
 
   await getPassword(location)
   getTerms()

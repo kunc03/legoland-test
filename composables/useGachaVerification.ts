@@ -1,5 +1,3 @@
-import moment from 'moment'
-
 export const useGachaVerification = () => {
   const { encryptData, decryptData } = useEncryption()
 
@@ -10,14 +8,23 @@ export const useGachaVerification = () => {
   const setScanVerified = (slug: string) => {
     if (!slug) return
     
+    const timestamp = Date.now()
     const ticket = {
       slug: slug.toLowerCase(),
-      timestamp: Date.now(),
+      timestamp,
       // Add a session-bound salt if needed, but for now this is robust enough
     }
     
     const encryptedTicket = encryptData(ticket)
     sessionStorage.setItem(`GACHA_SCAN_TICKET_${slug.toLowerCase()}`, encryptedTicket)
+    sessionStorage.setItem(
+      'GACHA_SCAN_TICKET_',
+      encryptData({
+        verified: true,
+        timestamp,
+        slug: slug.toLowerCase(),
+      })
+    )
   }
 
   /**
@@ -74,10 +81,11 @@ export const useGachaVerification = () => {
    * Clear the verification for a specific gacha slug.
    * Should be called after a successful spin.
    */
-  const clearScanVerified = (slug: string) => {
-    if (!slug) return
-    sessionStorage.removeItem(`GACHA_SCAN_TICKET_${slug.toLowerCase()}`)
-    sessionStorage.removeItem(`GACHA_SCAN_TICKET_${slug.toUpperCase()}`)
+  const clearScanVerified = (slug?: string) => {
+    if (slug) {
+      sessionStorage.removeItem(`GACHA_SCAN_TICKET_${slug.toLowerCase()}`)
+      sessionStorage.removeItem(`GACHA_SCAN_TICKET_${slug.toUpperCase()}`)
+    }
     sessionStorage.removeItem('GACHA_SCAN_TICKET_')
   }
 
