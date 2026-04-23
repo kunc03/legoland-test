@@ -180,7 +180,7 @@
           </p>
         </div>
         <div
-          v-if="charCategory && !hideCharacterDetails"
+          v-if="!externalRedeemStore.isExternalRedeem && charCategory && !hideCharacterDetails"
           class="flex items-center gap-5 text-exd-1218"
         >
           <p
