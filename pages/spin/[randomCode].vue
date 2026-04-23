@@ -700,11 +700,13 @@ const nextToSpin = async () => {
     return
   }
 
-  if (settings.value?.flow?.screens?.show_before_gacha_screen) {
+  const screenGacha = settings.value?.flow?.screens
+
+  if (screenGacha?.show_before_gacha_screen) {
     if (
-      settings.value?.flow?.screens?.spin_gacha_1_screen?.show_point_screen &&
-      settings.value?.flow?.screens?.spin_gacha_1_screen
-        ?.show_spin_gacha_1_video && (!isPrizeSpinRoute.value && !externalRedeemStore.isExternalRedeem)
+      screenGacha?.spin_gacha_1_screen?.show_point_screen &&
+      screenGacha?.spin_gacha_1_screen
+        ?.show_spin_gacha_1_video && (isPrizeSpinRoute.value && externalRedeemStore.isExternalRedeem)
     ) {
       playVideo.value = true
     } else {
