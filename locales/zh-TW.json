@@ -374,5 +374,6 @@
   "category1": "虛擬",
   "category2": "等待素材",
   "incorrectCode": "您輸入的代碼不正確，請重試。",
-  "redeem": "兌換"
+  "redeem": "兌換",
+  "productExchange": "商品兌換"
 }
