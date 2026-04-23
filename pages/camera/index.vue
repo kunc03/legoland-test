@@ -95,7 +95,7 @@
         <template #fallback>
           <div class="camera-loading z-6">
             <LoadingIcon />
-            <p class="camera-loading-text">Memuat kamera...</p>
+            <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
           </div>
         </template>
       </ClientOnly>
@@ -109,7 +109,7 @@
 
       <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
-        <p class="camera-loading-text">Memuat kamera...</p>
+        <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
       </div>
 
       <!-- Viewfinder Overlay -->
@@ -275,12 +275,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 import close from '~/assets/images/close.svg'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 // Device Detection
 const isAndroid = typeof navigator !== 'undefined'
@@ -298,6 +299,7 @@ const isDesktopDevice = typeof navigator !== 'undefined'
 // Hooks & Composables
 const { setScanVerified, clearScanVerified } = useGachaVerification()
 const { t } = useI18n()
+const route = useRoute()
 
 // Settings & i18n
 const settings = useState('settings')
@@ -337,6 +339,25 @@ const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
+
+// Handle restoration from bfcache (Back-Forward Cache)
+const handlePageShow = (event) => {
+  if (event.persisted) {
+    isLoading.value = false
+    paused.value = false
+  }
+}
+
+onMounted(() => {
+  // Ensure state is clean on mount
+  isLoading.value = false
+  paused.value = false
+  window.addEventListener('pageshow', handlePageShow)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pageshow', handlePageShow)
+})
 
 // Click-to-focus UI
 const focusPoint = ref({ x: 0, y: 0, visible: false })
@@ -691,9 +712,17 @@ const handleClose = () => {
   paused.value = false
 }
 
-const goToSpin = (url) => {
-  handleClose()
-  doRedirect(url)
+const getSlugFromUrl = (url) => {
+  try {
+    if (/^https?:\/\//i.test(url)) {
+      const urlObj = new URL(url)
+      const segments = urlObj.pathname.split('/').filter(Boolean)
+      return segments[segments.length - 1] || ''
+    }
+    return String(url).split('/').filter(Boolean).pop() || ''
+  } catch (e) {
+    return ''
+  }
 }
 
 const doRedirect = (url) => {
@@ -701,32 +730,54 @@ const doRedirect = (url) => {
   sessionStorage.removeItem('IS_ALREADY_SPIN')
   sessionStorage.removeItem('SPIN_TYPE')
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
-  const slug = url.split('/').pop()
+  
+  const slug = getSlugFromUrl(url)
   if (slug) {
     localStorage.removeItem(`GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`)
+    setScanVerified(slug)
   }
-  setScanVerified(slug)
+  
   window.location.href = url
 }
 
 const handleRedirect = async (url) => {
-  if (!url) return
+  if (!url || isLoading.value) return
   isLoading.value = true
 
   try {
-    // Extract path segments to build check-status endpoint
-    // URL pattern: .../{randomCode} or .../{randomCode}/{location}
-    const urlObj = new URL(url)
-    const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
-    // Remove known prefixes like 'scan'
-    const filtered = segments.filter(s => s !== 'scan')
-    const statusPath = filtered.join('/')
+    let statusPath = ''
+    let redirectUrl = url
+
+    if (/^https?:\/\//i.test(url)) {
+      const urlObj = new URL(url)
+      const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
+      statusPath = segments.filter(s => s !== 'scan').join('/')
+    } else {
+      // Relative path or plain code
+      const path = url.startsWith('/') ? url : `/scan/${url}`
+      const segments = path.replace(/^\//, '').split('/').filter(Boolean)
+      statusPath = segments.filter(s => s !== 'scan').join('/')
+      
+      // Ensure we have a full URL for redirect
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+      const absolutePath = path.startsWith('/scan') ? path : `/scan${path.startsWith('/') ? '' : '/'}${path}`
+      redirectUrl = `${baseUrl}${absolutePath}`
+    }
+
+    if (!statusPath) {
+      throw new Error('Invalid QR code')
+    }
 
     const { checkStatus } = useGachaService()
-    const response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+    let response = null
+    
+    // Only fetch status if on the camera page and have a valid statusPath (location)
+    if (route.path.startsWith('/camera') && statusPath) {
+      response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+    }
 
     if (response?.data?.can_spin === true) {
-      doRedirect(url)
+      doRedirect(redirectUrl)
     } else {
       isLoading.value = false
       errorMessages.value = response?.message || t('no_available_data')
@@ -734,7 +785,7 @@ const handleRedirect = async (url) => {
       isNotAllowed.value = true
     }
   } catch (err) {
-    console.error('[Camera] check-status error:', err)
+    console.error('[Camera] handleRedirect error:', err)
     isLoading.value = false
     errorMessages.value = err?._data?.message || err?.data?.message || t('no_available_data')
     redirectLink.value = ''

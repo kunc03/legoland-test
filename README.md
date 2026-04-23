@@ -1,63 +1,130 @@
-# Legoland Gacha Application
+# 🎡 Legoland Gacha Application
 
-A professional web application built with **Nuxt 3** and **Vue 3** for managing gacha spins and prize redemptions.
+[![Nuxt](https://img.shields.io/badge/Nuxt-3.18-00DC82?logo=nuxt.js&logoColor=white)](https://nuxt.com/)
+[![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
+[![PrimeVue](https://img.shields.io/badge/PrimeVue-4.0-3B82F6?logo=primevue&logoColor=white)](https://primevue.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-Private-red.svg)](README.md)
 
-## 🚀 Versioning Strategy
+A professional, high-performance web application built with **Nuxt 3** and **Vue 3** for managing the Legoland Gacha ecosystem, including QR code scanning, spin logic, and prize redemptions.
 
-This project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
+---
 
-- **MAJOR (x.0.0)**: Incompatible API changes.
-- **MINOR (1.x.0)**: Backwards-compatible new features.
-- **PATCH (1.0.x)**: Backwards-compatible bug fixes.
+## 🌟 Key Features
 
-Current Version: `1.1.0`  
-Last Update: `21-04-2026`
-
-Refer to the [CHANGELOG.md](./CHANGELOG.md) for a detailed history of changes.
+- 📸 **Advanced QR Scanning**: High-accuracy scanning using `@zxing/browser` and `vue-qrcode-reader`.
+- 🎰 **Gacha Engine**: Complex spin logic with backend validation and state persistence.
+- 🎁 **Prize Management**: Integrated flow for claiming and redeeming prizes.
+- 🔐 **Secure Authentication**: Robust auth system with session management via Pinia.
+- 📊 **Dashboard Integration**: Real-time monitoring and management metrics.
+- 📱 **Mobile Optimized**: Responsive design tailored for seamless mobile experiences.
+- 🔄 **Version Detection**: Built-in mechanism to detect and prompt for application updates.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Nuxt 3](https://nuxt.com/)
-- **State Management**: [Pinia](https://pinia.vuejs.org/)
-- **UI Components**: [PrimeVue 4](https://primevue.org/)
-- **Styling**: Tailwind CSS
-- **Camera**: [Vue QR Code Reader](https://gruhn.github.io/vue-qrcode-reader/)
+### Core Frameworks
+- **Framework**: [Nuxt 3](https://nuxt.com/) (Hybrid Vue Framework)
+- **UI Library**: [PrimeVue 4](https://primevue.org/) (Tailwind-integrated theme)
+- **State Management**: [Pinia](https://pinia.vuejs.org/) (with persisted state support)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [SASS](https://sass-lang.com/)
 
-## 📦 Setup & Installation
+### Essential Libraries
+- **API Client**: Axios (configured in `services/`)
+- **QR/Barcode**: Vue QR Code Reader & ZXing
+- **Validation**: Yup (Schema-based validation for forms)
+- **I18n**: Vue I18n (Multi-language support)
+- **Utilities**: Lodash, Moment, Crypto-js
 
-Make sure to install the dependencies:
+---
+
+## 📁 Project Structure
+
+```text
+├── assets/             # Global styles (SCSS), images, and fonts
+├── components/         # Reusable Vue components
+├── composables/        # Shared logic and reactive state
+├── data/               # Static datasets and configuration
+├── layouts/            # Nuxt layout templates
+├── locales/            # Translation files for i18n
+├── middleware/         # Navigation guards and auth logic
+├── pages/              # Application routes and views
+├── plugins/            # Nuxt plugins (GTag, PrimeVue config)
+├── public/             # Static assets (robots.txt, favicon)
+├── server/             # Server-side routes and API handlers
+├── services/           # Data fetching and API interaction logic
+├── stores/             # Pinia state stores
+├── utils/              # Helper functions and constants
+└── VERSIONING_GUIDE.md # Standards for versioning and releases
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js**: `^18.0.0` or higher
+- **Package Manager**: `pnpm` (recommended) or `npm`
+
+### Installation
 
 ```bash
-# Using pnpm (recommended)
+# Clone the repository
+git clone <repository-url>
+
+# Install dependencies
 pnpm install
-
-# Using npm
-npm install
 ```
 
-## 💻 Development Server
+### Environment Setup
 
-Start the development server on `http://localhost:3000`:
+Create a `.env` file based on [.env.example](.env.example):
 
 ```bash
+cp .env.example .env
+```
+
+### Local Development
+
+```bash
+# Start development server
 pnpm dev
+
+# Expose to local network (useful for mobile testing)
+pnpm expose
 ```
 
-## 🏗️ Production Build
-
-Build the application for production:
+### Production
 
 ```bash
+# Build for production
 pnpm build
-```
 
-Locally preview the production build:
-
-```bash
+# Preview production build
 pnpm preview
 ```
 
 ---
-*Developed for Legoland Gacha System.*
+
+## 📌 Versioning Strategy
+
+This project follows **Semantic Versioning (SemVer) 2.0.0**. For a detailed guide on how we handle releases, commit messages, and version bumps, please refer to:
+
+👉 [**Versioning & Release Guide**](./VERSIONING_GUIDE.md)
+
+Current Version: `1.1.5`  
+Check [**CHANGELOG.md**](./CHANGELOG.md) for full history.
+
+---
+
+## 🤝 Contribution & Standards
+
+- **Linting**: Standard ESLint rules with Prettier integration.
+- **Commits**: Follow [Conventional Commits](https://www.conventionalcommits.org/) for automated changelog generation.
+- **Workflow**: Create feature branches from `main` or `develop`.
+
+---
+
+*Developed with ❤️ for Legoland Gacha System.*

@@ -376,5 +376,6 @@
   "incorrectCode": "入力したコードが正しくありません。もう一度お試しください。",
   "exchangeItemDesc": "マイページ「けいひんこうかん」から こうかんしてね！",
   "redeem": "交換",
-  "productExchange": "けいひんこうかん"
+  "productExchange": "けいひんこうかん",
+  "startingCamera": "カメラを起動中"
 }
