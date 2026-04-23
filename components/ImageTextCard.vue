@@ -8,7 +8,7 @@
       ]"
       @click="handleClick"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
         <div v-if="showImage" class="w-[40%] flex items-center">
           <CharacterCard :image="imageCard" :isDisabled="isDisabled" :bgColor="bgColor" />
         </div>
