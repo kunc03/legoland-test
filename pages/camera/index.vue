@@ -95,7 +95,7 @@
         <template #fallback>
           <div class="camera-loading z-6">
             <LoadingIcon />
-            <p class="camera-loading-text">Memuat kamera...</p>
+            <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
           </div>
         </template>
       </ClientOnly>
@@ -109,7 +109,7 @@
 
       <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
-        <p class="camera-loading-text">Memuat kamera...</p>
+        <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
       </div>
 
       <!-- Viewfinder Overlay -->

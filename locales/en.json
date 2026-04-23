@@ -374,5 +374,7 @@
   "category1": "Dummy",
   "category2": "Awaiting Assets",
   "incorrectCode": "The code you entered is incorrect. Please try again.",
-  "redeem": "Redeem"
+  "redeem": "Redeem",
+  "productExchange": "Product Exchange",
+  "startingCamera": "Starting camera"
 }

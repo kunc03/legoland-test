@@ -196,7 +196,8 @@ export const useGachaService = () => {
    * Checks spin eligibility status by slug.
    */
   const checkSpinStatus = (slug: string) => {
-    return useFetchApi('GET', `gacha/check-status/${slug}`)
+    const location = String(slug || '').split('/').filter(Boolean)[0] || slug
+    return useFetchApi('GET', `gacha/check-status/${location}`)
   }
 
   /**
@@ -222,10 +223,12 @@ export const useGachaService = () => {
 
   /**
    * Checks if the user can spin for a given code/location path.
-   * Endpoint: GET gacha/check-status/{path}
+   * Ensures only a single location segment is used.
+   * Endpoint: GET gacha/check-status/{location}
    */
   const checkStatus = (path: string, params: any = {}) => {
-    return useFetchApi('GET', `gacha/check-status/${path}`, { params })
+    const location = String(path || '').split('/').filter(Boolean)[0] || path
+    return useFetchApi('GET', `gacha/check-status/${location}`, { params })
   }
 
   /**

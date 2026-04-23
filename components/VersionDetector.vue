@@ -30,7 +30,8 @@
               <span class="font-semibold text-gray-700">Version:</span>
               <div @click="copyToClipboard" class="flex items-center gap-2 cursor-pointer group">
                 <span class="text-gray-500 font-mono">
-                  {{ version }} <small class="text-gray-400">({{ commit }})</small>
+                  {{ version }} 
+                  <!-- <small class="text-gray-400">({{ commit }})</small> -->
                 </span>
                 <i :class="isCopied ? 'pi pi-check text-green-500' : 'pi pi-copy text-gray-400'" class="text-[10px]"></i>
                 
