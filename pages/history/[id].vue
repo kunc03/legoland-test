@@ -64,7 +64,7 @@
           <Skeleton class="text-exd-gray-scorpion bg-exd-gray-scorpion" />
         </div>
         <div
-          v-else-if="!isFetching && historyDetailData.character_category"
+          v-else-if="!isFetching && historyDetailData.character_category && !externalRedeemStore.isExternalRedeem"
           class="flex items-center gap-5 text-exd-1218"
         >
           <p
@@ -88,7 +88,7 @@
           v-html="historyDetailData.character_description"
         />
 
-        <div
+        <div v-if="!externalRedeemStore.isExternalRedeem" 
           class="flex flex-col gap-2 py-4 text-exd-gray-scorpion text-exd-1218"
         >
           <div class="w-full">
@@ -106,6 +106,7 @@
         </div>
 
         <HeadingSection
+          v-if="!externalRedeemStore.isExternalRedeem"
           :is-fetching="isFetching"
           :title="historyDetailData?.store_name ?? ''"
           :body="historyDetailData?.store_description ?? ''"
@@ -157,7 +158,7 @@
         </div>
       </div>
 
-      <div class="inline-flex items-center justify-center w-full gap-3 mb-6">
+      <div v-if="!externalRedeemStore.isExternalRedeem" class="inline-flex items-center justify-center w-full gap-3 mb-6">
         <div class="speech-bubble text-[10pt]">
           {{ $t('share') }}
           <div class="triangle-border"></div>
@@ -255,6 +256,8 @@ const settings = useState('settings')
 const historyData = settings.value?.character_collection || {}
 
 const socialMediaLinks = ref([])
+
+const externalRedeemStore = useExternalRedeemStore()
 
 const openLink = (url) => {
   window.open(url, '_blank')
