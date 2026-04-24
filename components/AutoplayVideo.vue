@@ -12,6 +12,7 @@
       playsinline
       webkit-playsinline
       x5-playsinline
+      :muted="videoMuted"
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
       @ended="handleVideoEnded"
       @play="onVideoPlay"
@@ -53,6 +54,7 @@ const props = defineProps({
   src: { type: String, default: '' },
   triggerPlay: { type: Boolean, default: false },
   lightLoading: { type: Boolean, default: false },
+  muted: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['ended'])
@@ -63,6 +65,7 @@ const showButton = ref(false)
 const showLoading = ref(true)
 const hasPlayed = ref(false)
 const isVideoLoaded = ref(false)
+const videoMuted = ref(true) // Start muted for Safari autoplay compatibility
 const loadingStatus = ref('Loading...')
 const blobUrl = ref(null)
 let buttonDelayTimeout = null
@@ -81,6 +84,19 @@ const checkInAppBrowser = () => {
   if (typeof window === 'undefined') return true
   const ua = navigator.userAgent || ''
   return /Instagram|FBAN|FBAV|Line|Twitter/i.test(ua)
+}
+
+// Check if we're on old Safari (pre-iOS 10) where unmuting after play may cause pause
+const isOldSafari = () => {
+  if (typeof window === 'undefined') return false
+  const ua = navigator.userAgent || ''
+  // Match Safari on iOS with version < 10 (e.g. CPU iPhone OS 9_3 like, CPU iPhone OS 8_1)
+  const iosVersionMatch = ua.match(/CPU (?:iPhone )?OS (\d+)_/)
+  if (iosVersionMatch) {
+    const majorVersion = parseInt(iosVersionMatch[1], 10)
+    return majorVersion < 10
+  }
+  return false
 }
 
 // Get video source URL
@@ -161,6 +177,13 @@ const onVideoError = (e) => {
 const onVideoPlay = () => {
   hasPlayed.value = true
   showLoading.value = false
+  // Unmute after play starts if the parent wants sound and browser supports it
+  // (Safari allows autoplay only when muted, so we start muted then unmute)
+  // But on old Safari (pre-iOS 10), unmuting may cause the video to pause,
+  // so we keep it muted there as a safe fallback
+  if (!props.muted && !isOldSafari()) {
+    videoMuted.value = false
+  }
   startButtonDelay()
 }
 
@@ -224,6 +247,10 @@ const attemptPlay = async () => {
 
     showLoading.value = true
     loadingStatus.value = 'Starting...'
+
+    // Ensure video is muted before attempting play (required for Safari autoplay)
+    videoMuted.value = true
+    videoRef.value.muted = true
 
     try {
         await videoRef.value.play()
