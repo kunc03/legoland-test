@@ -270,11 +270,11 @@ const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
 }
 
 const handleButton = async () => {
-  const showVideo =
+  const showCharacterScreen =
     settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
 
-  if (showVideo) {
-    playVideo.value = true
+  if (showCharacterScreen) {
+    await handleGoToCharacter()
     return
   }
 
@@ -317,18 +317,6 @@ const handleKeydown = (event) => {
   }
 }
 
-onMounted(async () => {
-  await handleGoToCharacter()
-})
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })
@@ -356,11 +344,11 @@ onMounted(async () => {
   }
 
   if (!hideCharacter.value && showVideo && !showPointScreen) {
-    playVideo.value = true
+    await handleGoToCharacter()
     return
   }
 
-  fetchImageFromApi()
+  await fetchImageFromApi()
 
   disabledButton.value = !(showTapScreen || showCharScreen)
 
