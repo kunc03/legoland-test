@@ -118,22 +118,25 @@
     </Dialog>
   </div>
 
-  <AutoplayVideo
-    v-if="playVideo || shouldShowCharacterScreen"
+  <!-- <AutoplayVideo
+    v-if="!externalRedeemStore.isExternalGacha && (playVideo || shouldShowCharacterScreen)"
     :trigger-play="playVideo || shouldShowCharacterScreen"
     :light-loading="true"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
     @ended="handleGoToCharacter"
-  />
+  /> -->
 </template>
 
 <script setup>
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const router = useRouter()
 const route = useRoute()
+
+const externalRedeemStore = useExternalRedeemStore()
 
 const apiPoint = ref(null)
 const USER = useCookie('USER')
@@ -313,6 +316,10 @@ const handleKeydown = (event) => {
     }
   }
 }
+
+onMounted(async () => {
+  await handleGoToCharacter()
+})
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
