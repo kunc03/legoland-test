@@ -124,6 +124,7 @@
     :light-loading="true"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
+    play-once
     @ended="handleGoToCharacter"
   /> -->
 </template>

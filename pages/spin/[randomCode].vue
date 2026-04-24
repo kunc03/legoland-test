@@ -117,6 +117,7 @@
     :trigger-play="playVideo"
     :src="gacha?.spin_gacha_1_screen?.gacha_1_video"
     :is-external-gacha="gachaType == 'external'"
+    play-once
     @ended="goToSpinPoint"
   />
 

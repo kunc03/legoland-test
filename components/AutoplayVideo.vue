@@ -12,6 +12,7 @@
       playsinline
       webkit-playsinline
       x5-playsinline
+      :muted="props.muted"
       class="absolute z-[1200] inset-0 w-full h-full object-cover"
       @ended="handleVideoEnded"
       @play="onVideoPlay"
@@ -53,6 +54,8 @@ const props = defineProps({
   src: { type: String, default: '' },
   triggerPlay: { type: Boolean, default: false },
   lightLoading: { type: Boolean, default: false },
+  playOnce: { type: Boolean, default: false },
+  muted: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['ended'])
@@ -167,6 +170,7 @@ const onVideoPlay = () => {
 // Handle tap on the video area to play
 const handleTapToPlay = async () => {
   if (!videoRef.value) return
+  if (props.playOnce && hasPlayed.value) return
   
   const video = videoRef.value
   
@@ -231,7 +235,19 @@ const attemptPlay = async () => {
         showLoading.value = false
     } catch (e) {
         console.warn('Auto play failed:', e)
-        loadingStatus.value = 'Tap to play'
+        if (props.playOnce && !videoRef.value.muted) {
+            videoRef.value.muted = true
+            try {
+                await videoRef.value.play()
+                hasPlayed.value = true
+                showLoading.value = false
+            } catch (e2) {
+                console.warn('Muted auto play also failed:', e2)
+                loadingStatus.value = 'Tap to play'
+            }
+        } else {
+            loadingStatus.value = 'Tap to play'
+        }
     }
 }
 
