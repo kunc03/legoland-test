@@ -25,7 +25,7 @@ export const store = reactive({
         footer_point = data.point ?? 0
       }
       this.footer_point = footer_point
-      this.point = String(data.point).padStart(4, '0')
+      this.point = String(data.point)
     } catch (error) {
       console.log("Error: Can't save spin result")
     }
