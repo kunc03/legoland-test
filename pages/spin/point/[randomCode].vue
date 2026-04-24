@@ -123,7 +123,7 @@
     :trigger-play="playVideo || shouldShowCharacterScreen"
     :light-loading="true"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
-    :muted="isInstagram"
+    :muted="true"
     @ended="handleGoToCharacter"
   />
 </template>
