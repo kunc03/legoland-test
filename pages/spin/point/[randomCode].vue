@@ -209,7 +209,7 @@ const markSpinFlowCompleted = () => {
 }
 
 definePageMeta({
-  middleware: 'valid-password',
+  middleware: ['valid-password', 'auto-redirect'],
   layout: 'gacha-machine',
 })
 
