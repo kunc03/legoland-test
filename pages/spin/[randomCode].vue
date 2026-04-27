@@ -354,13 +354,13 @@
     </template>
   </Dialog>
 
-  <Modal :is-open="showAboutSpin" :on-close="() => closeShowAboutSpin()">
+  <Modal :is-open="showAboutSpin" width="exd-400" :on-close="() => closeShowAboutSpin()">
     <template v-slot:body>
       <div
         class="relative max-h-[55vh] overflow-y-auto flex flex-col items-center justify-start w-full gap-5 px-4 py-6"
       >
         <div class="w-full text-left">
-          <p v-html="popUpContent" class="text-exd-gray-scorpion"></p>
+          <div v-html="popUpContent" class="vhtml-desc"></div>
         </div>
       </div>
     </template>
