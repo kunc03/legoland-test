@@ -63,9 +63,9 @@
 
         <img
           v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
-          :src="gachaTom"
-          alt="gacha2"
-          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-auto max-h-[85%] sm:max-h-[90%] object-contain"
+          :src="roulette"
+          alt="roulette"
+          class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[85%] h-auto max-h-[85%] sm:max-h-[90%] object-contain"
           preload
         />
       </div>
@@ -86,7 +86,7 @@
           <p
             class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
             @click="handleAboutSpin"
-            :style="{ color: settings?.global?.text_colors?.tertiary }"
+            :style="{ color: externalRedeemStore.isExternalRedeem ? settings?.global?.text_colors?.tertiary : settings?.global?.text_colors?.primary }"
           >
             {{
               gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
@@ -459,6 +459,7 @@ import close from '~/assets/images/close.svg'
 import eventTitle from '~/assets/images/event-title.png'
 import instruction from '~/assets/images/instruction.png'
 import gachaTom from '~/public/images/gacha-tom.png'
+import roulette from '~/assets/images/roulette.png'
 import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const externalRedeemStore = useExternalRedeemStore()

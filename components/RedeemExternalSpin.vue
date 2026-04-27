@@ -87,7 +87,7 @@
             "
           />
 
-          <div
+          <!-- <div
             v-if="
               settings?.prize?.step_1?.prize_description
                 ?.show_redemption_location
@@ -114,14 +114,14 @@
                 </span>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
       <SolidButton
         :label="
           disableRedeem
             ? $t('cannotBeExchanged')
-            : settings?.prize?.step_1?.button_text
+            : $t('exchange')
         "
         :disabled="disableRedeem || isFetching"
         :on-click="handleToggleModal"

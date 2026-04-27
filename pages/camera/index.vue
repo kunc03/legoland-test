@@ -126,7 +126,7 @@
     </div>
 
     <!-- Zoom Slider UI -->
-    <div v-if="zoomSupported && !paused && cameraReady" class="zoom-slider-container">
+    <!-- <div v-if="zoomSupported && !paused && cameraReady" class="zoom-slider-container">
       <input 
         type="range" 
         class="zoom-slider" 
@@ -136,7 +136,7 @@
         v-model.number="zoom" 
       />
       <div class="zoom-text">{{ Number(zoom).toFixed(1) }}x</div>
-    </div>
+    </div> -->
 
     <!-- Low-light Tip Banner -->
     <Transition name="fade">
