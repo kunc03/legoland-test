@@ -118,22 +118,25 @@
     </Dialog>
   </div>
 
-  <AutoplayVideo
-    v-if="playVideo || shouldShowCharacterScreen"
+  <!-- <AutoplayVideo
+    v-if="!externalRedeemStore.isExternalGacha && (playVideo || shouldShowCharacterScreen)"
     :trigger-play="playVideo || shouldShowCharacterScreen"
     :light-loading="true"
     :src="gacha?.spin_gacha_2_screen?.gacha_2_video"
     :muted="isInstagram"
     @ended="handleGoToCharacter"
-  />
+  /> -->
 </template>
 
 <script setup>
 import moment from 'moment'
 import { useI18n } from 'vue-i18n'
+import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const router = useRouter()
 const route = useRoute()
+
+const externalRedeemStore = useExternalRedeemStore()
 
 const apiPoint = ref(null)
 const USER = useCookie('USER')
@@ -206,7 +209,7 @@ const markSpinFlowCompleted = () => {
 }
 
 definePageMeta({
-  middleware: 'valid-password',
+  middleware: ['valid-password', 'auto-redirect'],
   layout: 'gacha-machine',
 })
 
@@ -267,11 +270,11 @@ const reportMultipleSpin = async ({ gift_id, character_id, location_id }) => {
 }
 
 const handleButton = async () => {
-  const showVideo =
+  const showCharacterScreen =
     settings.value?.flow?.screens?.spin_gacha_2_screen?.show_character_screen
 
-  if (showVideo) {
-    playVideo.value = true
+  if (showCharacterScreen) {
+    await handleGoToCharacter()
     return
   }
 
@@ -322,14 +325,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
 onMounted(async () => {
   const screens = settings.value?.flow?.screens || {}
 
@@ -349,11 +344,11 @@ onMounted(async () => {
   }
 
   if (!hideCharacter.value && showVideo && !showPointScreen) {
-    playVideo.value = true
+    await handleGoToCharacter()
     return
   }
 
-  fetchImageFromApi()
+  await fetchImageFromApi()
 
   disabledButton.value = !(showTapScreen || showCharScreen)
 
