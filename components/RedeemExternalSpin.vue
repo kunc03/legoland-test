@@ -121,7 +121,7 @@
         :label="
           disableRedeem
             ? $t('cannotBeExchanged')
-            : settings?.prize?.step_1?.button_text
+            : $t('exchange')
         "
         :disabled="disableRedeem || isFetching"
         :on-click="handleToggleModal"

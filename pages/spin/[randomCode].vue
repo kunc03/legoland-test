@@ -86,7 +86,7 @@
           <p
             class="underline cursor-pointer sm:text-exd-1424 text-exd-1218"
             @click="handleAboutSpin"
-            :style="{ color: settings?.global?.text_colors?.primary }"
+            :style="{ color: externalRedeemStore.isExternalRedeem ? settings?.global?.text_colors?.tertiary : settings?.global?.text_colors?.primary }"
           >
             {{
               gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.popup?.popup_text
