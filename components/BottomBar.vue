@@ -131,7 +131,6 @@ const handleItems = () => {
   dynamicItems.value = items.map((item, index) => {
     const label = item.footer_title_name?.value || '';
     const key = (item.footer_title_name?.key || '').toLowerCase();
-    console.log(key)
 
     // Mapping routing berdasarkan key agar lebih stabil
     const getRouteHandler = () => {
