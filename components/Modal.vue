@@ -2,7 +2,7 @@
   <Dialog
     :visible="isOpen"
     modal
-    class="!w-exd-300 !max-w-sm border border-exd-gray-44 rounded-xl"
+    :class="`!w-${width} !max-w-sm border border-exd-gray-44 rounded-xl`"
     :style="{
       background: settings?.global?.modal?.background_color
     }"
@@ -44,6 +44,10 @@ const props = defineProps({
   isHiddenClose: {
     type: Boolean,
     default: false,
+  },
+  width: {
+    type: String,
+    default: 'exd-300',
   },
 })
 
