@@ -8,7 +8,7 @@
     </p>
   </HeaderBar>
   <div class="flex flex-col px-8 mt-[35%] sm:mt-[30%]">
-    <div v-if="!hidePoint" class="flex flex-col items-center">
+    <div v-if="!hidePoint && !externalRedeemStore.isExternalRedeem" class="flex flex-col items-center">
       <div class="flex flex-col mt-[5%] items-center">
         <p class="font-bold text-[var(--primary)] text-exd-1530">
           {{ $t('currentPoints') }}
@@ -284,11 +284,12 @@
     <div
       class="relative inline-flex flex-col w-full mx-auto mt-5 gap-5"
     >
-      <p class="text-center text-sm text-exd-gray-scorpion">
-        LEGO, the LEGO logo, and LEGOLAND are trademarks of the LEGO Group. ©2026 The LEGO Group. LEGOLAND is part of Merlin Entertainments Ltd.
+      <p class="text-center text-[55%] text-exd-gray-scorpion flex flex-col">
+        <span class="">LEGO, the LEGO logo & LEGOLAND are trademarks of the LEGO Group.</span>
+        <span class="">©2026 The LEGO Group. LEGOLAND is part of Merlin Entertainments Ltd.</span>
       </p>
       <p 
-        class="text-center text-exd-gray-scorpion text-sm cursor-pointer hover:text-gray-700 transition-colors"
+        class="text-center text-exd-gray-scorpion text-xs cursor-pointer hover:text-gray-700 transition-colors opacity-60"
         @click="showVersionDialog"
       >
         v{{ config.public.VERSION || '1.0.0' }}
