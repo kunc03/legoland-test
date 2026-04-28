@@ -64,10 +64,10 @@
     </div>
 
     <!-- Camera Stream -->
-    <div 
+    <div
       class="camera-stream-wrapper"
       @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
+      @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
       @touchcancel="onTouchEnd"
       @click="onCameraClick"
@@ -88,7 +88,7 @@
             transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: isPinching ? 'none' : 'transform 0.2s ease-out',
             willChange: 'transform'
           }"
         />
@@ -339,6 +339,7 @@ const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
+const isPinching = ref(false)
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -470,6 +471,7 @@ watch(zoom, (newVal) => {
 
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
+    isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -479,19 +481,21 @@ const onTouchStart = (e) => {
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    e.preventDefault()
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     const ratio = distance / initialPinchDistance.value
-    
+
     let newZoom = initialZoomAtPinchStart.value * ratio
     newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-    zoom.value = Number(newZoom.toFixed(1))
+    zoom.value = Number(newZoom.toFixed(2))
   }
 }
 
 const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
+    isPinching.value = false
     initialPinchDistance.value = null
   }
 }
