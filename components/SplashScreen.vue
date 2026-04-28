@@ -206,13 +206,11 @@ onUnmounted(() => {
   <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
-      <img
-        :src="gacha.loading_screen.gif || ''"
+      <img :src="$imgV(gacha.loading_screen.gif || '')"
         class="w-[100px] h-[100px]"
       />
       <h3 class="ml-5 text-xl font-bold" :style="{ color: gacha.loading_screen.text_color }">LOADING...</h3>
-      <!-- <img
-        src="~/assets/images/loading.png"
+      <!-- <img src="~/assets/images/loading.png"
         class="mt-6 ml-5 w-[126px] h-[24px]"
       /> -->
     </div>

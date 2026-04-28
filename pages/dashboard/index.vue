@@ -50,8 +50,7 @@
         @click="handleGoToPrize"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="settings?.user_dashboard?.prize_collections?.icon"
+          <img :src="$imgV(settings?.user_dashboard?.prize_collections?.icon)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -81,8 +80,7 @@
         @click="handleGoToRedeem"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="settings?.user_dashboard?.gacha_collections?.icon"
+          <img :src="$imgV(settings?.user_dashboard?.gacha_collections?.icon)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -112,8 +110,7 @@
         @click="handleGoToHistory"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="peopleImg"
+          <img :src="$imgV(peopleImg)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -143,8 +140,7 @@
         @click="handleGoToCamera"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="cameraImg"
+          <img :src="$imgV(cameraImg)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -182,8 +178,7 @@
         @click="handleGoToPrize"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="settings?.user_dashboard?.prize_collections?.icon"
+          <img :src="$imgV(settings?.user_dashboard?.prize_collections?.icon)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -213,8 +208,7 @@
         @click="handleGoToHistory"
       >
         <div class="flex items-center justify-center h-[60px]">
-          <img
-            :src="settings?.user_dashboard?.gacha_collections?.icon"
+          <img :src="$imgV(settings?.user_dashboard?.gacha_collections?.icon)"
             alt="icon-gift"
             width="60"
             height="60"
@@ -247,7 +241,7 @@
             <IconsExport class="w-5 h-5 text-exd-gray-scorpion" />
           </span>
         </p>
-        <img :src="arrow" alt="arrow" width="12" height="12" class="invert" />
+        <img :src="$imgV(arrow)" alt="arrow" width="12" height="12" class="invert" />
       </div>
     </div>
 
@@ -275,7 +269,7 @@
           class="!items-start"
         >
           <a :href="item.banner_url" target="_blank" class="w-full">
-            <img :src="item.banner_image" />
+            <img :src="$imgV(item.banner_image)" />
           </a>
         </SwiperSlide>
       </Swiper>
@@ -306,8 +300,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

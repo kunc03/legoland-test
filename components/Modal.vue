@@ -9,8 +9,7 @@
     @update:visible="$emit('isOpen', $event)"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         :hidden="isHiddenClose"
         alt="close"
         width="30"

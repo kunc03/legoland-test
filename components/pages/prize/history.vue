@@ -12,12 +12,11 @@
           class="inline-flex justify-between pr-4 text-exd-gray-scorpion w-100"
         >
           <div class="flex flex-col items-start justify-center gap-1">
-            <img
-              v-if="
+            <img v-if="
                 body.rarity?.type === 'image' &&
                 settings?.prize?.step_1?.has_been_redeemed?.show_prize_rarity
               "
-              :src="body.rarity?.image"
+              :src="$imgV(body.rarity?.image)"
               alt="arrow"
               width="30"
               height="30"

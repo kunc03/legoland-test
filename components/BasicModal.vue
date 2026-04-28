@@ -9,8 +9,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -24,7 +23,7 @@
       >
         <!-- Image -->
         <div v-if="image" class="relative w-full">
-          <img :src="image" alt="modal image" class="w-full object-cover px-8 pt-8" />
+          <img :src="$imgV(image)" alt="modal image" class="w-full object-cover px-8 pt-8" />
           <div
             v-if="category"
             class="absolute top-0 mx-10 mt-10 px-1 bg-[#FF0076] text-sm text-white"

@@ -11,8 +11,7 @@
       <template #container="{ closeCallback }">
         <div class="relative pt-20">
           <h3 class="text-lg font-bold text-gray-700 absolute top-5 left-5">Version Information</h3>
-          <img
-            :src="close"
+          <img :src="$imgV(close)"
             alt="close"
             width="30"
             height="30"

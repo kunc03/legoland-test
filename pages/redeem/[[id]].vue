@@ -450,8 +450,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

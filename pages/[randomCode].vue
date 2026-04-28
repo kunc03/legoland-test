@@ -17,8 +17,7 @@
         </button>
         <LanguangePanel v-model:visible="langPanel" />
       </div>
-      <img
-        :src="settings.global.logo"
+      <img :src="$imgV(settings.global.logo)"
         alt="logo"
         width="95"
         height="58"
@@ -68,8 +67,7 @@
           v-html="responseData.description"
         ></p>
         <div class="overflow-hidden basis-1/2 flex-0">
-          <img
-            :src="displayImage"
+          <img :src="$imgV(displayImage)"
             alt="response-image"
             preload
             class="size-auto"

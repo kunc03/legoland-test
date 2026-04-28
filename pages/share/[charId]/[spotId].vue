@@ -168,10 +168,9 @@
                 v-if="socialMediaLinks.length"
                 class="inline-flex md:gap-3 gap-[6px] w-full justify-center items-center mb-3 bg-exd-zinc-100 p-5 rounded-lg"
               >
-                <img
-                  v-for="(link, index) in socialMediaLinks"
+                <img v-for="(link, index) in socialMediaLinks"
                   :key="index"
-                  :src="link.src"
+                  :src="$imgV(link.src)"
                   :alt="link.alt"
                   :aria-label="link.alt"
                   class="cursor-pointer md:size-7 size-7"
@@ -201,8 +200,7 @@
                       class="text-exd-green text-sm flex items-center cursor-pointer relative after:content-[''] after:absolute after:inset-x-0 after:bottom-0 after:border-b after:border-b-exd-green"
                       @click="openGoogleMaps"
                       >{{ $t('openGoogleMaps') }}
-                      <img
-                        src="~/assets/images/export-green.svg"
+                      <img src="~/assets/images/export-green.svg"
                         alt="export"
                         width="15"
                         height="15"

@@ -21,8 +21,7 @@
       ]"
       v-else
     >
-      <img
-        :src="settings.global.logo"
+      <img :src="$imgV(settings.global.logo)"
         alt="intl"
         preload
         class="absolute w-auto h-full transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"

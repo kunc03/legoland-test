@@ -23,8 +23,8 @@
         <IconsArrow v-if="hasIcon && !hasLoading && variant !== 'skip'" :style="{ color: textColor }" class="w-8 h-8 rotate-180" />
       </div>
       <div v-if="hasIcon && variant === 'skip'" class="flex pr-3">
-        <img :src="arrowSkip" alt="arrow" width="16" height="10" />
-        <img :src="arrowSkip" alt="arrow" width="16" height="10" />
+        <img :src="$imgV(arrowSkip)" alt="arrow" width="16" height="10" />
+        <img :src="$imgV(arrowSkip)" alt="arrow" width="16" height="10" />
       </div>
     </Button>
   </div>

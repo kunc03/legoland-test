@@ -44,8 +44,7 @@ defineExpose({
     class="!bg-white !w-8/12 !max-w-sm border border-exd-gray-44"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -56,7 +55,7 @@ defineExpose({
       <div
         class="w-full flex flex-col justify-center items-center gap-4 py-8 px-4"
       >
-        <img :src="warning" alt="warning" width="40" height="40" preload />
+        <img :src="$imgV(warning)" alt="warning" width="40" height="40" preload />
         <div class="text-center w-10/12">
           <p class="font-bold text-exd-1424 text-exd-gray-scorpion">
             {{ warningMessage }}

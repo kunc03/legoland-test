@@ -53,12 +53,11 @@
                 height="3rem"
               />
             </template>
-            <img
-              v-else-if="
+            <img v-else-if="
                 prizeDetailData.rarity?.type === 'image' &&
                 prizeDetailData.rarity?.show_rarity
               "
-              :src="prizeDetailData.rarity?.image"
+              :src="$imgV(prizeDetailData.rarity?.image)"
               alt="arrow"
               width="50"
               height="0"
@@ -111,8 +110,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -149,8 +147,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

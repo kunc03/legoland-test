@@ -15,16 +15,14 @@
   >
     <SparkleStart className="top-3 z-30" />
 
-    <img
-      :src="settings?.global?.gacha_machine_image"
+    <img :src="$imgV(settings?.global?.gacha_machine_image)"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-none h-auto max-h-[96svh] object-contain"
       loading="eager"
       decoding="async"
       fetchpriority="high"
     />
-    <img
-      src="/images/sparkling.png"
+    <img :src="$imgV('/images/sparkling.png')"
       alt="sparkling"
       class="absolute z-10 object-cover w-full h-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 animate-sparkling"
       loading="eager"
