@@ -1,15 +1,15 @@
 <template>
+  <HeaderBar hasBack>
+    <p
+      style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
+      class="text-exd-gray-scorpion font-bold text-exd-1824.52"
+    >
+      {{ $t('camera') }}
+    </p>
+  </HeaderBar>
   <div class="camera-page">
     <!-- Top Controls Bar -->
     <div class="camera-controls-top">
-      <HeaderBar hasBack>
-        <p
-          style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
-          class="text-exd-gray-scorpion font-bold text-exd-1824.52"
-        >
-          {{ $t('camera') }}
-        </p>
-      </HeaderBar>
 
       <div class="camera-controls-right">
         <!-- Camera Switch Button -->
@@ -225,6 +225,12 @@
       >
         <LoadingIcon />
         <p class="text-white font-semibold">Loading...</p>
+        <button 
+          class="mt-4 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm border border-white/30 active:bg-white/30"
+          @click="isLoading = false; paused = false"
+        >
+          {{ $t('cancel') || 'Cancel' }}
+        </button>
       </div>
   </div>
 
@@ -348,15 +354,43 @@ const handlePageShow = (event) => {
   }
 }
 
+// Handle iOS Safari background/foreground — camera stream is killed by OS when backgrounded
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    // If isLoading was stuck true (e.g. API call interrupted by backgrounding), reset it
+    if (isLoading.value) {
+      isLoading.value = false
+    }
+  }
+}
+
+// Safety timeout for isLoading to prevent permanent stuck state
+let isLoadingTimeout = null
+
+const setLoadingWithTimeout = (value) => {
+  isLoading.value = value
+  if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
+  if (value) {
+    isLoadingTimeout = setTimeout(() => {
+      if (isLoading.value) {
+        isLoading.value = false
+      }
+    }, 15000) // Auto-reset after 15 seconds
+  }
+}
+
 onMounted(() => {
   // Ensure state is clean on mount
   isLoading.value = false
   paused.value = false
   window.addEventListener('pageshow', handlePageShow)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
   window.removeEventListener('pageshow', handlePageShow)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
 })
 
 // Click-to-focus UI
@@ -562,8 +596,8 @@ const selectedConstraints = computed(() => {
   let frameRate = { ideal: 30, max: 60 }
 
   if (isIOS) {
-    width = { min: 1280, ideal: 3840 }
-    height = { min: 720, ideal: 2160 }
+    width = { min: 1280, ideal: 1920 }
+    height = { min: 720, ideal: 1080 }
   } else if (isAndroid) {
     width = { min: 1280, ideal: 1280 }
     height = { min: 720, ideal: 720 }
@@ -575,7 +609,6 @@ const selectedConstraints = computed(() => {
     height,
     aspectRatio: { ideal: 16 / 9 },
     frameRate,
-    resizeMode: 'none',
   }
 
   const advanced = isAndroid 
@@ -583,11 +616,15 @@ const selectedConstraints = computed(() => {
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' }
       ]
+    : isIOS
+    ? [
+        { focusMode: 'continuous' },
+        { exposureMode: 'continuous' },
+      ]
     : [
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' },
         { whiteBalanceMode: 'continuous' },
-        { sharpness: 100 },
       ]
 
   if (selectedDeviceId.value) {
@@ -677,6 +714,7 @@ const onDetect = (data) => {
 function onError(err) {
   error.value = `[${err.name}]: `
   cameraReady.value = false
+  isLoading.value = false
   if (err.name === 'NotAllowedError') {
     error.value += 'you need to grant camera access permission'
   } else if (err.name === 'NotFoundError') {
@@ -687,6 +725,8 @@ function onError(err) {
     error.value += 'is the camera already in use?'
   } else if (err.name === 'OverconstrainedError') {
     error.value += 'installed cameras are not suitable'
+    // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
+    selectedDeviceId.value = null
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
@@ -742,7 +782,7 @@ const doRedirect = (url) => {
 
 const handleRedirect = async (url) => {
   if (!url || isLoading.value) return
-  isLoading.value = true
+  setLoadingWithTimeout(true)
 
   try {
     let statusPath = ''
@@ -815,7 +855,7 @@ watch(drawerVisible, (value) => {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 10000;
   display: flex;
   justify-content: space-between;
   align-items: center;
