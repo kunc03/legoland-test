@@ -136,8 +136,7 @@
   <div v-if="!externalRedeemStore.isExternalRedeem" class="absolute bottom-[15%] right-0 flex flex-col items-end">
     <div class="menu-item" @click="handleScrollUp">
       <div class="flex items-center gap-2 btn-click">
-        <img
-          src="~/assets/images/arrow-skip.svg"
+        <img src="~/assets/images/arrow-skip.svg"
           width="13"
           height="13"
           alt=""
@@ -153,8 +152,7 @@
         <p :class="{ 'reverse-mode': $i18n.locale === 'en' }">
           {{ $t('exchangeHistory') }}
         </p>
-        <img
-          src="~/assets/images/arrow-skip.svg"
+        <img src="~/assets/images/arrow-skip.svg"
           width="13"
           height="13"
           alt=""

@@ -3,8 +3,7 @@
     class="flex flex-col items-center justify-center cursor-pointer"
     @click="handleClick"
   >
-    <img
-      :src="icon"
+    <img :src="$imgV(icon)"
       alt="icon"
       preload
       class="text-center w-[25px] h-[25px] sm:w-[33px] sm:h-[33px]"

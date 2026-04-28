@@ -15,8 +15,7 @@
       class="bg-rainbow !absolute text-white font-bold flex justify-center bottom-[12%] items-center rounded-full px-4 py-3 h-[14.222vw] w-[41.522vw] max-w-[191px] max-h-[65px] text-[3vw] sm:text-[16px] !z-[100]"
     >
       {{ $t('characterIntroduction') }}
-      <img
-        :src="opIntro ? minusIcon : plusIcon"
+      <img :src="$imgV(opIntro ? minusIcon : plusIcon)"
         alt="plus icon"
         width="15%"
         height="15%"
@@ -29,9 +28,8 @@
       :class="{ notif: true, hide: isHiding }"
       class="flex items-center justify-center"
     >
-      <img
-        v-if="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon"
-        :src="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon"
+      <img v-if="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon"
+        :src="$imgV(gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.popup_icon)"
         alt="icon gift"
         class="w-8 h-8"
       />
@@ -45,8 +43,7 @@
       </p>
     </div>
 
-    <img
-      :src="settings?.global?.gacha_machine_image"
+    <img :src="$imgV(settings?.global?.gacha_machine_image)"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
       :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
@@ -54,8 +51,7 @@
       decoding="async"
       fetchpriority="high"
     />
-    <img
-      src="/images/sparkling.png"
+    <img :src="$imgV('/images/sparkling.png')"
       alt="sparkling"
       class="absolute z-10 object-cover w-full h-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 animate-sparkling"
       loading="eager"
@@ -132,8 +128,7 @@
     }"
   >
     <template #container>
-      <img
-        src="/images/close.svg"
+      <img :src="$imgV('/images/close.svg')"
         alt="close"
         width="30"
         height="30"

@@ -11,13 +11,13 @@
     <template v-slot:text v-if="!isFetching">
       <div class="flex flex-col justify-center w-full gap-1 pr-4 overflow-hidden ">
         <div class="flex gap-3" :class="showLocation ? 'items-center' : 'items-start flex-col'">
-          <img v-if="showRarity" :src="raritySrc" alt="rarity icon" class="h-4 " />
+          <img v-if="showRarity" :src="$imgV(raritySrc)" alt="rarity icon" class="h-4 " />
           <p v-if="showTitle" class="pr-2 font-medium text-exd-gray-scorpion sm:text-exd-1320 text-[2.708vw] line-clamp-2">
             {{ data.title }}
           </p>
         </div>
         <div class="flex" :class="showLocation ? 'items-center gap-3' : 'items-start flex-col'">
-          <img v-if="showLocation" :src="pinIcon" alt="pin icon" class="w-6 h-6" />
+          <img v-if="showLocation" :src="$imgV(pinIcon)" alt="pin icon" class="w-6 h-6" />
           <!-- <div v-if="!showLocation" class="w-6 h-6"/> -->
           <div class="flex flex-col gap-1">
             <!-- <p v-if="!showRarity" class="font-medium text-exd-gray-scorpion sm:text-exd-1320 text-[2.708vw] line-clamp-2">

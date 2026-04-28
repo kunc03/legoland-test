@@ -46,13 +46,12 @@
             width="2rem "
           />
 
-          <img
-            v-if="
+          <img v-if="
               !isFetching &&
               settings?.flow?.screens?.spin_gacha_2_screen
                 ?.show_character_rarity
             "
-            :src="rarityImg"
+            :src="$imgV(rarityImg)"
             alt="rarity icon"
             class="w-10"
           />
@@ -116,10 +115,9 @@
           v-if="socialMediaLinks.length"
           class="inline-flex md:gap-3 gap-[6px] w-full justify-center items-center mb-6 bg-exd-zinc-100 p-5 rounded-lg"
         >
-          <img
-            v-for="(link, index) in socialMediaLinks"
+          <img v-for="(link, index) in socialMediaLinks"
             :key="index"
-            :src="link.src"
+            :src="$imgV(link.src)"
             :alt="link.alt"
             :aria-label="link.alt"
             class="cursor-pointer md:size-7 size-7"
@@ -145,8 +143,7 @@
                 class="flex items-center text-sm border-b cursor-pointer text-exd-green border-b-exd-green"
                 @click="openGoogleMaps"
                 >{{ $t('openGoogleMaps') }}
-                <img
-                  src="~/assets/images/export-green.svg"
+                <img src="~/assets/images/export-green.svg"
                   alt="export"
                   width="15"
                   height="15"
@@ -164,29 +161,25 @@
           <div class="triangle-border"></div>
           <div class="triangle-inner"></div>
         </div>
-        <img
-          :src="download"
+        <img :src="$imgV(download)"
           alt="download"
           class="cursor-pointer size-5"
           @click="share('image')"
           preload
         />
-        <img
-          :src="line"
+        <img :src="$imgV(line)"
           alt="line"
           class="cursor-pointer size-5"
           @click="share('line')"
           preload
         />
-        <img
-          :src="x"
+        <img :src="$imgV(x)"
           alt="x"
           class="cursor-pointer size-5"
           @click="share('x')"
           preload
         />
-        <img
-          :src="facebook"
+        <img :src="$imgV(facebook)"
           alt="facebook"
           class="cursor-pointer size-5"
           @click="share('facebook')"
@@ -204,7 +197,7 @@
       <div
         class="flex items-center justify-center rounded-full w-7 h-7 bg-exd-green text-exd-1320"
       >
-        <img :src="check" alt="success" class="w-6 h-6" />
+        <img :src="$imgV(check)" alt="success" class="w-6 h-6" />
       </div>
       {{ $t('downloadImage') }}
     </div>

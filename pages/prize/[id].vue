@@ -44,9 +44,8 @@
               class="!h-3 !rounded-full !bg-exd-orange-700"
               width="2rem"
             ></Skeleton>
-            <img
-              v-else-if="prizeDetailData.rarity?.type === 'image'"
-              :src="prizeDetailData.rarity?.image"
+            <img v-else-if="prizeDetailData.rarity?.type === 'image'"
+              :src="$imgV(prizeDetailData.rarity?.image)"
               alt="arrow"
               width="50"
               height="50"
@@ -143,8 +142,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -193,8 +191,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -387,7 +384,7 @@ const handleSwipe = async () => {
 const colorBg = ref('')
 
 const imgTag =
-  '<img src="/images/export.svg" alt="export" width="23" height="23" class="inline ml-1" />'
+  `<img src="${useNuxtApp().$imgV('/images/export.svg')}" alt="export" width="23" height="23" class="inline ml-1" />`
 
 const formattedMessage = t('exchange_prize', {
   img: imgTag,

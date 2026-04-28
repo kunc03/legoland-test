@@ -12,8 +12,7 @@
   >
     <SparkleStart className="top-3 z-30" />
 
-    <img
-      :src="externalRedeemStore.isExternalRedeem ? roulette : settings?.global?.gacha_machine_image"
+    <img :src="$imgV(externalRedeemStore.isExternalRedeem ? roulette : settings?.global?.gacha_machine_image)"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
       :class="externalRedeemStore.isExternalRedeem ? 'w-[85%] max-w-none' : 'w-[120%] max-w-none'"
@@ -21,8 +20,7 @@
       decoding="async"
       fetchpriority="high"
     />
-    <img
-      src="/images/sparkling.png"
+    <img :src="$imgV('/images/sparkling.png')"
       alt="sparkling"
       class="absolute z-10 object-cover w-full h-full transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 animate-sparkling"
       loading="eager"
@@ -89,9 +87,8 @@
       }"
     >
       <template #container>
-        <img
-          v-if="modalSpinWarningMode === 'exchange'"
-          :src="close"
+        <img v-if="modalSpinWarningMode === 'exchange'"
+          :src="$imgV(close)"
           alt="close"
           width="30"
           height="30"

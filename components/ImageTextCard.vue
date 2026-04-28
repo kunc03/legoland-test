@@ -17,8 +17,7 @@
           v-if="!history"
           class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2"
         >
-          <img
-            :src="arrow"
+          <img :src="$imgV(arrow)"
             alt="arrow"
             width="10"
             height="10"
@@ -52,8 +51,7 @@
         </div>
       </div>
       <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
-        <img
-          :src="arrow"
+        <img :src="$imgV(arrow)"
           alt="arrow"
           width="12"
           height="12"

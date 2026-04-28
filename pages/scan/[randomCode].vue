@@ -188,7 +188,7 @@
               {{ $t('settingWithPick') }}
             </template>
             <template v-slot:body>
-              <img src="/images/apple_settings.webp" class="w-14 h-14" />
+              <img :src="$imgV('/images/apple_settings.webp')" class="w-14 h-14" />
               <span class="text-exd-0910">{{ $t('setting') }}</span>
             </template>
           </StepDown>
@@ -202,7 +202,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/privacy_and_security.png" class="w-full" />
+                <img :src="$imgV('/images/privacy_and_security.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -215,7 +215,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/location_services.png" class="w-full" />
+                <img :src="$imgV('/images/location_services.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -231,7 +231,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -245,7 +245,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/chrome.png" class="w-full" />
+                <img :src="$imgV('/images/chrome.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -255,7 +255,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/bing.png" class="w-full" />
+                <img :src="$imgV('/images/bing.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -271,7 +271,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -285,7 +285,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/firefox.png" class="w-full" />
+                <img :src="$imgV('/images/firefox.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -295,7 +295,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/edge.png" class="w-full" />
+                <img :src="$imgV('/images/edge.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -311,7 +311,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -327,7 +327,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/while_using_this_app.png" class="w-full" />
+                <img :src="$imgV('/images/while_using_this_app.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -347,8 +347,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img
-                  src="/images/tap_the_browser_refresh_button.png"
+                <img :src="$imgV('/images/tap_the_browser_refresh_button.png')"
                   class="w-full"
                 />
               </div>

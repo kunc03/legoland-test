@@ -38,9 +38,8 @@
               class="!h-3 !rounded-full !bg-exd-orange-700"
               width="2rem"
             ></Skeleton>
-            <img
-              v-else-if="prizeDetailData.rarity?.type === 'image'"
-              :src="prizeDetailData.rarity?.image"
+            <img v-else-if="prizeDetailData.rarity?.type === 'image'"
+              :src="$imgV(prizeDetailData.rarity?.image)"
               alt="arrow"
               width="50"
               height="50"
@@ -141,8 +140,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -191,8 +189,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

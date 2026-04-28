@@ -10,8 +10,7 @@
   >
     <template v-if="afterGacha?.option == '2'" #container>
       <div>
-        <img
-          src="/images/close.svg"
+        <img :src="$imgV('/images/close.svg')"
           alt="close"
           width="30"
           height="30"
@@ -27,8 +26,7 @@
             v-if="afterGacha?.data?.select_image !== 'none'"
             class="w-auto h-24"
           >
-            <img
-              :src="handleImageAfterGacha(afterGacha?.data)"
+            <img :src="$imgV(handleImageAfterGacha(afterGacha?.data))"
               class="object-contain w-full h-full"
             />
           </div>
@@ -56,22 +54,19 @@
               <div class="triangle-border"></div>
               <div class="triangle-inner"></div>
             </div>
-            <img
-              :src="line"
+            <img :src="$imgV(line)"
               alt="line"
               class="cursor-pointer size-6"
               @click="share('line')"
               preload
             />
-            <img
-              :src="x"
+            <img :src="$imgV(x)"
               alt="x"
               class="cursor-pointer size-6"
               @click="share('x')"
               preload
             />
-            <img
-              :src="facebook"
+            <img :src="$imgV(facebook)"
               alt="facebook"
               class="cursor-pointer size-6"
               @click="share('facebook')"
@@ -98,8 +93,7 @@
     </template>
 
     <template v-else-if="afterGacha?.option == '1'" #container>
-      <img
-        src="/images/close.svg"
+      <img :src="$imgV('/images/close.svg')"
         alt="close"
         width="30"
         height="30"

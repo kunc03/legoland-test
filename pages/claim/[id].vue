@@ -53,12 +53,11 @@
                 height="3rem"
               />
             </template>
-            <img
-              v-else-if="
+            <img v-else-if="
                 prizeDetailData.rarity?.type === 'image' &&
                 prizeDetailData.rarity?.show_rarity
               "
-              :src="prizeDetailData.rarity?.image"
+              :src="$imgV(prizeDetailData.rarity?.image)"
               alt="arrow"
               width="50"
               height="0"
@@ -111,8 +110,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -131,7 +129,7 @@
           <SolidButton
             :on-click="handleDialog"
             :has-loading="isLoading"
-            label="GO!"
+            :label="$t('next')"
             :bgColor="step2Data?.button_and_text_color?.background"
             :textColor="step2Data?.button_and_text_color?.color"
           />
@@ -149,8 +147,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"
@@ -394,7 +391,7 @@ const fetchingPrizeData = async () => {
 
 const handleRankColor = () => {
   const rank = prizeDetailData.value.rarity
-  if (rank.type === 'color') {
+  if (rank?.type === 'color') {
     colorBg.value = rank.background_color
     prizeTypeText.value = rank.text
   }

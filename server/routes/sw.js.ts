@@ -1,5 +1,14 @@
+export default defineEventHandler((event) => {
+  const config = useRuntimeConfig()
+  const buildTime = config.public.BUILD_TIME
+  
+  event.node.res.setHeader('Content-Type', 'application/javascript')
+  
+  return `
 // Tentukan nama cache dan file yang ingin di-cache
-const CACHE_NAME = `gacharary-v3 - ${self.location.origin}`
+const BUILD_TIME = '${buildTime}';
+const CACHE_NAME = \`gacharary-v3-\${self.location.origin}-\${BUILD_TIME}\`;
+
 const urlsToCache = [
   '/',
   '/favicon.ico',
@@ -37,7 +46,11 @@ const urlsToCache = [
   '/images/text-char.png',
   '/images/warning.svg',
   '/images/while_using_this_app.png',
-]
+].map(url => {
+  if (url === '/') return url;
+  if (url === '/favicon.ico') return url;
+  return url + '?v=' + BUILD_TIME;
+});
 
 self.addEventListener('install', function (event) {
   self.skipWaiting()
@@ -118,7 +131,7 @@ self.addEventListener('fetch', (event) => {
   // 2. Handle Images - Cache First
   if (
     event.request.destination === 'image' ||
-    /\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/i.test(url.pathname)
+    /\\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/i.test(url.pathname)
   ) {
     event.respondWith(handleImageRequest(event))
     return
@@ -171,7 +184,7 @@ async function handleImageRequest(event) {
     }
     return fetchResponse
   } catch (error) {
-    console.error(`Fetch failed for ${event.request.url}. Using fallback if available.`)
+    console.error(\`Fetch failed for \${event.request.url}. Using fallback if available.\`)
     const fallbackResponse = await cache.match(FALLBACK_IMAGE)
     return fallbackResponse || new Response('Asset not found', { status: 404 })
   }
@@ -194,7 +207,7 @@ async function handleRangeRequest(request) {
 
   try {
     const range = request.headers.get('range')
-    const bytes = /bytes\=(\d+)\-(\d+)?/.exec(range)
+    const bytes = /bytes\\=(\\d+)\\-(\\d+)?/.exec(range)
     if (!bytes) {
       return fetch(request)
     }
@@ -212,7 +225,7 @@ async function handleRangeRequest(request) {
       statusText: 'Partial Content',
       headers: [
         ['Cache-Control', 'public, max-age=3600'],
-        ['Content-Range', `bytes ${start}-${end}/${videoSize}`],
+        ['Content-Range', \`bytes \${start}-\${end}/\${videoSize}\`],
         ['Content-Length', chunk.byteLength],
         ['Content-Type', 'video/mp4'],
       ],
@@ -222,3 +235,5 @@ async function handleRangeRequest(request) {
     return fetch(request)
   }
 }
+  `;
+})

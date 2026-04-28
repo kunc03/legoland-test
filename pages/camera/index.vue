@@ -206,9 +206,8 @@
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
-            <img
-              v-if="isValidLink(result)"
-              :src="arrow"
+            <img v-if="isValidLink(result)"
+              :src="$imgV(arrow)"
               alt="arrow"
               width="10"
               height="10"
@@ -237,8 +236,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

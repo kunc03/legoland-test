@@ -29,9 +29,8 @@
       <div
         class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4"
       >
-        <img
-          v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
-          :src="settings?.global?.gacha_machine_image"
+        <img v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
+          :src="$imgV(settings?.global?.gacha_machine_image)"
           alt="gacha2"
           class="absolute left-1/2 top-[55%] sm:top-[53%] transform -translate-x-1/2 -translate-y-[45%] w-full h-auto max-h-[90%] object-contain"
           preload
@@ -42,28 +41,24 @@
           class="grid grid-cols-12 w-full h-full pb-4"
         >
           <div class="col-start-2 col-span-10 flex flex-col items-center justify-center gap-3 relative min-h-0">
-            <img
-              :src="eventTitle"
+            <img :src="$imgV(eventTitle)"
               alt="event-title"
               class="w-full h-auto max-h-[15%] object-contain shrink"
             />
-            <img
-              :src="settings?.global?.gacha_machine_image"
+            <img :src="$imgV(settings?.global?.gacha_machine_image)"
               alt="gacha2"
               class="w-full h-auto max-h-[50%] object-contain shrink"
               preload
             />
-            <img
-              :src="instruction"
+            <img :src="$imgV(instruction)"
               alt="instruction"
               class="w-full h-auto max-h-[15%] object-contain shrink"
             />
           </div>
         </div>
 
-        <img
-          v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
-          :src="roulette"
+        <img v-else-if="isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
+          :src="$imgV(roulette)"
           alt="roulette"
           class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[85%] h-auto max-h-[85%] sm:max-h-[90%] object-contain"
           preload
@@ -183,7 +178,7 @@
               {{ $t('settingWithPick') }}
             </template>
             <template v-slot:body>
-              <img src="/images/apple_settings.webp" class="w-14 h-14" />
+              <img :src="$imgV('/images/apple_settings.webp')" class="w-14 h-14" />
               <span class="text-exd-0910">{{ $t('setting') }}</span>
             </template>
           </StepDown>
@@ -197,7 +192,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/privacy_and_security.png" class="w-full" />
+                <img :src="$imgV('/images/privacy_and_security.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -210,7 +205,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/location_services.png" class="w-full" />
+                <img :src="$imgV('/images/location_services.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -226,7 +221,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -240,7 +235,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/chrome.png" class="w-full" />
+                <img :src="$imgV('/images/chrome.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -250,7 +245,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/bing.png" class="w-full" />
+                <img :src="$imgV('/images/bing.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -266,7 +261,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -280,7 +275,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/firefox.png" class="w-full" />
+                <img :src="$imgV('/images/firefox.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -290,7 +285,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/edge.png" class="w-full" />
+                <img :src="$imgV('/images/edge.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -306,7 +301,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/safari.png" class="w-full" />
+                <img :src="$imgV('/images/safari.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -322,7 +317,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img src="/images/while_using_this_app.png" class="w-full" />
+                <img :src="$imgV('/images/while_using_this_app.png')" class="w-full" />
               </div>
             </template>
           </StepDown>
@@ -342,8 +337,7 @@
             </template>
             <template v-slot:body>
               <div class="">
-                <img
-                  src="/images/tap_the_browser_refresh_button.png"
+                <img :src="$imgV('/images/tap_the_browser_refresh_button.png')"
                   class="w-full"
                 />
               </div>
@@ -354,13 +348,13 @@
     </template>
   </Dialog>
 
-  <Modal :is-open="showAboutSpin" :on-close="() => closeShowAboutSpin()">
+  <Modal :is-open="showAboutSpin" width="exd-400" :on-close="() => closeShowAboutSpin()">
     <template v-slot:body>
       <div
         class="relative max-h-[55vh] overflow-y-auto flex flex-col items-center justify-start w-full gap-5 px-4 py-6"
       >
         <div class="w-full text-left">
-          <p v-html="popUpContent" class="text-exd-gray-scorpion"></p>
+          <div v-html="popUpContent" class="vhtml-desc"></div>
         </div>
       </div>
     </template>
@@ -419,8 +413,7 @@
     }"
   >
     <template #container>
-      <img
-        :src="close"
+      <img :src="$imgV(close)"
         alt="close"
         width="30"
         height="30"

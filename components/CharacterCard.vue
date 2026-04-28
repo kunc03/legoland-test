@@ -6,8 +6,7 @@
     ]"
     :style="variantStyle"
   >
-    <img
-      :src="image || notImage"
+    <img :src="$imgV(image || notImage)"
       alt="character"
       class="relative object-contain w-full h-full"
       preload
