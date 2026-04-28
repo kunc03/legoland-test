@@ -119,11 +119,7 @@
         </div>
       </div>
       <SolidButton
-        :label="
-          disableRedeem
-            ? $t('cannotBeExchanged')
-            : settings?.prize?.step_1?.button_text
-        "
+        :label="settings?.prize?.step_1?.button_text"
         :disabled="disableRedeem || isFetching"
         :has-loading="disableRedeem"
         :on-click="handleSwipe"

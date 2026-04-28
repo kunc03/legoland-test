@@ -118,11 +118,7 @@
         </div>
       </div>
       <SolidButton
-        :label="
-          disableRedeem
-            ? $t('cannotBeExchanged')
-            : $t('exchange')
-        "
+        :label="$t('exchange')"
         :disabled="disableRedeem || isFetching"
         :on-click="handleToggleModal"
         :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
