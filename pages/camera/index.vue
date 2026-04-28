@@ -85,11 +85,11 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${isPinching || !hasNativeZoom ? zoom : 1}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${isPinching || !hasNativeZoom ? zoom : 1}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: isPinching ? 'none' : 'transform 0.2s ease-out',
-            willChange: 'transform'
+            transition: isPinching ? 'none' : 'transform 0.15s ease-out',
+            willChange: isPinching ? 'transform' : 'auto'
           }"
         />
         <template #fallback>
@@ -340,6 +340,8 @@ const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
+const pendingZoomUpdate = ref(null)
+const rafId = ref(null)
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -358,6 +360,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('pageshow', handlePageShow)
+  if (rafId.value) {
+    cancelAnimationFrame(rafId.value)
+    rafId.value = null
+  }
 })
 
 // Click-to-focus UI
@@ -464,7 +470,8 @@ const applyZoom = async (newZoom) => {
 }
 
 watch(zoom, (newVal) => {
-  if (zoomSupported.value) {
+  // Skip native zoom apply during pinch - use CSS transform for smoothness
+  if (zoomSupported.value && !isPinching.value) {
     applyZoom(newVal)
   }
 })
@@ -489,7 +496,15 @@ const onTouchMove = (e) => {
 
     let newZoom = initialZoomAtPinchStart.value * ratio
     newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-    zoom.value = Number(newZoom.toFixed(2))
+
+    // Batch zoom updates with RAF for smoothness
+    pendingZoomUpdate.value = newZoom
+    if (!rafId.value) {
+      rafId.value = requestAnimationFrame(() => {
+        zoom.value = Number(pendingZoomUpdate.value.toFixed(2))
+        rafId.value = null
+      })
+    }
   }
 }
 
@@ -497,6 +512,22 @@ const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     isPinching.value = false
     initialPinchDistance.value = null
+
+    // Cancel any pending RAF
+    if (rafId.value) {
+      cancelAnimationFrame(rafId.value)
+      rafId.value = null
+    }
+
+    // Apply final zoom value and native zoom after pinch ends
+    if (pendingZoomUpdate.value !== null) {
+      zoom.value = Number(pendingZoomUpdate.value.toFixed(2))
+      pendingZoomUpdate.value = null
+    }
+
+    if (hasNativeZoom.value && zoomSupported.value) {
+      applyZoom(zoom.value)
+    }
   }
 }
 
@@ -566,8 +597,15 @@ const selectedConstraints = computed(() => {
   let frameRate = { ideal: 30, max: 60 }
 
   if (isIOS) {
-    width = { min: 1280, ideal: 3840 }
-    height = { min: 720, ideal: 2160 }
+    if (hasTriedFallbackConstraints.value) {
+      // Fallback: use minimal constraints for iOS
+      width = { ideal: 1280 }
+      height = { ideal: 720 }
+      frameRate = { ideal: 30 }
+    } else {
+      width = { min: 1280, ideal: 1920 }
+      height = { min: 720, ideal: 1080 }
+    }
   } else if (isAndroid) {
     width = { min: 1280, ideal: 1280 }
     height = { min: 720, ideal: 720 }
@@ -582,7 +620,7 @@ const selectedConstraints = computed(() => {
     resizeMode: 'none',
   }
 
-  const advanced = isAndroid 
+  const advanced = isAndroid
     ? [
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' }
@@ -591,7 +629,6 @@ const selectedConstraints = computed(() => {
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' },
         { whiteBalanceMode: 'continuous' },
-        { sharpness: 100 },
       ]
 
   if (selectedDeviceId.value) {
@@ -651,6 +688,7 @@ const switchCamera = () => {
   drawerVisible.value = false
   paused.value = false
   cameraReady.value = false
+  hasTriedFallbackConstraints.value = false
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
@@ -678,9 +716,12 @@ const onDetect = (data) => {
   paused.value = true
 }
 
+const hasTriedFallbackConstraints = ref(false)
+
 function onError(err) {
   error.value = `[${err.name}]: `
   cameraReady.value = false
+
   if (err.name === 'NotAllowedError') {
     error.value += 'you need to grant camera access permission'
   } else if (err.name === 'NotFoundError') {
@@ -691,6 +732,17 @@ function onError(err) {
     error.value += 'is the camera already in use?'
   } else if (err.name === 'OverconstrainedError') {
     error.value += 'installed cameras are not suitable'
+    // iOS fallback: try simpler constraints
+    if (isIOS && !hasTriedFallbackConstraints.value) {
+      hasTriedFallbackConstraints.value = true
+      console.log('[Camera] iOS OverconstrainedError, retrying with simpler constraints...')
+      // Force re-render with default constraints by toggling paused
+      paused.value = true
+      setTimeout(() => {
+        paused.value = false
+      }, 100)
+      return
+    }
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
@@ -698,6 +750,7 @@ function onError(err) {
   } else {
     error.value += err.message
   }
+
   if (err.name === 'OverconstrainedError') {
     torchSupported.value = false
     torchActive.value = false
@@ -819,13 +872,14 @@ watch(drawerVisible, (value) => {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 16px;
   padding-top: max(16px, env(safe-area-inset-top));
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  pointer-events: auto;
 }
 
 .camera-controls-right {
@@ -864,6 +918,7 @@ watch(drawerVisible, (value) => {
   position: relative;
   touch-action: none;
   overflow: hidden;
+  z-index: 1;
 }
 
 .focus-ring {
