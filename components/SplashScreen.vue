@@ -132,8 +132,6 @@ const preCacheDuringLoading = async () => {
   }, maxWaitMs)
 
   try {
-    const cache = await caches.open(cacheName)
-
     if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: 'CACHE_IMAGES',
@@ -148,24 +146,21 @@ const preCacheDuringLoading = async () => {
     const tasks = [
       ...imageUrlsToCache.map(async (url) => {
         try {
-          const cached = await cache.match(url)
+          const cached = await caches.match(url)
           if (cached) return
-          const response = await fetch(url, { mode: 'no-cors' })
-          await cache.put(url, response.clone())
+          await fetch(url, { mode: 'no-cors' })
         } catch {
         }
       }),
       ...videoUrlsToCache.map(async (url) => {
         try {
-          const cached = await cache.match(url)
+          const cached = await caches.match(url)
           if (cached) return
-          let response
           try {
-            response = await fetch(url, { mode: 'cors' })
+            await fetch(url, { mode: 'cors' })
           } catch {
-            response = await fetch(url, { mode: 'no-cors' })
+            await fetch(url, { mode: 'no-cors' })
           }
-          await cache.put(url, response.clone())
         } catch {
         }
       }),
