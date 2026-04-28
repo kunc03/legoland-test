@@ -93,9 +93,7 @@ const getCachedVideo = async () => {
   if (!('caches' in window)) return null
   
   try {
-    const cacheName = `gacharary-v2 - ${window.location.origin}`
-    const cache = await caches.open(cacheName)
-    const cachedResponse = await cache.match(getVideoUrl())
+    const cachedResponse = await caches.match(getVideoUrl())
     
     if (cachedResponse) {
       const blob = await cachedResponse.blob()
