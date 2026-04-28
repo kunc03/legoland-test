@@ -1,15 +1,15 @@
 <template>
+  <HeaderBar hasBack>
+    <p
+      style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
+      class="text-exd-gray-scorpion font-bold text-exd-1824.52"
+    >
+      {{ $t('camera') }}
+    </p>
+  </HeaderBar>
   <div class="camera-page">
     <!-- Top Controls Bar -->
     <div class="camera-controls-top">
-      <HeaderBar hasBack>
-        <p
-          style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
-          class="text-exd-gray-scorpion font-bold text-exd-1824.52"
-        >
-          {{ $t('camera') }}
-        </p>
-      </HeaderBar>
 
       <div class="camera-controls-right">
         <!-- Camera Switch Button -->
