@@ -122,6 +122,11 @@ self.addEventListener('message', async (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
+  // 0. Skip cross-origin requests - let browser handle them directly
+  if (url.origin !== self.location.origin) {
+    return
+  }
+
   // 1. Handle Built Assets (_nuxt) - Stale-While-Revalidate
   if (url.pathname.startsWith('/_nuxt/')) {
     event.respondWith(staleWhileRevalidate(event.request))
@@ -146,7 +151,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 4. Default Strategy - Network First or Cache Match
+  // 4. Default Strategy - Cache First then Network
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request)
