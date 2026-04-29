@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -482,9 +482,9 @@ const syncStreamSettings = async () => {
   }
 }
 
+let lastAppliedZoom = ref(1)
 let isApplyingZoom = false
 let pendingZoom = null
-const currentHardwareZoom = ref(1)
 
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
@@ -500,32 +500,34 @@ const applyZoom = async (newZoom) => {
   try {
     let zoomToApply = newZoom
     
-    // Android Micro-Stepping Optimization
+    // Android "Google Lens Style" Fluid Micro-Stepping
     if (isAndroid) {
-      const current = currentHardwareZoom.value
+      const current = lastAppliedZoom.value
       const diff = newZoom - current
-      // Limit each jump to 0.25 for smoother animation
-      const maxJump = 0.25
       
-      if (Math.abs(diff) > maxJump) {
-        zoomToApply = current + (diff > 0 ? maxJump : -maxJump)
-        pendingZoom = newZoom // Keep final target in queue to continue stepping
+      // Fixed small step (0.1) for buttery smooth sequence
+      // but adaptive for large gaps to maintain speed
+      const stepLimit = Math.abs(diff) > 2 ? 0.4 : (Math.abs(diff) > 0.5 ? 0.2 : 0.1)
+      
+      if (Math.abs(diff) > 0.05) {
+        zoomToApply = current + (diff > 0 ? stepLimit : -stepLimit)
+        pendingZoom = newZoom // Keep final target in queue
       }
       
-      // Step Alignment
-      const step = zoomStep.value || 0.1
-      zoomToApply = Math.round(zoomToApply / step) * step
+      // Hardware Step Alignment
+      const hardwareStep = zoomStep.value || 0.1
+      zoomToApply = Math.round(zoomToApply / hardwareStep) * hardwareStep
     }
 
     await track.applyConstraints({
       advanced: [{ zoom: Number(zoomToApply.toFixed(2)) }]
     })
-    currentHardwareZoom.value = zoomToApply
+    lastAppliedZoom.value = zoomToApply
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Adaptive cooldown: Android (70ms) hardware calls are optimized for micro-stepping
-    const cooldown = isAndroid ? 70 : 50
+    // Turbo cooldown: Android (40ms) optimized for Google Lens style smoothness
+    const cooldown = isAndroid ? 40 : 50
     
     setTimeout(() => {
       isApplyingZoom = false
@@ -552,6 +554,8 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
+    // Sync the hardware tracker at the start of gesture
+    lastAppliedZoom.value = zoom.value
   }
 }
 
