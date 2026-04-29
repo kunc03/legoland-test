@@ -376,5 +376,8 @@
   "incorrectCode": "Kode yang Anda masukkan salah. Silakan coba lagi.",
   "redeem": "Tukar",
   "productExchange": "Penukaran Hadiah",
-  "startingCamera": "Memulai kamera"
+  "startingCamera": "Memulai kamera",
+  "prizeItem": "Hadiah",
+  "prizeCollectionsTitle": ["Ikuti", "undian!"],
+  "gachaCollectionsTitle": ["Tukar", "Hadiah"]
 }

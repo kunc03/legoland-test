@@ -74,7 +74,7 @@
         </template>
         <template v-else>
           <p class="font-semibold md:text-[15px] sm:text-[14px] text-[13px]">
-            {{ $t('exchangeHistory') }}
+            {{ $t('prizeItem') }}
           </p>
         </template>
       </div>
