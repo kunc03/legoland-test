@@ -29,7 +29,7 @@
           :class="isDisabled ? 'opacity-50' : ''"
           />
         </div>
-        <div v-if="history" class="w-full mt-1 max-w-16 max-h-16">
+        <div v-if="history" class="w-full mt-1 max-w-16 max-h-16" :class="(isRedeemed && !isFailed) || isDisabled ? 'opacity-40' : ''">
           <CharacterCard :image="imageCard" variant="without-background" />
         </div>
       </div>

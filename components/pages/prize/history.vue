@@ -51,6 +51,7 @@
                 settings?.prize?.step_1?.has_been_redeemed?.show_prize_title
               "
               class="font-semibold md:text-[15px] sm:text-[14px] text-[13px]"
+              :class="isRedeemed && !isFailed ? 'opacity-40' : ''"
             >
               {{ name }}
             </p>
