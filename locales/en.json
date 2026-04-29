@@ -376,5 +376,8 @@
   "incorrectCode": "The code you entered is incorrect. Please try again.",
   "redeem": "Redeem",
   "productExchange": "Product Exchange",
-  "startingCamera": "Starting camera"
+  "startingCamera": "Starting camera",
+  "prizeItem": "Prize",
+  "prizeCollectionsTitle": ["Enter the", "lottery!"],
+  "gachaCollectionsTitle": ["Prize", "Exchange"]
 }

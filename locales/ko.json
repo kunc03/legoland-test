@@ -376,5 +376,8 @@
   "incorrectCode": "입력한 코드가 올바르지 않습니다. 다시 시도해 주세요.",
   "redeem": "교환",
   "productExchange": "경품 교환",
-  "startingCamera": "카메라 시작 중"
+  "startingCamera": "카메라 시작 중",
+  "prizeItem": "경품",
+  "prizeCollectionsTitle": ["추첨에", "참가!"],
+  "gachaCollectionsTitle": ["경품", "교환"]
 }

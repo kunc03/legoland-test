@@ -376,5 +376,8 @@
   "incorrectCode": "您輸入的代碼不正確，請重試。",
   "redeem": "兌換",
   "productExchange": "商品兌換",
-  "startingCamera": "啟動相機"
+  "startingCamera": "啟動相機",
+  "prizeItem": "獎品",
+  "prizeCollectionsTitle": ["參加", "抽獎!"],
+  "gachaCollectionsTitle": ["獎品", "兌換"]
 }

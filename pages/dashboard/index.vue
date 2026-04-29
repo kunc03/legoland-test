@@ -59,8 +59,8 @@
             class="text-center cursor-pointer object-contain"
           />
         </div>
-        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
-          {{ settings?.user_dashboard?.prize_collections?.page_title }}
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424 flex flex-col">
+          <span v-for="(line, index) in $tm('prizeCollectionsTitle')" :key="index">{{ line }}</span>
         </p>
       </div>
 
@@ -90,8 +90,8 @@
             class="text-center cursor-pointer object-contain"
           />
         </div>
-        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424">
-          {{ settings?.user_dashboard?.gacha_collections?.page_title }}
+        <p class="font-bold text-center text-exd-gray-scorpion text-exd-1424 flex flex-col">
+          <span v-for="(line, index) in $tm('gachaCollectionsTitle')" :key="index">{{ line }}</span>
         </p>
       </div>
 

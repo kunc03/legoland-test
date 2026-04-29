@@ -377,5 +377,8 @@
   "exchangeItemDesc": "マイページ「けいひんこうかん」から こうかんしてね！",
   "redeem": "交換",
   "productExchange": "けいひんこうかん",
-  "startingCamera": "カメラを起動中"
+  "startingCamera": "カメラを起動中",
+  "prizeItem": "景品",
+  "prizeCollectionsTitle": ["ちゅうせんに", "さんか！"],
+  "gachaCollectionsTitle": ["けいひん", "こうかん"]
 }
