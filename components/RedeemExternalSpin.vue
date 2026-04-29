@@ -119,7 +119,7 @@
       </div>
       <SolidButton
         :label="$t('exchange')"
-        :disabled="disableRedeem || isFetching"
+        :disabled="disableRedeem || isFetching || prizeDetailData?.is_failed"
         :on-click="handleToggleModal"
         :bgColor="settings?.prize?.step_1?.button_and_text_color?.background"
         :textColor="settings?.prize?.step_1?.button_and_text_color?.color"
@@ -266,7 +266,7 @@ const disableRedeem = ref(false)
 const popupType = ref('')
 
 const handleToggleModal = () => {
-  if (props.disableRedeem) return
+  if (props.disableRedeem || props.prizeDetailData?.is_failed) return
   hasModal.value = !hasModal.value
 }
 
