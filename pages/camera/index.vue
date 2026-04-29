@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? (zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? (zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
