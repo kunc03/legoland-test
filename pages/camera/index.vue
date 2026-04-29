@@ -123,12 +123,6 @@
         </div>
         <p class="viewfinder-hint">{{ $t('scanQRCode') }}</p>
       </div>
-      <!-- Zoom Badge UI -->
-      <Transition name="zoom-fade">
-        <div v-if="showZoomIndicator" class="zoom-badge">
-          {{ Number(zoom).toFixed(1) }}x
-        </div>
-      </Transition>
     </div>
 
     <!-- Zoom Slider UI -->
@@ -231,12 +225,6 @@
       >
         <LoadingIcon />
         <p class="text-white font-semibold">Loading...</p>
-        <button 
-          class="mt-4 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm border border-white/30 active:bg-white/30"
-          @click="isLoading = false; paused = false"
-        >
-          {{ $t('cancel') || 'Cancel' }}
-        </button>
       </div>
   </div>
 
@@ -352,8 +340,6 @@ const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
-const showZoomIndicator = ref(false)
-let zoomTimeoutId = null
 let rAFId = null
 
 // Handle restoration from bfcache (Back-Forward Cache)
@@ -401,7 +387,6 @@ onUnmounted(() => {
   window.removeEventListener('pageshow', handlePageShow)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
-  if (zoomTimeoutId) clearTimeout(zoomTimeoutId)
   if (rAFId) cancelAnimationFrame(rAFId)
 })
 
@@ -534,7 +519,6 @@ watch(zoom, (newVal) => {
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
     isPinching.value = true
-    showZoomIndicator.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -553,22 +537,8 @@ const onTouchMove = (e) => {
       const ratio = distance / initialPinchDistance.value
       
       let newZoom = initialZoomAtPinchStart.value * ratio
-      
-      // Haptic feedback at limits
-      if ((newZoom >= zoomMax.value && zoom.value < zoomMax.value) || 
-          (newZoom <= zoomMin.value && zoom.value > zoomMin.value)) {
-        if (navigator.vibrate) navigator.vibrate(5)
-      }
-
       newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
       zoom.value = newZoom
-      
-      // UI Indicator logic
-      showZoomIndicator.value = true
-      if (zoomTimeoutId) clearTimeout(zoomTimeoutId)
-      zoomTimeoutId = setTimeout(() => {
-        showZoomIndicator.value = false
-      }, 1500)
     })
   }
 }
@@ -1096,7 +1066,7 @@ watch(drawerVisible, (value) => {
 
 .low-light-tip, .error-banner {
   position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
+  bottom: max(66px, env(safe-area-inset-bottom, 50px));
   left: 16px;
   right: 16px;
   z-index: 10;
@@ -1135,33 +1105,5 @@ watch(drawerVisible, (value) => {
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
-}
-
-.zoom-badge {
-  position: absolute;
-  bottom: 110px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fbbf24;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 800;
-  font-size: 16px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  z-index: 100;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  letter-spacing: 1px;
-}
-
-.zoom-fade-enter-active, .zoom-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.zoom-fade-enter-from, .zoom-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) scale(0.8);
 }
 </style>
