@@ -340,7 +340,6 @@ const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
-const targetZoom = ref(1)
 let rAFId = null
 
 // Handle restoration from bfcache (Back-Forward Cache)
@@ -485,37 +484,33 @@ const syncStreamSettings = async () => {
 let isApplyingZoom = false
 let pendingZoom = null
 
-let lastAppliedZoom = 1
-
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
   
-  // Throttle hardware calls: don't apply if change is negligible (< 0.02)
-  if (Math.abs(newZoom - lastAppliedZoom) < 0.02 && newZoom !== zoomMin.value && newZoom !== zoomMax.value) {
-    return
-  }
-
+  // Strict throttling: don't call if already applying
   if (isApplyingZoom) {
     pendingZoom = newZoom
     return
   }
   
   isApplyingZoom = true
-  lastAppliedZoom = newZoom
   try {
     await track.applyConstraints({
-      advanced: [{ zoom: newZoom }]
+      advanced: [{ zoom: Number(newZoom.toFixed(2)) }]
     })
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    isApplyingZoom = false
-    if (pendingZoom !== null) {
-      const nextZoom = pendingZoom
-      pendingZoom = null
-      applyZoom(nextZoom)
-    }
+    // Add a small cooldown for hardware (50ms)
+    setTimeout(() => {
+      isApplyingZoom = false
+      if (pendingZoom !== null) {
+        const nextZoom = pendingZoom
+        pendingZoom = null
+        applyZoom(nextZoom)
+      }
+    }, 50)
   }
 }
 
@@ -533,8 +528,6 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
-    targetZoom.value = zoom.value
-    startZoomPhysics()
   }
 }
 
@@ -546,8 +539,8 @@ const onTouchMove = (e) => {
     const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     const ratio = distance / initialPinchDistance.value
     
-    let newTarget = initialZoomAtPinchStart.value * ratio
-    targetZoom.value = Math.max(zoomMin.value, Math.min(newTarget, zoomMax.value))
+    let newZoom = initialZoomAtPinchStart.value * ratio
+    zoom.value = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
   }
 }
 
@@ -555,29 +548,7 @@ const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     initialPinchDistance.value = null
     isPinching.value = false
-    // Physics loop will stop itself when it reaches target
   }
-}
-
-const startZoomPhysics = () => {
-  if (rAFId) cancelAnimationFrame(rAFId)
-  
-  const update = () => {
-    // Lerp formula: current += (target - current) * damping
-    const diff = targetZoom.value - zoom.value
-    
-    // Using a slightly higher damping (0.25) for faster convergence
-    // and a larger threshold (0.005) to stop the loop earlier
-    if (Math.abs(diff) > 0.005) {
-      zoom.value += diff * 0.25 
-      rAFId = requestAnimationFrame(update)
-    } else {
-      zoom.value = targetZoom.value
-      rAFId = null
-    }
-  }
-  
-  rAFId = requestAnimationFrame(update)
 }
 
 const pickPreferredCameraDeviceId = (devices) => {
