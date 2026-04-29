@@ -5,6 +5,8 @@
         roundedClass,
         'bg-white w-full p-3 flex flex-col gap-2 border-b border-b-exd-light-grey relative',
         isDisabled ? 'cursor-default' : 'cursor-pointer',
+        isRedeemed && !isFailed ? '!cursor-default !bg-gray-100' : 'cursor-pointer',
+        (isFailed && isRedeemed) ? 'cursor-pointer' : 'cursor-default'
       ]"
       @click="handleClick"
     >
@@ -27,7 +29,7 @@
           :class="isDisabled ? 'opacity-50' : ''"
           />
         </div>
-        <div v-if="history" class="w-full mt-1 max-w-16 max-h-16">
+        <div v-if="history" class="w-full mt-1 max-w-16 max-h-16" :class="(isRedeemed && !isFailed) || isDisabled ? 'opacity-40' : ''">
           <CharacterCard :image="imageCard" variant="without-background" />
         </div>
       </div>
@@ -103,11 +105,19 @@ const props = defineProps({
   },
   bgColor: {
     type: String
+  },
+  isRedeemed: {
+    type: Boolean,
+    default: false
+  },
+  isFailed: {
+    type: Boolean,
+    default: false
   }
 })
 
 const handleClick = (event) => {
-  if (props.isDisabled) {
+  if (props.isDisabled || (!props.isFailed && props.isRedeemed)) {
     return
   }
   
@@ -119,4 +129,6 @@ const handleClick = (event) => {
 const roundedClass = computed(() => {
   return props.hasRounded ? 'rounded-xl' : 'rounded-none'
 })
+
+console.log('isRedeem', props.isRedeemed, 'isFailed', props.isFailed)
 </script>
