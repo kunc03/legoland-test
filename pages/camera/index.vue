@@ -340,6 +340,7 @@ const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
+const targetZoom = ref(1)
 let rAFId = null
 
 // Handle restoration from bfcache (Back-Forward Cache)
@@ -523,23 +524,20 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
+    targetZoom.value = zoom.value
+    startZoomPhysics()
   }
 }
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
-    if (rAFId) cancelAnimationFrame(rAFId)
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    const ratio = distance / initialPinchDistance.value
     
-    rAFId = requestAnimationFrame(() => {
-      const t1 = e.touches[0]
-      const t2 = e.touches[1]
-      const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
-      const ratio = distance / initialPinchDistance.value
-      
-      let newZoom = initialZoomAtPinchStart.value * ratio
-      newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-      zoom.value = newZoom
-    })
+    let newTarget = initialZoomAtPinchStart.value * ratio
+    targetZoom.value = Math.max(zoomMin.value, Math.min(newTarget, zoomMax.value))
   }
 }
 
@@ -547,8 +545,27 @@ const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     initialPinchDistance.value = null
     isPinching.value = false
-    if (rAFId) cancelAnimationFrame(rAFId)
+    // Physics loop will stop itself when it reaches target
   }
+}
+
+const startZoomPhysics = () => {
+  if (rAFId) cancelAnimationFrame(rAFId)
+  
+  const update = () => {
+    // Lerp formula: current += (target - current) * damping
+    const diff = targetZoom.value - zoom.value
+    
+    if (Math.abs(diff) > 0.001) {
+      zoom.value += diff * 0.15 // Damping factor (0.1 - 0.2 is sweet spot)
+      rAFId = requestAnimationFrame(update)
+    } else {
+      zoom.value = targetZoom.value
+      rAFId = null
+    }
+  }
+  
+  rAFId = requestAnimationFrame(update)
 }
 
 const pickPreferredCameraDeviceId = (devices) => {
