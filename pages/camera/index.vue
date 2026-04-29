@@ -498,37 +498,16 @@ const applyZoom = async (newZoom) => {
   
   isApplyingZoom = true
   try {
-    let zoomToApply = newZoom
-    
-    // Android "Google Lens Style" Fluid Micro-Stepping
-    if (isAndroid) {
-      const current = lastAppliedZoom.value
-      const diff = newZoom - current
-      
-      // Fixed small step (0.1) for buttery smooth sequence
-      // but adaptive for large gaps to maintain speed
-      const stepLimit = Math.abs(diff) > 2 ? 0.4 : (Math.abs(diff) > 0.5 ? 0.2 : 0.1)
-      
-      if (Math.abs(diff) > 0.05) {
-        zoomToApply = current + (diff > 0 ? stepLimit : -stepLimit)
-        pendingZoom = newZoom // Keep final target in queue
-      }
-      
-      // Hardware Step Alignment
-      const hardwareStep = zoomStep.value || 0.1
-      zoomToApply = Math.round(zoomToApply / hardwareStep) * hardwareStep
-    }
-
+    // Directly apply the target zoom with high precision
+    // removing complex micro-stepping to maximize responsiveness
     await track.applyConstraints({
-      advanced: [{ zoom: Number(zoomToApply.toFixed(2)) }]
+      advanced: [{ zoom: Number(newZoom.toFixed(2)) }]
     })
-    lastAppliedZoom.value = zoomToApply
+    lastAppliedZoom.value = newZoom
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Turbo cooldown: Android (40ms) optimized for Google Lens style smoothness
-    const cooldown = isAndroid ? 40 : 50
-    
+    // Standard 50ms cooldown for all platforms to keep hardware responsive
     setTimeout(() => {
       isApplyingZoom = false
       if (pendingZoom !== null) {
@@ -536,7 +515,7 @@ const applyZoom = async (newZoom) => {
         pendingZoom = null
         applyZoom(nextZoom)
       }
-    }, cooldown)
+    }, 50)
   }
 }
 
