@@ -88,7 +88,7 @@
             transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
           }"
         />
@@ -345,6 +345,7 @@ const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
+const isPinching = ref(false)
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -484,15 +485,32 @@ const syncStreamSettings = async () => {
   }
 }
 
+let isApplyingZoom = false
+let pendingZoom = null
+
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
+  
+  if (isApplyingZoom) {
+    pendingZoom = newZoom
+    return
+  }
+  
+  isApplyingZoom = true
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
+  } finally {
+    isApplyingZoom = false
+    if (pendingZoom !== null) {
+      const nextZoom = pendingZoom
+      pendingZoom = null
+      applyZoom(nextZoom)
+    }
   }
 }
 
@@ -504,6 +522,7 @@ watch(zoom, (newVal) => {
 
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
+    isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -520,13 +539,14 @@ const onTouchMove = (e) => {
     
     let newZoom = initialZoomAtPinchStart.value * ratio
     newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-    zoom.value = Number(newZoom.toFixed(1))
+    zoom.value = newZoom
   }
 }
 
 const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     initialPinchDistance.value = null
+    isPinching.value = false
   }
 }
 
