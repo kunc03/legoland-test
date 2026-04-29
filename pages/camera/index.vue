@@ -459,6 +459,7 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
+    currentHardwareZoom.value = zoom.value
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
@@ -483,6 +484,7 @@ const syncStreamSettings = async () => {
 
 let isApplyingZoom = false
 let pendingZoom = null
+const currentHardwareZoom = ref(1)
 
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
@@ -498,20 +500,32 @@ const applyZoom = async (newZoom) => {
   try {
     let zoomToApply = newZoom
     
-    // Android Optimization: Align to nearest hardware step for better driver compatibility
+    // Android Micro-Stepping Optimization
     if (isAndroid) {
+      const current = currentHardwareZoom.value
+      const diff = newZoom - current
+      // Limit each jump to 0.25 for smoother animation
+      const maxJump = 0.25
+      
+      if (Math.abs(diff) > maxJump) {
+        zoomToApply = current + (diff > 0 ? maxJump : -maxJump)
+        pendingZoom = newZoom // Keep final target in queue to continue stepping
+      }
+      
+      // Step Alignment
       const step = zoomStep.value || 0.1
-      zoomToApply = Math.round(newZoom / step) * step
+      zoomToApply = Math.round(zoomToApply / step) * step
     }
 
     await track.applyConstraints({
       advanced: [{ zoom: Number(zoomToApply.toFixed(2)) }]
     })
+    currentHardwareZoom.value = zoomToApply
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Adaptive cooldown: Android (100ms) hardware calls are heavier than iOS (50ms)
-    const cooldown = isAndroid ? 100 : 50
+    // Adaptive cooldown: Android (70ms) hardware calls are optimized for micro-stepping
+    const cooldown = isAndroid ? 70 : 50
     
     setTimeout(() => {
       isApplyingZoom = false
