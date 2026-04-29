@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${(!hasNativeZoom || (isAndroid && isPinching)) ? zoom : 1}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${(!hasNativeZoom || (isAndroid && isPinching)) ? zoom : 1}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -497,21 +497,11 @@ const applyZoom = async (newZoom) => {
   isApplyingZoom = true
   try {
     let zoomToApply = newZoom
-    const step = zoomStep.value || 0.1
     
-    // Android Optimization: Step-by-step gradual transition
+    // Android Optimization: Align to nearest hardware step for better driver compatibility
     if (isAndroid) {
-      const current = lastAppliedZoom
-      const diff = newZoom - current
-      // Limit hardware jump to 0.4 per step to make it "gradual" (bertahap)
-      const maxJump = 0.4
-      if (Math.abs(diff) > maxJump) {
-        zoomToApply = current + (diff > 0 ? maxJump : -maxJump)
-        pendingZoom = newZoom // Keep the final target in queue
-      }
-      
-      // Align to nearest hardware step
-      zoomToApply = Math.round(zoomToApply / step) * step
+      const step = zoomStep.value || 0.1
+      zoomToApply = Math.round(newZoom / step) * step
     }
 
     await track.applyConstraints({
@@ -549,6 +539,8 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
+    // Sync the hardware tracker at the start of gesture
+    lastAppliedZoom = zoom.value
   }
 }
 
