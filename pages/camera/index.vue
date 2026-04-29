@@ -496,13 +496,24 @@ const applyZoom = async (newZoom) => {
   
   isApplyingZoom = true
   try {
+    let zoomToApply = newZoom
+    
+    // Android Optimization: Align to nearest hardware step
+    // Chrome on Android is smoother when using step-aligned values
+    if (isAndroid) {
+      const step = zoomStep.value || 0.1
+      zoomToApply = Math.round(newZoom / step) * step
+    }
+
     await track.applyConstraints({
-      advanced: [{ zoom: Number(newZoom.toFixed(2)) }]
+      advanced: [{ zoom: Number(zoomToApply.toFixed(2)) }]
     })
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Add a small cooldown for hardware (50ms)
+    // Adaptive cooldown: Android (120ms) hardware calls are heavier than iOS (50ms)
+    const cooldown = isAndroid ? 120 : 50
+    
     setTimeout(() => {
       isApplyingZoom = false
       if (pendingZoom !== null) {
@@ -510,7 +521,7 @@ const applyZoom = async (newZoom) => {
         pendingZoom = null
         applyZoom(nextZoom)
       }
-    }, 50)
+    }, cooldown)
   }
 }
 
