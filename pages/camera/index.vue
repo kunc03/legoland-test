@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -481,7 +481,6 @@ const syncStreamSettings = async () => {
   }
 }
 
-let lastAppliedZoom = ref(1)
 let isApplyingZoom = false
 let pendingZoom = null
 
@@ -508,7 +507,6 @@ const applyZoom = async (newZoom) => {
     await track.applyConstraints({
       advanced: [{ zoom: Number(zoomToApply.toFixed(2)) }]
     })
-    lastAppliedZoom.value = zoomToApply
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
@@ -540,8 +538,6 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
-    // Sync the hardware tracker at the start of gesture
-    lastAppliedZoom.value = zoom.value
   }
 }
 
