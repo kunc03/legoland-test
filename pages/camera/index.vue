@@ -88,7 +88,7 @@
             transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
           }"
         />
@@ -225,12 +225,6 @@
       >
         <LoadingIcon />
         <p class="text-white font-semibold">Loading...</p>
-        <button 
-          class="mt-4 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm border border-white/30 active:bg-white/30"
-          @click="isLoading = false; paused = false"
-        >
-          {{ $t('cancel') || 'Cancel' }}
-        </button>
       </div>
   </div>
 
@@ -345,6 +339,8 @@ const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
+const isPinching = ref(false)
+let rAFId = null
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -391,6 +387,7 @@ onUnmounted(() => {
   window.removeEventListener('pageshow', handlePageShow)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
+  if (rAFId) cancelAnimationFrame(rAFId)
 })
 
 // Click-to-focus UI
@@ -484,15 +481,32 @@ const syncStreamSettings = async () => {
   }
 }
 
+let isApplyingZoom = false
+let pendingZoom = null
+
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
+  
+  if (isApplyingZoom) {
+    pendingZoom = newZoom
+    return
+  }
+  
+  isApplyingZoom = true
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
+  } finally {
+    isApplyingZoom = false
+    if (pendingZoom !== null) {
+      const nextZoom = pendingZoom
+      pendingZoom = null
+      applyZoom(nextZoom)
+    }
   }
 }
 
@@ -504,6 +518,7 @@ watch(zoom, (newVal) => {
 
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
+    isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -513,20 +528,26 @@ const onTouchStart = (e) => {
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
-    const t1 = e.touches[0]
-    const t2 = e.touches[1]
-    const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
-    const ratio = distance / initialPinchDistance.value
+    if (rAFId) cancelAnimationFrame(rAFId)
     
-    let newZoom = initialZoomAtPinchStart.value * ratio
-    newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-    zoom.value = Number(newZoom.toFixed(1))
+    rAFId = requestAnimationFrame(() => {
+      const t1 = e.touches[0]
+      const t2 = e.touches[1]
+      const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+      const ratio = distance / initialPinchDistance.value
+      
+      let newZoom = initialZoomAtPinchStart.value * ratio
+      newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
+      zoom.value = newZoom
+    })
   }
 }
 
 const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     initialPinchDistance.value = null
+    isPinching.value = false
+    if (rAFId) cancelAnimationFrame(rAFId)
   }
 }
 
@@ -1045,7 +1066,7 @@ watch(drawerVisible, (value) => {
 
 .low-light-tip, .error-banner {
   position: absolute;
-  bottom: max(32px, env(safe-area-inset-bottom, 16px));
+  bottom: max(66px, env(safe-area-inset-bottom, 50px));
   left: 16px;
   right: 16px;
   z-index: 10;
