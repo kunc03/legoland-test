@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.8] - 2026-04-29
+
+### Added
+
+- **Version Display**: Added text above the version display.
+
+### Fixed
+
+- **UI Improvements**: Changed text color to white, updated button label for exchanging prizes, removed pinch-to-zoom feature, and hid map on the prize exchange screen.
+- **Gacha Machine**: Changed the machine to roulette and hid autoplay video.
+- **Point & Display**: Fixed blank screen issue in point page, hid characters, and set point to 1 digit.
+- **Optimization**: Fetched data only on the point page.
+
 ## [1.1.7] - 2026-04-28
 
 ### Added
@@ -64,6 +77,17 @@ and this project adheres to
   stuck in a loading state (PR #38).
 - **Status Checks**: Fixed various bugs related to gacha status checking and
   prize redemption.
+
+### Added
+
+- **Version Display**: Added text above the version display.
+
+### Fixed
+
+- **UI Improvements**: Changed text color to white, updated button label for exchanging prizes, removed pinch-to-zoom feature, and hid map on the prize exchange screen.
+- **Gacha Machine**: Changed the machine to roulette and hid autoplay video.
+- **Point & Display**: Fixed blank screen issue in point page, hid characters, and set point to 1 digit.
+- **Optimization**: Fetched data only on the point page.
 
 ## [1.1.0] - 2026-04-21
 
