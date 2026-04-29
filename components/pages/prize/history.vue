@@ -5,7 +5,9 @@
       :history="true"
       :image-card="image"
       :show-image="false"
-      isDisabled
+      :is-redeemed="isRedeemed"
+      :is-failed="isFailed"
+      :on-click="() => handleGoToDetailRedeem(body.id)"
     >
       <template v-slot:text>
         <div
@@ -77,7 +79,7 @@
           </div>
         </div>
       </template>
-      <template v-slot:action>
+      <!-- <template v-slot:action>
         <button 
           v-if="!isRedeemed" 
           class="w-20 hover:opacity-80 text-[10px] py-1 font-semibold rounded-md"
@@ -87,7 +89,7 @@
           }"
           @click="handleGoToDetailRedeem(body.id)"
         >{{ $t('redeem') }}</button>
-      </template>
+      </template> -->
     </ImageTextCard>
   </div>
 </template>
@@ -132,6 +134,10 @@ const redemptionDate = computed(() => {
 
 const isRedeemed = computed(() => {
   return props.body?.is_redeemed || innerData.value?.is_redeemed
+})
+
+const isFailed = computed(() => {
+  return props.body?.is_failed || innerData.value?.is_failed
 })
 
 const handleGoToDetailRedeem = (id) => {
