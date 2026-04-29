@@ -85,8 +85,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, zoom / lastAppliedZoom) : (!hasNativeZoom ? zoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, visualZoom / lastAppliedZoom) : (!hasNativeZoom ? visualZoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${(hasNativeZoom && isAndroid && isPinching) ? Math.max(1, visualZoom / lastAppliedZoom) : (!hasNativeZoom ? visualZoom : 1)}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -331,7 +331,8 @@ const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
 
 // Zoom Management
-const zoom = ref(1)
+const zoom = ref(1)        // Hardware target zoom (applied to camera track)
+const visualZoom = ref(1)  // Instant visual zoom for CSS (updates at 60fps via rAF)
 const zoomMin = ref(1)
 const zoomMax = ref(1)
 const zoomStep = ref(0.1)
@@ -341,6 +342,7 @@ const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
+let rAFPendingZoom = null
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -459,7 +461,8 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
-    currentHardwareZoom.value = zoom.value
+    visualZoom.value = zoom.value
+    lastAppliedZoom.value = zoom.value
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
@@ -482,24 +485,22 @@ const syncStreamSettings = async () => {
   }
 }
 
-let lastAppliedZoom = ref(1)
+const lastAppliedZoom = ref(1)
 let isApplyingZoom = false
 let pendingZoom = null
 
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
-  
-  // Strict throttling: don't call if already applying
+
+  // Queue latest zoom if a call is already in-flight
   if (isApplyingZoom) {
     pendingZoom = newZoom
     return
   }
-  
+
   isApplyingZoom = true
   try {
-    // Directly apply the target zoom with high precision
-    // removing complex micro-stepping to maximize responsiveness
     await track.applyConstraints({
       advanced: [{ zoom: Number(newZoom.toFixed(2)) }]
     })
@@ -507,21 +508,26 @@ const applyZoom = async (newZoom) => {
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Standard 50ms cooldown for all platforms to keep hardware responsive
-    setTimeout(() => {
-      isApplyingZoom = false
-      if (pendingZoom !== null) {
-        const nextZoom = pendingZoom
-        pendingZoom = null
-        applyZoom(nextZoom)
-      }
-    }, 50)
+    // No artificial cooldown — apply next queued zoom immediately
+    // so hardware updates as fast as the device allows
+    isApplyingZoom = false
+    if (pendingZoom !== null) {
+      const nextZoom = pendingZoom
+      pendingZoom = null
+      applyZoom(nextZoom)
+    }
   }
 }
 
 watch(zoom, (newVal) => {
   if (zoomSupported.value) {
-    applyZoom(newVal)
+    if (hasNativeZoom.value) {
+      applyZoom(newVal)
+    }
+    // For CSS-only zoom, keep visualZoom in sync (non-pinch, e.g. slider)
+    if (!isPinching.value) {
+      visualZoom.value = newVal
+    }
   }
 })
 
@@ -533,8 +539,15 @@ const onTouchStart = (e) => {
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
-    // Sync the hardware tracker at the start of gesture
+    // Sync trackers at gesture start
     lastAppliedZoom.value = zoom.value
+    visualZoom.value = zoom.value
+    // Cancel any pending rAF from previous gesture
+    if (rAFId) {
+      cancelAnimationFrame(rAFId)
+      rAFId = null
+      rAFPendingZoom = null
+    }
   }
 }
 
@@ -545,14 +558,37 @@ const onTouchMove = (e) => {
     const t2 = e.touches[1]
     const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     const ratio = distance / initialPinchDistance.value
-    
-    let newZoom = initialZoomAtPinchStart.value * ratio
-    zoom.value = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
+    const newZoom = Math.max(zoomMin.value, Math.min(initialZoomAtPinchStart.value * ratio, zoomMax.value))
+
+    // 1. Instantly update visual zoom → CSS reflects finger position at full 60fps
+    visualZoom.value = newZoom
+
+    // 2. Coalesce hardware zoom updates to one per rAF frame (~16ms)
+    //    This prevents flooding applyConstraints with 120Hz touch events
+    rAFPendingZoom = newZoom
+    if (!rAFId) {
+      rAFId = requestAnimationFrame(() => {
+        rAFId = null
+        if (rAFPendingZoom !== null) {
+          zoom.value = rAFPendingZoom  // triggers watcher → applyZoom
+          rAFPendingZoom = null
+        }
+      })
+    }
   }
 }
 
 const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
+    // Flush any pending rAF zoom before ending
+    if (rAFId) {
+      cancelAnimationFrame(rAFId)
+      rAFId = null
+    }
+    if (rAFPendingZoom !== null) {
+      zoom.value = rAFPendingZoom
+      rAFPendingZoom = null
+    }
     initialPinchDistance.value = null
     isPinching.value = false
   }
