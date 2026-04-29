@@ -485,16 +485,24 @@ const syncStreamSettings = async () => {
 let isApplyingZoom = false
 let pendingZoom = null
 
+let lastAppliedZoom = 1
+
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
   
+  // Throttle hardware calls: don't apply if change is negligible (< 0.02)
+  if (Math.abs(newZoom - lastAppliedZoom) < 0.02 && newZoom !== zoomMin.value && newZoom !== zoomMax.value) {
+    return
+  }
+
   if (isApplyingZoom) {
     pendingZoom = newZoom
     return
   }
   
   isApplyingZoom = true
+  lastAppliedZoom = newZoom
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
@@ -519,6 +527,7 @@ watch(zoom, (newVal) => {
 
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
+    if (e.cancelable) e.preventDefault()
     isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
@@ -531,6 +540,7 @@ const onTouchStart = (e) => {
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    if (e.cancelable) e.preventDefault()
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -556,8 +566,10 @@ const startZoomPhysics = () => {
     // Lerp formula: current += (target - current) * damping
     const diff = targetZoom.value - zoom.value
     
-    if (Math.abs(diff) > 0.001) {
-      zoom.value += diff * 0.15 // Damping factor (0.1 - 0.2 is sweet spot)
+    // Using a slightly higher damping (0.25) for faster convergence
+    // and a larger threshold (0.005) to stop the loop earlier
+    if (Math.abs(diff) > 0.005) {
+      zoom.value += diff * 0.25 
       rAFId = requestAnimationFrame(update)
     } else {
       zoom.value = targetZoom.value
