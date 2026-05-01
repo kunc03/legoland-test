@@ -366,6 +366,7 @@ export default defineComponent({
 .slideunlock .slideunlock-text {
   display: inline;
   z-index: 2;
+  margin-left: 50px;
   align-items: center;
   justify-content: center;
   width: 100%;
