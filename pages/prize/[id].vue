@@ -128,6 +128,8 @@
         has-bottom
       />
     </div>
+
+    <Copyright />
   </div>
 
   <Dialog

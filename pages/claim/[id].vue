@@ -99,7 +99,10 @@
         @completed="handleSwipe()"
         :bgColor="step2Data?.button_and_text_color?.background"
       />
+      
+      <Copyright />
     </div>
+
   </div>
 
   <Dialog
