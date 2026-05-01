@@ -66,6 +66,7 @@
         <IconsArrow class="w-7 h-7 rotate-180" />
       </button>
     </div>
+    <Copyright />
   </div>
 </template>
 
