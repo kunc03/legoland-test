@@ -458,8 +458,9 @@ const handleKeydown = (event) => {
 }
 
 // Handle browser back button - redirect to /camera
+// Uses window.location.replace for synchronous navigation without flicker
 const handlePopState = () => {
-  navigateTo('/camera')
+  window.location.replace('/camera')
 }
 
 // Intercept Vue Router navigation
@@ -473,8 +474,11 @@ onBeforeRouteLeave((to, from, next) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
-  // Push state to history so we can intercept back button
-  history.pushState(null, '', window.location.href)
+  // Push two dummy states to create history buffer
+  // This prevents mobile back gesture from exiting the app
+  // First back goes to first dummy, second back triggers popstate
+  history.pushState({ noBackExit: 1 }, '', window.location.href)
+  history.pushState({ noBackExit: 2 }, '', window.location.href)
   window.addEventListener('popstate', handlePopState)
   fetchImage()
 
