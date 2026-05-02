@@ -242,6 +242,7 @@ import charImg from '~/public/images/character.png'
 import plusIcon from '~/assets/icons/plus.png'
 import minusIcon from '~/assets/icons/minus.png'
 import StarRating from '~/components/StarRating.vue'
+import { onBeforeRouteLeave } from '#vue-router'
 
 definePageMeta({
   middleware: 'valid-password',
@@ -456,20 +457,35 @@ const handleKeydown = (event) => {
   }
 }
 
+// Handle browser back button - redirect to /camera
+const handlePopState = () => {
+  navigateTo('/camera')
+}
+
+// Intercept Vue Router navigation
+onBeforeRouteLeave((to, from, next) => {
+  if (to.path !== '/camera') {
+    next('/camera')
+  } else {
+    next()
+  }
+})
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
-
-onMounted(() => {
+  // Push state to history so we can intercept back button
+  history.pushState(null, '', window.location.href)
+  window.addEventListener('popstate', handlePopState)
   fetchImage()
 
   if (!settings.value?.flow?.screens?.show_user_tap_screen) {
     disabledButton.value = true
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('popstate', handlePopState)
 })
 </script>
 
