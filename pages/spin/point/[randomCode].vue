@@ -317,12 +317,28 @@ const handleKeydown = (event) => {
   }
 }
 
+const handlePopState = (event) => {
+  console.log('popstate triggered - redirecting to /prize')
+  window.location.replace('/prize')
+}
+
+const setupBackButtonHandler = () => {
+  if (!import.meta.client) return
+  console.log('Setting up back button handler')
+  history.pushState({ noBack: true }, '', location.href)
+  history.pushState({ noBack: true }, '', location.href)
+  window.addEventListener('popstate', handlePopState)
+  console.log('Back button handler setup complete')
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  setupBackButtonHandler()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('popstate', handlePopState)
 })
 
 onMounted(async () => {
