@@ -131,6 +131,10 @@
         </button>
       </div>
 
+      <Copyright v-if="redeems.length > 4" />
+
+    </div>
+    <div v-if="redeems.length <= 4" class="absolute left-0 right-0 bottom-[13%]">
       <Copyright />
     </div>
   </div>
