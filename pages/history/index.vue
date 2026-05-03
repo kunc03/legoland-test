@@ -66,9 +66,9 @@
         <IconsArrow class="w-7 h-7 rotate-180" />
       </button>
     </div>
-    <Copyright v-if="!isFetching && histories.length > 4" />
+    <Copyright v-if="!isFetching && histories.length > 1" />
   </div>
-  <div v-if="!isFetching && histories.length <= 4" class="absolute left-0 right-0 bottom-[115px]">
+  <div v-if="!isFetching && histories.length <= 1" class="absolute left-0 right-0 bottom-[115px]">
     <Copyright />
   </div>
 </template>
