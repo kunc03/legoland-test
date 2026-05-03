@@ -465,10 +465,11 @@ const handlePopState = () => {
 
 // Intercept Vue Router navigation
 onBeforeRouteLeave((to, from, next) => {
-  if (to.path !== '/camera') {
-    next('/camera')
-  } else {
+  const allowedPaths = ['/camera', '/dashboard']
+  if (allowedPaths.includes(to.path)) {
     next()
+  } else {
+    next('/camera')
   }
 })
 
