@@ -131,10 +131,10 @@
         </button>
       </div>
 
-      <Copyright v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length > 4" />
+      <Copyright v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length > 1" />
 
     </div>
-    <div v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length <= 4" class="absolute left-0 right-0 bottom-[115px]">
+    <div v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length <= 1" class="absolute left-0 right-0 bottom-[115px]">
       <Copyright />
     </div>
   </div>
