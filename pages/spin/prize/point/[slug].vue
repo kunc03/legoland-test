@@ -148,6 +148,8 @@ const router = useRouter()
 const route = useRoute()
 const externalRedeemStore = useExternalRedeemStore()
 
+useNavigationGuard('/prize')
+
 const apiPoint = ref(null)
 const USER = useCookie('USER')
 const TOKEN = useCookie('TOKEN')

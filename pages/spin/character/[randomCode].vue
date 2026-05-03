@@ -304,6 +304,7 @@ const pointCategoryIsFail = ref(false)
 const hasClicked = ref(false)
 
 const externalRedeemStore = useExternalRedeemStore()
+const router = useRouter()
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)
@@ -457,11 +458,11 @@ const handleKeydown = (event) => {
   }
 }
 
-// Handle browser back button - redirect to /camera
-// Uses window.location.replace for synchronous navigation without flicker
-const handlePopState = () => {
-  window.location.replace('/camera')
-}
+useNavigationGuard('/camera')
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
 
 // Intercept Vue Router navigation
 onBeforeRouteLeave((to, from, next) => {
