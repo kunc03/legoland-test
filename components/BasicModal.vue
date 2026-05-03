@@ -24,9 +24,9 @@
       >
         <!-- Image -->
         <div v-if="image" class="relative w-full">
-          <img :src="image" alt="modal image" class="w-full object-cover px-8 pt-8" />
+          <img :src="image" alt="modal image" class="w-full object-contain px-8 pt-8" :class="{ 'max-h-64': isExternalPrize,  }" />
           <div
-            v-if="category"
+            v-if="category && !isExternalPrize"
             class="absolute top-0 mx-10 mt-10 px-1 bg-[#FF0076] text-sm text-white"
           >
             {{ category }}
@@ -36,7 +36,8 @@
         <!-- Text -->
         <div
           v-if="text"
-          class="px-8 font-bold text-center text-exd-1424 min-h-[72px]"
+          class="px-8 font-bold text-center text-exd-1424"
+          :class="{ 'min-h-[72px]': !isExternalPrize }"
           :style="{
             color: settings?.global?.modal?.text_color,
           }"
@@ -47,8 +48,35 @@
         </div>
 
         <!-- Button -->
+        <div v-if="isExternalPrize" class="flex items-center gap-4">
+          <button
+            class="flex items-center justify-center w-12 h-12 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
+            :style="{ backgroundColor: bgColor }"
+            :disabled="currentIndex === 0"
+            @click="handlePrev"
+          >
+            <IconsArrow class="w-6 h-6" :style="{ color: textColor }" />
+          </button>
+          <!-- Pagination Dots -->
+          <div class="flex gap-2">
+            <button
+              v-for="i in totalSteps"
+              :key="i"
+              class="w-2 h-2 rounded-full transition-colors cursor-pointer"
+              :class="currentIndex === i - 1 ? 'bg-[#FF0076]' : 'bg-gray-300'"
+              @click="handleGoto(i - 1)"
+            />
+          </div>
+          <button
+            class="flex items-center justify-center w-12 h-12 rounded-full"
+            :style="{ backgroundColor: bgColor }"
+            @click="handleButtonTap"
+          >
+            <IconsArrow class="w-6 h-6 rotate-180" :style="{ color: textColor }" />
+          </button>
+        </div>
         <SolidButton
-          v-if="buttonText"
+          v-else-if="buttonText"
           :label="buttonText"
           :bgColor="bgColor"
           :textColor="textColor"
@@ -102,9 +130,25 @@ const props = defineProps({
     type: String,
     default: '#fff',
   },
+  isExternalPrize: {
+    type: Boolean,
+    default: false,
+  },
+  onPrev: {
+    type: Function,
+    default: null,
+  },
+  currentIndex: {
+    type: Number,
+    default: 0,
+  },
+  totalSteps: {
+    type: Number,
+    default: 0,
+  },
 })
 
-const emits = defineEmits(['update:modelValue'])
+const emits = defineEmits(['update:modelValue', 'prev', 'goto'])
 
 const handleClose = () => {
   if (props.onClose) {
@@ -122,5 +166,19 @@ const handleButtonTap = () => {
       emits('update:modelValue', false)
     }
   })
+}
+
+const handlePrev = () => {
+  nextTick(() => {
+    if (props.onPrev) {
+      props.onPrev()
+    } else {
+      emits('prev')
+    }
+  })
+}
+
+const handleGoto = (index) => {
+  emits('goto', index)
 }
 </script>

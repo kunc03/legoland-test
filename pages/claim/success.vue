@@ -42,7 +42,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-0 w-full max-w-md px-8 mx-auto">
+  <div class="fixed bottom-10 w-full max-w-md px-8 mx-auto">
     <SolidButton
       :on-click="() => goTo('top')"
       :label="settings?.prize?.step_2?.swipe_exchange?.data?.button_text_2"
@@ -56,6 +56,10 @@
           ?.color
       "
     />
+  </div>
+
+  <div class="pb-5">
+    <Copyright />
   </div>
 </template>
 

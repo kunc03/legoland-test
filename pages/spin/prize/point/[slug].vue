@@ -16,7 +16,7 @@
       :src="externalRedeemStore.isExternalRedeem ? roulette : settings?.global?.gacha_machine_image"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
-      :class="externalRedeemStore.isExternalRedeem ? 'w-[85%] max-w-none' : 'w-[120%] max-w-none'"
+      :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
       loading="eager"
       decoding="async"
       fetchpriority="high"
@@ -40,8 +40,7 @@
         :is-external-gacha="true"
       />
       <div
-        v-if="settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title && displayPointName"
-        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[20%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
+        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[14%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
       >
         <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
           {{ displayPointName }}
@@ -233,7 +232,7 @@ const handleSpinWarningAction = async () => {
 }
 
 const displayPointName = computed(() => {
-  return spinResultData.value?.name || pointName.value || ""
+  return spinResultData.value?.name || pointName.value || "-"
 })
 
 const handleCloseModalLogin = () => (modalLogin.value = false)

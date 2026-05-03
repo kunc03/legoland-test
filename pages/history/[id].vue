@@ -209,6 +209,7 @@
       {{ $t('downloadImage') }}
     </div>
   </transition>
+  <Copyright />
 </template>
 
 <script setup>

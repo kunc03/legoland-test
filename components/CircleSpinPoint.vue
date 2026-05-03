@@ -8,22 +8,22 @@ const props = defineProps({
 const settings = useState('settings')
 const giftType = reactive({
   x: 50,
-  y: 270,
+  y: 260,
   width: 300,
-  height: 140,
+  height: 200,
 })
 
 const pointType = reactive({
-  x: 60,
-  y: 20,
-  width: 300,
+  x: 75,
+  y: -5,
+  width: 250,
   height: 250,
 })
 
 const circleBlur = reactive({
-  x: -75,
+  x: -90,
   y: -170,
-  width: 550,
+  width: 580,
   height: 600,
 })
 
