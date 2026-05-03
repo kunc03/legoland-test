@@ -242,7 +242,6 @@ import charImg from '~/public/images/character.png'
 import plusIcon from '~/assets/icons/plus.png'
 import minusIcon from '~/assets/icons/minus.png'
 import StarRating from '~/components/StarRating.vue'
-import { onBeforeRouteLeave } from '#vue-router'
 
 definePageMeta({
   middleware: 'valid-password',
@@ -458,39 +457,22 @@ const handleKeydown = (event) => {
   }
 }
 
-useNavigationGuard('/camera')
+useNavigationGuard('/camera') 
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })
 
-// Intercept Vue Router navigation
-onBeforeRouteLeave((to, from, next) => {
-  if (to.path !== '/camera') {
-    next('/camera')
-  } else {
-    next()
-  }
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-  // Push two dummy states to create history buffer
-  // This prevents mobile back gesture from exiting the app
-  // First back goes to first dummy, second back triggers popstate
-  history.pushState({ noBackExit: 1 }, '', window.location.href)
-  history.pushState({ noBackExit: 2 }, '', window.location.href)
-  window.addEventListener('popstate', handlePopState)
   fetchImage()
 
   if (!settings.value?.flow?.screens?.show_user_tap_screen) {
     disabledButton.value = true
   }
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('popstate', handlePopState)
 })
 </script>
 
