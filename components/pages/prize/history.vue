@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!isFetching" class="bg-white">
+  <div v-if="!isFetching" class="bg-white rounded-xl">
     <ImageTextCard
       :key="id"
       :history="true"
@@ -7,6 +7,7 @@
       :show-image="false"
       :is-redeemed="isRedeemed"
       :is-failed="isFailed"
+      :is-last-item="isLastItem"
       :on-click="() => handleGoToDetailRedeem(body.id)"
     >
       <template v-slot:text>
@@ -113,6 +114,10 @@ const props = defineProps({
   currentPoint: {
     type: [Number, String],
     default: 0,
+  },
+  isLastItem: {
+    type: Boolean,
+    default: false,
   },
 })
 
