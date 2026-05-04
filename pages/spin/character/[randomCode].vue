@@ -457,8 +457,6 @@ const handleKeydown = (event) => {
   }
 }
 
-useNavigationGuard('/camera') 
-
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
 })
