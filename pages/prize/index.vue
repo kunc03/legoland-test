@@ -65,10 +65,11 @@
     </div>
 
     <div
+      v-if="redeems.length > 0"
       ref="prizeHistory"
       class="relative flex flex-col px-10 sm:mb-[23%] mb-[28%]"
     >
-      <div class="px-2 py-1 text-white bg-exd-gray-44">
+      <div class="px-2 py-1 text-white bg-exd-gray-44 rounded-t-xl">
         <template v-if="isFetchingRedeems">
           <Skeleton width="8rem" height="1.25rem"></Skeleton>
         </template>
@@ -101,12 +102,13 @@
           :body="redeem"
           :currentPoint="store.point"
           :is-fetching="isFetchingRedeems"
+          :is-last-item="redeemLastPage <= 1 && key === redeems.length - 1"
         />
       </template>
 
       <div
         v-if="!isFetchingRedeems && redeemLastPage > 1"
-        class="flex items-center justify-between p-3 bg-white border-t border-surface-200"
+        class="flex items-center justify-between p-3 bg-white border-t border-surface-200 rounded-b-xl"
       >
         <button
           class="flex items-center justify-center w-10 h-10 text-white rounded-md bg-exd-gray-44 disabled:opacity-50 disabled:cursor-not-allowed"
