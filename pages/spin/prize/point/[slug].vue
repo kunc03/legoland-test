@@ -39,29 +39,37 @@
         :showPointOnly="showPointOnly"
         :is-external-gacha="true"
       />
+    </div>
+    <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
+    <div class="w-full absolute bottom-0 flex flex-col items-center gap-4 z-[1100] pb-4">
       <div
-        class="absolute text-exd-gray-scorpion bg-white flex justify-center bottom-[14%] px-4 py-3 h-auto rounded-lg max-w-[50vw]"
+        v-if="
+          settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title &&
+          displayPointName
+        "
+        class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[50vw]"
       >
         <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
           {{ displayPointName }}
         </p>
       </div>
-    </div>
-    <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
-    <div class="w-full absolute bottom-0 mb-5 z-[1100]">
-      <SolidButton
-        :label="gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_text"
-        :on-click="() => handleButton()"
-        :disabled="disabledButton"
-        :bgColor="
-          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color
-            ?.background
-        "
-        :textColor="
-          gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color?.color
-        "
-      />
-      <Copyright class="!w-[83%]" />
+
+      <div class="w-full">
+        <SolidButton
+          :label="gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_text"
+          :on-click="() => handleButton()"
+          :disabled="disabledButton"
+          :bgColor="
+            gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color
+              ?.background
+          "
+          :textColor="
+            gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color
+              ?.color
+          "
+        />
+        <Copyright class="!w-[83%] mx-auto" />
+      </div>
     </div>
 
     <ModalAfterSpin
