@@ -854,6 +854,8 @@ const handleRedirect = async (url) => {
   }
 }
 
+useNavigationGuard('/dashboard')
+
 watch(drawerVisible, (value) => {
   if (!value) {
     paused.value = false

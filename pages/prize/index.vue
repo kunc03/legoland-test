@@ -305,6 +305,8 @@ const handleScrollDown = () => {
   }
 }
 
+useNavigationGuard('/dashboard')
+
 onMounted(async () => {
   await fetchingPrizesData()
   await fetchingRedeemsData(1)
