@@ -357,6 +357,7 @@
   />
 
   <StepWalkthrough
+    v-if="externalRedeemStore.prizeLists?.length > 0"
     v-model="hasRedeemWalkthrough"
     :steps="externalRedeemStore.prizeLists"
     :isExternalPrize="true"
@@ -514,7 +515,14 @@ const visibleSubMenus = computed(() => {
       key: 'sub_menu_3',
       show: flow?.show_sub_menu_3_change_member_information,
       text: menu?.sub_menu_3?.text,
-      action: () => hasRedeemWalkthrough.value = true,
+      action: () => {
+        if (externalRedeemStore.prizeLists?.length > 0) {
+          hasRedeemWalkthrough.value = true
+        } else {
+          errorMessages.value = t('prizesComingSoon')
+          isNotAllowed.value = true
+        }
+      },
     },
     {
       key: 'sub_menu_2',
