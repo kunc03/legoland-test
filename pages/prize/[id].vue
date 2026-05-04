@@ -129,7 +129,7 @@
       />
     </div>
 
-    <Copyright />
+    <Copyright class="!w-[100%]" />
   </div>
 
   <Dialog

@@ -103,8 +103,8 @@
           gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color?.color
         "
         :disabled="disabledButton"
-        has-bottom
       />
+      <Copyright class="!w-[83%]" />
     </div>
   </div>
 

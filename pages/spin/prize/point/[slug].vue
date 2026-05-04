@@ -48,11 +48,10 @@
       </div>
     </div>
     <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
-    <div class="w-full absolute bottom-0 z-[1100]">
+    <div class="w-full absolute bottom-0 mb-5 z-[1100]">
       <SolidButton
         :label="gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_text"
         :on-click="() => handleButton()"
-        has-bottom
         :disabled="disabledButton"
         :bgColor="
           gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color
@@ -62,6 +61,7 @@
           gacha?.spin_gacha_1_screen?.after_gacha_1_screen?.button_and_text_color?.color
         "
       />
+      <Copyright class="!w-[83%]" />
     </div>
 
     <ModalAfterSpin
@@ -125,6 +125,7 @@
         </div>
       </template>
     </Dialog>
+    
   </div>
 
   <AutoplayVideo
