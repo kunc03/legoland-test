@@ -284,7 +284,7 @@
     <div
       class="relative inline-flex flex-col w-full mx-auto mt-5 gap-5"
     >
-      <Copyright class="!w-[100%] rounded-lg" />
+      <Copyright class="!w-[100%]" />
       <p 
         class="text-center text-exd-gray-scorpion text-xs cursor-pointer hover:text-gray-700 transition-colors opacity-60"
         @click="showVersionDialog"
