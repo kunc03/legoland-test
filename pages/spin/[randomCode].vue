@@ -524,7 +524,7 @@ const handleAboutSpin = () => (showAboutSpin.value = true)
 
 const { encryptData, decryptData } = useEncryption()
 const { isScanVerified, clearScanVerified, setScanVerified } = useGachaVerification()
-const { performSpin, checkSpinStatus } = useGachaService()
+const { performSpin, checkSpinStatus, getStoredResult, isEligibleForSpin } = useGachaService()
 const { t, locale } = useI18n()
 const config = useRuntimeConfig()
 
@@ -774,14 +774,18 @@ const triggerGachaSpin = async () => {
     if (isResumingCurrentSpinSession()) {
       return true
     }
-
     const slug = String(spinSlug.value).toUpperCase()
     const storedData = useCookie('VALID_PASSWORD')
     const payload = storedData.value 
       ? (decryptData(storedData.value) || {}) 
       : { slug: slug.toLowerCase(), password: '' }
-
-    await performSpin(slug, payload)
+    const spinType = useState('spin_type').value
+    let storage = getStoredResult(slug)
+    // Jika belum ada data dari gacha sebelumnya, ATAU dia memang layak spin lagi DAN tiket scan dari /camera masih ada,
+    // maka kita jalankan gacha baru. Jika tiketnya sudah dipakai oleh halaman sebelumnya, kita cukup pakai `storage` lama.
+    if (!storage || (isEligibleForSpin(slug, spinType) && isScanVerified(slug))) {
+      await performSpin(slug, payload)
+    }
     
     return true
   } catch (error) {
@@ -1051,10 +1055,15 @@ watch(isNotAllowed, (newValue) => {
 })
 
 onMounted(() => {
+  const slug = String(spinSlug.value).toUpperCase()
+  
+  // 1. Ambil data storage untuk mengecek apakah ini sesi baru atau sesi resume
+  const existingResult = getStoredResult(slug)
+
   const scanVerifiedFlag = String(route.query?.scan_verified || '').toLowerCase()
   const shouldSetScanVerified = scanVerifiedFlag === '1' || scanVerifiedFlag === 'true'
   const scanSlug = String(route.query?.scan_slug || spinSlug.value || '')
-  if (shouldSetScanVerified && scanSlug) {
+  if (!existingResult && shouldSetScanVerified && scanSlug) {
     setScanVerified(scanSlug)
   }
 
