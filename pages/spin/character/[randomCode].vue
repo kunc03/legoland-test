@@ -302,6 +302,7 @@ const pointCategoryIsFail = ref(false)
 const hasClicked = ref(false)
 
 const externalRedeemStore = useExternalRedeemStore()
+const router = useRouter()
 
 const handleClose = () => (isNotAllowed.value = false)
 const handleShowDialog = () => (hasModal.value = true)

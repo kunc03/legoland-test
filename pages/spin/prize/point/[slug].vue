@@ -16,7 +16,7 @@
       :src="externalRedeemStore.isExternalRedeem ? roulette : settings?.global?.gacha_machine_image"
       alt="gacha2"
       class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
-      :class="externalRedeemStore.isExternalRedeem ? 'w-[85%] max-w-none' : 'w-[120%] max-w-none'"
+      :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
       loading="eager"
       decoding="async"
       fetchpriority="high"
@@ -239,7 +239,7 @@ const handleSpinWarningAction = async () => {
 }
 
 const displayPointName = computed(() => {
-  return spinResultData.value?.name || pointName.value || ""
+  return spinResultData.value?.name || pointName.value || "-"
 })
 
 const handleCloseModalLogin = () => (modalLogin.value = false)

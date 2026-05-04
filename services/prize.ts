@@ -35,6 +35,10 @@ export const usePrizeService = () => {
     return useFetchApi('POST', 'external-prize/redeem', { body: payload })
   }
 
+  const getExternalPrizeList = (params: any = {}) => {
+    return useFetchApi('GET', 'external-prize/list', { params })
+  }
+
   const spinExternalPrize = (slug: string, prizeId: string | number) => {
     return useFetchApi('POST', 'external-prize/spin', {
       body: { external_gacha_slug: slug, prize_id: prizeId },
@@ -59,5 +63,6 @@ export const usePrizeService = () => {
     spinExternalPrize,
     spinExternalPrizeOnly,
     getNextRedeemId,
+    getExternalPrizeList
   }
 }

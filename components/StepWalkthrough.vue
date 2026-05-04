@@ -3,13 +3,18 @@
     v-if="steps.length > 0"
     v-model="isOpen"
     :image="currentStep.image"
-    :text="currentStep.text"
-    :category="currentStep.category"
+    :text="currentStep.text || currentStep.name"
+    :category="typeof currentStep.category === 'object' ? currentStep.category?.name : currentStep.category"
     :button-text="$t('next')"
     :on-button-tap="handleNext"
     :on-close="handleClose"
     :bgColor="bgColor"
     :textColor="textColor"
+    :isExternalPrize="isExternalPrize"
+    :currentIndex="currentIndex"
+    :totalSteps="steps.length"
+    @prev="handlePrev"
+    @goto="handleGoto"
   />
 </template>
 
@@ -31,6 +36,10 @@ const props = defineProps({
   textColor: {
     type: String,
     default: '#fff',
+  },
+  isExternalPrize: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -60,6 +69,24 @@ const handleNext = () => {
 const handleClose = () => {
   isOpen.value = false
   emits('done')
+}
+
+const handlePrev = () => {
+  nextTick(() => {
+    if (currentIndex.value > 0) {
+      currentIndex.value--
+      isOpen.value = true
+    }
+  })
+}
+
+const handleGoto = (index) => {
+  nextTick(() => {
+    if (index >= 0 && index < props.steps.length) {
+      currentIndex.value = index
+      isOpen.value = true
+    }
+  })
 }
 
 // Reset index whenever walkthrough is opened

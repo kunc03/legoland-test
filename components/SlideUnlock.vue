@@ -15,7 +15,7 @@
     @touchend="slideFinish"
   >
     <div class="slideunlock-progressbar" :style="progressBarStyle" />
-    <div class="slideunlock-text" :style="{ opacity: Slider.TextOpacity }">
+    <div class="slideunlock-text" :class="[Slider.IsComplete ? 'ml-0' : 'ml-[35px]']" :style="{ opacity: Slider.TextOpacity }">
       {{ message }}
     </div>
 
