@@ -379,5 +379,6 @@
   "startingCamera": "Starting camera",
   "prizeItem": "Prize",
   "prizeCollectionsTitle": ["Enter the", "lottery!"],
-  "gachaCollectionsTitle": ["Prize", "Exchange"]
+  "gachaCollectionsTitle": ["Prize", "Exchange"],
+  "prizesComingSoon": "Prizes coming soon! Stay tuned"
 }

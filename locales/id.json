@@ -379,5 +379,6 @@
   "startingCamera": "Memulai kamera",
   "prizeItem": "Hadiah",
   "prizeCollectionsTitle": ["Ikuti", "undian!"],
-  "gachaCollectionsTitle": ["Tukar", "Hadiah"]
+  "gachaCollectionsTitle": ["Tukar", "Hadiah"],
+  "prizesComingSoon": "Hadiah akan segera hadir! Nantikan"
 }

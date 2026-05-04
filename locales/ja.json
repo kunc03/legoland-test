@@ -380,5 +380,6 @@
   "startingCamera": "カメラを起動中",
   "prizeItem": "景品",
   "prizeCollectionsTitle": ["ちゅうせんに", "さんか！"],
-  "gachaCollectionsTitle": ["けいひん", "こうかん"]
+  "gachaCollectionsTitle": ["けいひん", "こうかん"],
+  "prizesComingSoon": "景品は近日公開予定です。お楽しみに。"
 }
