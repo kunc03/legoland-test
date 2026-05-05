@@ -98,7 +98,7 @@ export const useGachaService = () => {
     const { data } = await useFetchApi(method, endpoint, fetchOptions)
 
     // 4. Cleanup verification
-    clearScanVerified(slug)
+    // clearScanVerified(slug)
 
     // 5. Update session state
     const spinType = useState<number | string>('spin_type')
