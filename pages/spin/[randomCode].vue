@@ -108,6 +108,8 @@
           :has-loading="isLoading"
           :on-click="() => nextToSpin()"
         />
+
+        <Copyright class="!w-[305px]" />
       </div>
     </div>
   </div>

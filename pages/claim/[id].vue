@@ -99,6 +99,8 @@
         @completed="handleSwipe()"
         :bgColor="step2Data?.button_and_text_color?.background"
       />
+      
+      <Copyright class="!w-[100%]" />
     </div>
   </div>
 
