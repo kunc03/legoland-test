@@ -143,13 +143,7 @@
           <IconsArrow class="w-7 h-7 rotate-180" />
         </button>
       </div>
-
-      <!-- <Copyright v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length > 1" class="!w-[100%]" /> -->
-
     </div>
-    <!-- <div v-if="!isFetchingPrizes && !isFetchingRedeems && redeems.length <= 1" class="absolute left-0 right-0 bottom-[115px]">
-      <Copyright class="!w-[79%]" />
-    </div> -->
   </div>
 
   <div v-if="!externalRedeemStore.isExternalRedeem" class="absolute bottom-[15%] right-0 flex flex-col items-end">

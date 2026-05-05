@@ -194,7 +194,6 @@
         />
       </div>
     </div>
-    <!-- <Copyright class="w-full"/> -->
   </div>
 
   <transition name="slide-right">
