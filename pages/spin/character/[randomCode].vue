@@ -53,7 +53,7 @@
 
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinCharacter
-        class="relative top-1/2 -translate-y-[50%]"
+        class="relative top-1/2 -translate-y-[45%]"
         :imageSrc="characterImageUrl"
         :raritySrc="raritySrc"
         :hideCharacterInfo="hideCharacterInfo"
@@ -65,7 +65,7 @@
       />
     </div>
 
-    <div class="absolute bottom-0 w-full flex flex-col items-center gap-4 z-30 pb-4">
+    <div class="absolute bottom-0 w-full flex flex-col items-center gap-4 z-30 pb-5">
       <div
         v-if="
           settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title && charName
