@@ -137,7 +137,7 @@ onMounted(() => {
         width="270"
         :href="charTitleImage"
         x="65"
-        y="-30"
+        y="-42"
       />
 
       <!-- <foreignObject x="70" y="60" width="260" height="260">
