@@ -94,15 +94,27 @@
       </template>
 
       <template v-else>
-        <PagesPrizeHistory
-          v-for="(redeem, key) in redeems"
-          :key="key"
-          :keyBody="key"
-          :body="redeem"
-          :currentPoint="store.point"
-          :is-fetching="isFetchingRedeems"
-          :is-last-item="redeemLastPage <= 1 && key === redeems.length - 1"
-        />
+        <template v-if="redeems.length > 0">
+          <PagesPrizeHistory
+            v-for="(redeem, key) in redeems"
+            :key="key"
+            :keyBody="key"
+            :body="redeem"
+            :currentPoint="store.point"
+            :is-fetching="isFetchingRedeems"
+            :is-last-item="redeemLastPage <= 1 && key === redeems.length - 1"
+          />
+        </template>
+        <div
+          v-else
+          class="flex flex-col items-center justify-center p-8 bg-white rounded-b-xl border-b border-surface-200"
+        >
+          <p
+            class="text-exd-gray-scorpion font-semibold text-[13px] text-center"
+          >
+            {{ $t('noExchangeHistory') }}
+          </p>
+        </div>
       </template>
 
       <div
