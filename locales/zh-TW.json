@@ -379,5 +379,6 @@
   "startingCamera": "啟動相機",
   "prizeItem": "獎品",
   "prizeCollectionsTitle": ["參加", "抽獎!"],
-  "gachaCollectionsTitle": ["獎品", "兌換"]
+  "gachaCollectionsTitle": ["獎品", "兌換"],
+  "prizesComingSoon": "獎品即將公布！敬請期待。"
 }

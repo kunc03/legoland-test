@@ -355,6 +355,21 @@
         ?.button_text_and_color?.color
     "
   />
+
+  <StepWalkthrough
+    v-if="externalRedeemStore.prizeLists?.length > 0"
+    v-model="hasRedeemWalkthrough"
+    :steps="externalRedeemStore.prizeLists"
+    :isExternalPrize="true"
+    :bgColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.background
+    "
+    :textColor="
+      settings?.register_login?.successful_member_registration_page
+        ?.button_text_and_color?.color
+    "
+  />
 </template>
 
 <script setup>
@@ -445,6 +460,7 @@ const hidePoint = ref(false)
 const { t } = useI18n()
 
 const hasWalkthrough = ref(false)
+const hasRedeemWalkthrough = ref(false)
 
 const walkthroughSteps = computed(() => [
   { image: city, text: t('step1') },
@@ -499,7 +515,14 @@ const visibleSubMenus = computed(() => {
       key: 'sub_menu_3',
       show: flow?.show_sub_menu_3_change_member_information,
       text: menu?.sub_menu_3?.text,
-      action: () => navigateTo('/profile'),
+      action: () => {
+        if (externalRedeemStore.prizeLists?.length > 0) {
+          hasRedeemWalkthrough.value = true
+        } else {
+          errorMessages.value = t('prizesComingSoon')
+          isNotAllowed.value = true
+        }
+      },
     },
     {
       key: 'sub_menu_2',
@@ -691,6 +714,9 @@ onMounted(async () => {
   hidePoint.value = !settings.value?.flow?.screens?.show_current_point
   await nextTick()
   checkSpinEligibility()
+  if (externalRedeemStore.isExternalRedeem) {
+    await externalRedeemStore.getExternalPrizeList()
+  }
 })
 
 onBeforeUnmount(() => {
