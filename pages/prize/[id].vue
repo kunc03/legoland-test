@@ -10,7 +10,7 @@
 
   <div class="flex flex-col px-8 pt-32 text-black bg-center">
     <div
-      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow"
+      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 rounded-xl shadow"
     >
       <div class="w-full overflow-hidden bg-[#FFF6E8]">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
