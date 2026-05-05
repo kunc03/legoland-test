@@ -53,7 +53,7 @@
 
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinCharacter
-        class="relative top-1/2 -translate-y-[40%]"
+        class="relative top-1/2 -translate-y-[45%]"
         :imageSrc="characterImageUrl"
         :raritySrc="raritySrc"
         :hideCharacterInfo="hideCharacterInfo"
