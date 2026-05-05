@@ -782,11 +782,29 @@ const triggerGachaSpin = async () => {
     const payload = storedData.value 
       ? (decryptData(storedData.value) || {}) 
       : { slug: slug.toLowerCase(), password: '' }
+    
     const spinType = useState('spin_type').value
+    const beforeSpinType = useState('before_spin_type').value
+    const verified = isScanVerified(slug)
     let storage = getStoredResult(slug)
-    // Jika belum ada data dari gacha sebelumnya, ATAU dia memang layak spin lagi DAN tiket scan dari /camera masih ada,
-    // maka kita jalankan gacha baru. Jika tiketnya sudah dipakai oleh halaman sebelumnya, kita cukup pakai `storage` lama.
-    if (!storage || (isEligibleForSpin(slug, spinType) && isScanVerified(slug))) {
+    
+    // Determine if we should attempt a new spin
+    // A new spin is triggered if:
+    // 1. There is no previous result (!storage)
+    // 2. OR the user is eligible for a repeat spin AND has a fresh scan ticket
+    const shouldPerformNewSpin = !storage || (isEligibleForSpin(slug, spinType) && verified)
+    
+    if (shouldPerformNewSpin) {
+      // Security check: if gacha type requires a scan (type 2)
+      if (beforeSpinType === 2 && !verified) {
+        if (!storage) {
+          // No previous data AND not scanned -> block first spin
+          throw { data: { message: t('no_available_data') } }
+        }
+        // Has previous data but scan ticket expired -> just return and use storage
+        return true
+      }
+      
       await performSpin(slug, payload)
     }
     
