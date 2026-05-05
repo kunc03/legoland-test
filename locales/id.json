@@ -380,5 +380,6 @@
   "prizeItem": "Hadiah",
   "prizeCollectionsTitle": ["Ikuti", "undian!"],
   "gachaCollectionsTitle": ["Tukar", "Hadiah"],
-  "prizesComingSoon": "Hadiah akan segera hadir! Nantikan"
+  "prizesComingSoon": "Hadiah akan segera hadir! Nantikan",
+  "noExchangeHistory": "Belum ada riwayat pertukaran"
 }

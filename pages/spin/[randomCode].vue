@@ -12,19 +12,19 @@
         isSplashComplete)
     "
     class="flex flex-col h-[100dvh] overflow-y-auto"
+    :style="{
+      background:
+        gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+          ?.type === 'image'
+          ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
+          : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
+              ?.value,
+    }"
   >
     <HeaderBar withLogo />
 
     <div
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[102px]"
-      :style="{
-        background:
-          gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
-            ?.type === 'image'
-            ? `url(${gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background?.value})`
-            : gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.background
-                ?.value,
-      }"
     >
       <div
         class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4"
