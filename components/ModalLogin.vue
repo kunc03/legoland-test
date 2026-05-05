@@ -353,9 +353,9 @@ const handleSubmit = async () => {
 
     emits('logged-in', { isFirstLogin: response.data.is_first_login })
   } catch (error) {
-    errorStatus.value = error._data?.data?.type
 
-    errorMessages.value = [
+    errorStatus.value = error._data?.data?.type
+    errorMessages.value = [ error._data?.message ||
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
         t('loginFailed'),
     ]
@@ -399,7 +399,6 @@ const processLoginLine = async () => {
     emits('logged-in', { isFirstLogin: response.data.is_first_login })
   } catch (error) {
     errorStatus.value = error._data?.data?.type
-    console.log('error', error)
 
     errorMessages.value = [ error?._data?.message ||
       settings.value?.register_login?.registration_login_pop_up?.warning_text ||
