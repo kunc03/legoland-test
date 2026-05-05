@@ -8,8 +8,8 @@
     </p>
   </HeaderBar>
   <div class="flex flex-col gap-3 px-8 pt-32 text-black">
-    <div class="max-w-sm bg-white rounded-lg shadow">
-      <div class="w-full overflow-hidden rounded-t-lg">
+    <div class="max-w-sm bg-white rounded-xl shadow">
+      <div class="w-full overflow-hidden rounded-t-xl">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
         <CharacterCard
           v-else
@@ -114,7 +114,7 @@
 
         <div
           v-if="socialMediaLinks.length"
-          class="inline-flex md:gap-3 gap-[6px] w-full justify-center items-center mb-6 bg-exd-zinc-100 p-5 rounded-lg"
+          class="inline-flex md:gap-3 gap-[6px] w-full justify-center items-center mb-6 bg-exd-zinc-100 p-5 rounded-xl"
         >
           <img
             v-for="(link, index) in socialMediaLinks"
@@ -194,6 +194,7 @@
         />
       </div>
     </div>
+    <Copyright class="w-full"/>
   </div>
 
   <transition name="slide-right">
@@ -209,7 +210,6 @@
       {{ $t('downloadImage') }}
     </div>
   </transition>
-  <Copyright />
 </template>
 
 <script setup>
