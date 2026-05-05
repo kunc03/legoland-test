@@ -1,5 +1,7 @@
-// Tentukan nama cache dan file yang ingin di-cache
-const CACHE_NAME = `gacharary-v3 - ${self.location.origin}`
+// Extract version from registration URL (e.g., sw.js?v=1.1.9)
+const params = new URLSearchParams(self.location.search)
+const version = params.get('v') || 'v4' 
+const CACHE_NAME = `gacharary-${version}-${self.location.origin}`
 const urlsToCache = [
   '/',
   '/favicon.ico',
@@ -109,13 +111,14 @@ self.addEventListener('message', async (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
-  // 1. Handle Built Assets (_nuxt) - Stale-While-Revalidate
+  // 1. Handle Built Assets (_nuxt) - Network First
+  // Using NetworkFirst ensures that we don't serve old hashed assets
   if (url.pathname.startsWith('/_nuxt/')) {
-    event.respondWith(staleWhileRevalidate(event.request))
+    event.respondWith(networkFirst(event.request))
     return
   }
 
-  // 2. Handle Images - Cache First
+  // 2. Handle Images - Cache First (Static assets are safe to cache)
   if (
     event.request.destination === 'image' ||
     /\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/i.test(url.pathname)
@@ -133,13 +136,24 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 4. Default Strategy - Network First or Cache Match
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request)
-    })
-  )
+  // 4. Default Strategy - Network First
+  // Primarily for index.html and navigation to ensure user gets latest version
+  event.respondWith(networkFirst(event.request))
 })
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME)
+  try {
+    const networkResponse = await fetch(request)
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone())
+    }
+    return networkResponse
+  } catch (error) {
+    const cachedResponse = await cache.match(request)
+    return cachedResponse || new Response('Offline and no cache available', { status: 503 })
+  }
+}
 
 const FALLBACK_IMAGE = '/images/gacha-aichi.png'
 

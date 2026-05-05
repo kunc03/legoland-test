@@ -1,6 +1,8 @@
 <script setup>
 import circleBlur from '~/assets/images/circle-blur.png'
 
+const config = useRuntimeConfig()
+const version = config.public.VERSION || '1.0.0'
 const route = useRoute()
 const loading = ref(true)
 const isSupportSerWorker = ref(false)
@@ -25,7 +27,7 @@ if (import.meta.client && 'serviceWorker' in navigator) {
       registration.update()
       console.log('ServiceWorker updated')
     } else {
-      navigator.serviceWorker.register('/sw.js').then(
+      navigator.serviceWorker.register(`/sw.js?v=${version}`).then(
         (registration) => {
           console.log(
             'ServiceWorker registration successful with scope: ',
@@ -121,7 +123,7 @@ const preCacheDuringLoading = async () => {
 
   const startedAt = Date.now()
   const minWaitMs = 2000
-  const cacheName = `gacharary-v2 - ${window.location.origin}`
+  const cacheName = `gacharary-${version}-${window.location.origin}`
   const urlsToCache = buildUrlsToCache()
   const imageUrlsToCache = urlsToCache.filter((url) => !isMp4Url(url))
   const videoUrlsToCache = urlsToCache.filter((url) => isMp4Url(url))
