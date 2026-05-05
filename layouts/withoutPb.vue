@@ -21,7 +21,7 @@
       <slot />
     </section>
     <BottomBar bottom-offset="2.4rem" />
-    <div class="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto">
+    <div class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto">
       <Copyright />
     </div>
   </main>
