@@ -31,7 +31,7 @@
     />
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinPoint
-        class="relative top-1/2 -translate-y-[60%]"
+        class="relative top-1/2 -translate-y-[61%]"
         :imageSrc="pointImageUrl"
         :categorySrc="categoryImageUrl"
         width="100%"

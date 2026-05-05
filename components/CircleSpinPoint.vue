@@ -17,11 +17,11 @@ const pointType = reactive({
   x: 75,
   y: -5,
   width: 250,
-  height: 220,
+  height: 250,
 })
 
 const circleBlur = reactive({
-  x: -90,
+  x: -91.5,
   y: -170,
   width: 580,
   height: 600,
