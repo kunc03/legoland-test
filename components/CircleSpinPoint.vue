@@ -10,14 +10,14 @@ const giftType = reactive({
   x: 50,
   y: 240,
   width: 300,
-  height: 190,
+  height: 175,
 })
 
 const pointType = reactive({
   x: 75,
   y: -5,
   width: 250,
-  height: 230,
+  height: 220,
 })
 
 const circleBlur = reactive({
