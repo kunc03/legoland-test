@@ -4,7 +4,9 @@
   >
     <slot />
 
-    <Copyright />
+    <div class="mt-auto">
+      <Copyright />
+    </div>
 
   </main>
 </template>

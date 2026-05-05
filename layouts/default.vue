@@ -5,7 +5,9 @@
   >
     <slot />
     <VersionDetector ref="versionDetector" />
-    <Copyright />
+    <div class="mt-auto">
+      <Copyright />
+    </div>
   </main>
 </template>
 <script setup>

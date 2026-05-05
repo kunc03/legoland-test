@@ -1,7 +1,7 @@
 <template>
   <div
-    class="fixed bottom-0 left-0 right-0 z-50 w-full h-16 max-w-md mx-auto"
-    :style="{ 'background': settings.global?.global_header_footer_color }"
+    class="fixed left-0 right-0 z-50 w-full h-16 max-w-md mx-auto"
+    :style="{ bottom: bottomOffset, 'background': settings.global?.global_header_footer_color }"
   >
     <div class="inline-flex w-full gap-3">
       <div
@@ -113,6 +113,13 @@ import iconPerson from '~/assets/images/icon-person.png'
 import { store } from '~/stores/dashboard.js'
 import { useRouter } from 'vue-router'
 import close from '~/assets/images/close.svg'
+
+const props = defineProps({
+  bottomOffset: {
+    type: String,
+    default: '0px',
+  },
+})
 
 const router = useRouter()
 const settings = useState('settings')
