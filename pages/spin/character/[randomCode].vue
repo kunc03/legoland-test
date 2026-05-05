@@ -9,19 +9,7 @@
     }"
     @touchmove="(e) => e.preventDefault()"
   >
-    <Button
-      v-if="!hideCharacterInfo"
-      @click="handleBtnIntroduce"
-      class="bg-rainbow !absolute text-white font-bold flex justify-center bottom-[12%] items-center rounded-full px-4 py-3 h-[14.222vw] w-[41.522vw] max-w-[191px] max-h-[65px] text-[3vw] sm:text-[16px] !z-[100]"
-    >
-      {{ $t('characterIntroduction') }}
-      <img
-        :src="opIntro ? minusIcon : plusIcon"
-        alt="plus icon"
-        width="15%"
-        height="15%"
-      />
-    </Button>
+
 
     <SparkleStart className="top-3 z-30" />
 
@@ -65,7 +53,7 @@
 
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinCharacter
-        class="relative top-1/2 -translate-y-[50%]"
+        class="relative top-1/2 -translate-y-[45%]"
         :imageSrc="characterImageUrl"
         :raritySrc="raritySrc"
         :hideCharacterInfo="hideCharacterInfo"
@@ -75,36 +63,47 @@
         width="100%"
         height="100%"
       />
+    </div>
 
+    <div class="absolute bottom-0 w-full flex flex-col items-center gap-4 z-30 pb-5">
       <div
         v-if="
           settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title && charName
         "
-        class="absolute flex justify-center h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
-        :class="
-          hideCharacterInfo
-            ? 'sm:bottom-[15%] bottom-[14.5%]'
-            : 'sm:bottom-[23%] bottom-[22%]'
-        "
+        class="flex justify-center h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
       >
         <p class="text-[15px] max-w-[300px] text-center">{{ charName }}</p>
       </div>
-    </div>
 
-    <div class="absolute bottom-0 w-full">
-      <SolidButton
-        :on-click="handleButton"
-        :label="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_text"
-        :bgColor="
-          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color
-            ?.background
-        "
-        :textColor="
-          gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color?.color
-        "
-        :disabled="disabledButton"
-        has-bottom
-      />
+      <Button
+        v-if="!hideCharacterInfo"
+        @click="handleBtnIntroduce"
+        class="bg-rainbow text-white font-bold flex justify-center items-center rounded-full px-4 py-3 h-[14.222vw] w-[41.522vw] max-w-[191px] max-h-[65px] text-[3vw] sm:text-[16px] relative"
+      >
+        {{ $t('characterIntroduction') }}
+        <img
+          :src="opIntro ? minusIcon : plusIcon"
+          alt="plus icon"
+          width="15%"
+          height="15%"
+        />
+      </Button>
+
+      <div class="w-full">
+        <SolidButton
+          :on-click="handleButton"
+          :label="gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_text"
+          :bgColor="
+            gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color
+              ?.background
+          "
+          :textColor="
+            gacha?.spin_gacha_2_screen?.after_gacha_2_screen?.button_and_text_color?.color
+          "
+          :disabled="disabledButton"
+        />
+        <Copyright class="!w-[83%] mx-auto" />
+      </div>
     </div>
   </div>
 

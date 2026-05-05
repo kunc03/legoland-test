@@ -6,7 +6,8 @@
         'bg-white w-full p-3 flex flex-col gap-2 border-b border-b-exd-light-grey relative',
         isDisabled ? 'cursor-default' : 'cursor-pointer',
         isRedeemed && !isFailed ? '!cursor-default !bg-gray-100' : 'cursor-pointer',
-        (isFailed && isRedeemed) ? 'cursor-pointer' : 'cursor-default'
+        (isFailed && isRedeemed) ? 'cursor-pointer' : 'cursor-default',
+        isLastItem ? 'rounded-b-xl' : ''
       ]"
       @click="handleClick"
     >
@@ -111,6 +112,10 @@ const props = defineProps({
     default: false
   },
   isFailed: {
+    type: Boolean,
+    default: false
+  },
+  isLastItem: {
     type: Boolean,
     default: false
   }

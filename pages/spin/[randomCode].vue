@@ -71,8 +71,7 @@
       </div>
 
       <div 
-        class="flex flex-col items-center justify-center w-full pb-10 bg-transparent"
-        :style="{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }"
+        class="flex flex-col items-center justify-center w-full pb-7 bg-transparent"
       >
         <div
           v-if="
@@ -94,20 +93,26 @@
           </p>
         </div>
 
-        <SolidButton
-          :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
-          :bgColor="
-            gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-              ?.button_and_text_color?.background
-          "
-          :textColor="
-            gacha?.spin_gacha_1_screen?.before_gacha_1_screen
-              ?.button_and_text_color?.color
-          "
-          :disabled="isLoading"
-          :has-loading="isLoading"
-          :on-click="() => nextToSpin()"
-        />
+        <div class="flex flex-col w-full items-center justify-center gap-2">
+          <SolidButton
+            :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
+            :bgColor="
+              gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+                ?.button_and_text_color?.background
+            "
+            :textColor="
+              gacha?.spin_gacha_1_screen?.before_gacha_1_screen
+                ?.button_and_text_color?.color
+            "
+            :disabled="isLoading"
+            :has-loading="isLoading"
+            :on-click="() => nextToSpin()"
+          />
+
+          <div class="w-full px-8">
+            <Copyright class="!w-full !mt-0" />
+          </div>
+        </div>
       </div>
     </div>
   </div>

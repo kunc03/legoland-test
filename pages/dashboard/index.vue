@@ -284,10 +284,7 @@
     <div
       class="relative inline-flex flex-col w-full mx-auto mt-5 gap-5"
     >
-      <p class="text-center text-[55%] text-exd-gray-scorpion flex flex-col">
-        <span class="">LEGO, the LEGO logo & LEGOLAND are trademarks of the LEGO Group.</span>
-        <span class="">©2026 The LEGO Group. LEGOLAND is part of Merlin Entertainments Ltd.</span>
-      </p>
+      <Copyright class="!w-[100%]" />
       <p 
         class="text-center text-exd-gray-scorpion text-xs cursor-pointer hover:text-gray-700 transition-colors opacity-60"
         @click="showVersionDialog"

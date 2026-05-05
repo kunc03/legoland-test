@@ -1,7 +1,7 @@
 <template>
   <div
     @touchmove.prevent
-    class="flex flex-col grow !bg-no-repeat !bg-cover !bg-center justify-between relative overflow-hidden cursor-pointer"
+    class="flex flex-col grow !bg-no-repeat !bg-cover !bg-center justify-between relative overflow-hidden cursor-pointer pb-5"
     :style="{
       background:
         settings?.gacha?.user_tap_splash_screen?.background.type === 'image'
@@ -26,6 +26,7 @@
     <!-- container scrollable -->
 
     <!-- Tap screen -->
+     <Copyright class="!w-[90%]" />
   </div>
 
   <ModalLogin
