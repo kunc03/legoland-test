@@ -381,5 +381,6 @@
   "prizeItem": "景品",
   "prizeCollectionsTitle": ["ちゅうせんに", "さんか！"],
   "gachaCollectionsTitle": ["けいひん", "こうかん"],
-  "prizesComingSoon": "景品は近日公開予定です。お楽しみに。"
+  "prizesComingSoon": "景品は近日公開予定です。お楽しみに。",
+  "noExchangeHistory": "交換履歴はありません"
 }

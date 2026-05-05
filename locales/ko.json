@@ -380,5 +380,6 @@
   "prizeItem": "경품",
   "prizeCollectionsTitle": ["추첨에", "참가!"],
   "gachaCollectionsTitle": ["경품", "교환"],
-  "prizesComingSoon": "경품은 곧 공개됩니다! 기대해주세요."
+  "prizesComingSoon": "경품은 곧 공개됩니다! 기대해주세요.",
+  "noExchangeHistory": "교환 내역이 없습니다"
 }
