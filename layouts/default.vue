@@ -5,6 +5,7 @@
   >
     <slot />
     <VersionDetector ref="versionDetector" />
+    <Copyright />
   </main>
 </template>
 <script setup>

@@ -102,7 +102,7 @@
           "
           :disabled="disabledButton"
         />
-        <Copyright class="!w-[83%] mx-auto" />
+        <!-- <Copyright class="!w-[83%] mx-auto" /> -->
       </div>
     </div>
   </div>
