@@ -64,8 +64,11 @@ export const useGachaVerification = () => {
         const ticket = decryptData(globalTicket)
         // Check if it's a valid global ticket object
         if (ticket?.verified === true && ticket.timestamp) {
+          // Verify slug matches if present in global ticket
+          const isSlugMatch = !ticket.slug || ticket.slug.toLowerCase() === slug.toLowerCase()
+          
           // Verify ticket hasn't expired (30 mins)
-          if (Date.now() - ticket.timestamp < 30 * 60 * 1000) {
+          if (isSlugMatch && (Date.now() - ticket.timestamp < 30 * 60 * 1000)) {
             return true
           }
         }
