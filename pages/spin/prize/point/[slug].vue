@@ -49,7 +49,7 @@
         "
         class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[83vw]"
       >
-        <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
+        <p class="text-[3.3vw] font-bold sm:text-[17px] break-words text-center">
           {{ displayPointName }}
         </p>
       </div>

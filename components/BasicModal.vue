@@ -36,7 +36,7 @@
         <!-- Text -->
         <div
           v-if="text"
-          class="px-8 font-bold text-center text-exd-1424"
+          class="px-8 font-bold text-center text-[3.3vw] sm:text-[14px]"
           :class="{ 'min-h-[72px]': !isExternalPrize }"
           :style="{
             color: settings?.global?.modal?.text_color,

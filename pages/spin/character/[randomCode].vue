@@ -70,7 +70,7 @@
         v-if="
           settings?.flow?.screens?.spin_gacha_2_screen?.show_character_title && charName
         "
-        class="flex justify-center h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
+        class="flex justify-center font-bold h-auto px-4 py-3 bg-white rounded-lg text-exd-gray-scorpion"
       >
         <p class="text-[15px] max-w-[300px] text-center">{{ charName }}</p>
       </div>
