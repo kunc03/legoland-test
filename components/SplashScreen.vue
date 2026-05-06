@@ -219,6 +219,6 @@ onUnmounted(() => {
         class="mt-6 ml-5 w-[126px] h-[24px]"
       /> -->
     </div>
-    <Copyright class="absolute bottom-0 w-full" />
+    <Copyright class="absolute left-0 right-0 bottom-[calc(5.05rem+env(safe-area-inset-bottom))]" />
   </div>
 </template>

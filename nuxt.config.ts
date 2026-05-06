@@ -48,11 +48,11 @@ export default defineNuxtConfig({
           name: 'google-site-verification',
           content: process.env.GOOGLE_SITE_VERIFICATION,
         },
-        {
-          name: 'theme-color',
-          content: '#000000',
-        },
       ],
+      bodyAttrs: {
+        // Paksa background body menjadi hitam agar menyatu dengan bar Safari
+        class: 'bg-black',
+      },
     },
   },
 
