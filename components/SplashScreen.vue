@@ -198,7 +198,7 @@ onUnmounted(() => {
 <template>
   <div
     v-if="loading"
-    class="relative w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
+    class="w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
     :style="{
       background:
         gacha.loading_screen.background.type === 'image'
