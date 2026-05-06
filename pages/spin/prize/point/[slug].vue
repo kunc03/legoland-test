@@ -41,13 +41,13 @@
       />
     </div>
     <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
-    <div class="w-full absolute bottom-0 flex flex-col items-center gap-4 z-[1100] pb-4">
+    <div class="w-full absolute bottom-0 flex flex-col items-center gap-10 z-[1100] pb-4">
       <div
         v-if="
           settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title &&
           displayPointName
         "
-        class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[50vw]"
+        class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[83vw]"
       >
         <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
           {{ displayPointName }}

@@ -49,6 +49,9 @@ export default defineNuxtConfig({
           content: process.env.GOOGLE_SITE_VERIFICATION,
         },
       ],
+      bodyAttrs: {
+        class: 'bg-black',
+      },
     },
   },
 

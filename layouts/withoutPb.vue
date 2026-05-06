@@ -13,7 +13,7 @@
 
     <slot name="header"></slot>
 
-    <section class="overflow-y-auto pb-[50px]"
+    <section class="min-h-dvh max-h-[calc(100dvh-50px)] overflow-y-auto pb-12"
     :style="{
       background: bgPrize
     }"

@@ -1,5 +1,5 @@
 <template>
-  <HeaderBar hasBack>
+  <HeaderBar hasBack customBack="/dashboard">
     <p
       style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
       class="text-exd-gray-scorpion font-bold text-exd-1824.52"
@@ -107,7 +107,7 @@
         </template>
         <div
           v-else
-          class="flex flex-col items-center justify-center p-8 bg-white rounded-b-xl border-b border-surface-200"
+          class="flex flex-col items-center justify-center p-8 bg-white border-b rounded-b-xl border-surface-200"
         >
           <p
             class="text-exd-gray-scorpion font-semibold text-[13px] text-center"
@@ -140,7 +140,7 @@
           aria-label="Next page"
           @click="handleNextRedeemPage"
         >
-          <IconsArrow class="w-7 h-7 rotate-180" />
+          <IconsArrow class="rotate-180 w-7 h-7" />
         </button>
       </div>
     </div>

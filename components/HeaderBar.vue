@@ -46,7 +46,7 @@ const router = useRouter()
 const settings = useState('settings')
 const hasMultipleLanguages = Object.keys(settings.value.languages).length > 1
 
-defineProps({
+const props = defineProps({
   hasBack: {
     type: Boolean,
     default: false,
@@ -54,6 +54,10 @@ defineProps({
   withLogo: {
     type: Boolean,
     default: false,
+  },
+  customBack: {
+    type: [String, Function],
+    default: null,
   },
 })
 
@@ -64,10 +68,18 @@ const langPanelToggle = (event) => {
 }
 
 const handleGoBack = () => {
-  if (window.history.length > 2) {
-    router.back()
+  if (props.customBack) {
+    if (typeof props.customBack === 'string') {
+      router.push(props.customBack)
+    } else if (typeof props.customBack === 'function') {
+      props.customBack()
+    }
   } else {
-    router.push('/')
+    if (window.history.length > 2) {
+      router.back()
+    } else {
+      router.push('/')
+    }
   }
 }
 </script>

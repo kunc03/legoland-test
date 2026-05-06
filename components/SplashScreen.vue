@@ -1,5 +1,6 @@
 <script setup>
 import circleBlur from '~/assets/images/circle-blur.png'
+import Copyright from '~/components/Copyright.vue'
 
 const config = useRuntimeConfig()
 const version = config.public.VERSION || '1.0.0'
@@ -197,15 +198,16 @@ onUnmounted(() => {
 <template>
   <div
     v-if="loading"
-    class="w-full max-w-md mx-auto h-screen overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
+    class="w-full max-w-md mx-auto h-[100dvh] overflow-hidden bg-cover bg-center flex flex-col fixed z-[2000]"
     :style="{
       background:
         gacha.loading_screen.background.type === 'image'
           ? `url(${gacha.loading_screen.background.value})`
           : gacha.loading_screen.background.value,
+      paddingBottom: 'env(safe-area-inset-bottom)',
     }"
   > 
-  <div
+    <div
       class="flex flex-col items-center justify-center w-full h-full text-exd-red"
     >
       <img
@@ -218,5 +220,6 @@ onUnmounted(() => {
         class="mt-6 ml-5 w-[126px] h-[24px]"
       /> -->
     </div>
+    <Copyright class="absolute bottom-0 left-0 right-0" />
   </div>
 </template>
