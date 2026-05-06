@@ -50,7 +50,6 @@ export default defineNuxtConfig({
         },
       ],
       bodyAttrs: {
-        // Paksa background body menjadi hitam agar menyatu dengan bar Safari
         class: 'bg-black',
       },
     },
