@@ -1,6 +1,6 @@
 <template>
   <main
-    class="relative flex flex-col w-full h-full max-w-md mx-auto overflow-hidden bg-white"
+    class="relative flex flex-col w-full min-h-dvh max-w-md mx-auto overflow-hidden bg-white"
   >
     <slot />
 
