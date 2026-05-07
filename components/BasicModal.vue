@@ -24,7 +24,7 @@
       >
         <!-- Image -->
         <div v-if="image" class="relative w-full">
-          <img :src="image" alt="modal image" class="w-full object-contain px-8 pt-8" :class="{ 'max-h-64': isExternalPrize,  }" />
+          <img :src="image" alt="modal image" class="object-contain w-full px-8 pt-8" :class="{ 'max-h-64': isExternalPrize,  }" />
           <div
             v-if="category && !isExternalPrize"
             class="absolute top-0 mx-10 mt-10 px-1 bg-[#FF0076] text-sm text-white"
@@ -36,8 +36,8 @@
         <!-- Text -->
         <div
           v-if="text"
-          class="px-8 font-bold text-center"
-          :class="{ 'min-h-[72px]': !isExternalPrize, 'text-exd-1424': !isExternalPrize, 'text-exd-1218': isExternalPrize }"
+          class="px-8 font-bold text-center text-[3.3vw] sm:text-[14px]"
+          :class="{ 'min-h-[72px]': !isExternalPrize }"
           :style="{
             color: settings?.global?.modal?.text_color,
           }"
@@ -62,7 +62,7 @@
             <button
               v-for="i in totalSteps"
               :key="i"
-              class="w-2 h-2 rounded-full transition-colors cursor-pointer"
+              class="w-2 h-2 transition-colors rounded-full cursor-pointer"
               :class="currentIndex === i - 1 ? 'bg-[#FF0076]' : 'bg-gray-300'"
               @click="handleGoto(i - 1)"
             />

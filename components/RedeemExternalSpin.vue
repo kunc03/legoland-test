@@ -126,8 +126,6 @@
         has-bottom
       />
     </div>
-
-    <Copyright class="!w-[100%]" />
   </div>
 
   <Dialog

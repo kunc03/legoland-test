@@ -26,7 +26,6 @@
     <!-- container scrollable -->
 
     <!-- Tap screen -->
-     <Copyright class="!w-[90%]" />
   </div>
 
   <ModalLogin

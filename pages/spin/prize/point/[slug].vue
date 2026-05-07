@@ -15,8 +15,8 @@
     <img
       :src="externalRedeemStore.isExternalRedeem ? roulette : settings?.global?.gacha_machine_image"
       alt="gacha2"
-      class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-auto max-h-[96svh] object-contain"
-      :class="externalRedeemStore.isExternalRedeem ? 'w-[80%] max-w-none' : 'w-[120%] max-w-none'"
+      class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-[60%] h-auto max-h-[96svh] object-contain"
+      :class="externalRedeemStore.isExternalRedeem ? 'w-[75%] max-w-none' : 'w-[120%] max-w-none'"
       loading="eager"
       decoding="async"
       fetchpriority="high"
@@ -31,7 +31,7 @@
     />
     <div class="absolute inset-0 z-20 flex justify-center">
       <CircleSpinPoint
-        class="relative top-1/2 -translate-y-[60%]"
+        class="relative top-1/2 -translate-y-[61%]"
         :imageSrc="pointImageUrl"
         :categorySrc="categoryImageUrl"
         width="100%"
@@ -41,15 +41,15 @@
       />
     </div>
     <!-- <div class="absolute-10 top-1/2 translate-y-[80%]"></div> -->
-    <div class="w-full absolute bottom-0 flex flex-col items-center gap-4 z-[1100] pb-4">
+    <div class="w-full absolute bottom-0 flex flex-col items-center gap-10 z-[1100] pb-4">
       <div
         v-if="
           settings?.flow?.screens?.spin_gacha_1_screen?.show_point_title &&
           displayPointName
         "
-        class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[50vw]"
+        class="text-exd-gray-scorpion bg-white flex justify-center px-4 py-3 h-auto rounded-lg max-w-[83vw]"
       >
-        <p class="text-[3.3vw] sm:text-[17px] break-words text-center">
+        <p class="text-[3.3vw] font-bold sm:text-[17px] break-words text-center">
           {{ displayPointName }}
         </p>
       </div>
@@ -68,7 +68,6 @@
               ?.color
           "
         />
-        <Copyright class="!w-[83%] mx-auto" />
       </div>
     </div>
 

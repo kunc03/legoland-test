@@ -109,9 +109,9 @@
             :on-click="() => nextToSpin()"
           />
 
-          <div class="w-full px-8">
+          <!-- <div class="w-full px-8">
             <Copyright class="!w-full !mt-0" />
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

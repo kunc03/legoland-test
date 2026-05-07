@@ -1,5 +1,5 @@
 <template>
-  <HeaderBar hasBack>
+  <HeaderBar hasBack customBack="/dashboard">
     <p
       style="text-shadow: 0 3px 3px rgba(0, 0, 0, 0.16)"
       class="text-exd-gray-scorpion font-bold text-exd-1824.52"
@@ -63,13 +63,9 @@
         aria-label="Next page"
         @click="handleNextPage"
       >
-        <IconsArrow class="w-7 h-7 rotate-180" />
+        <IconsArrow class="rotate-180 w-7 h-7" />
       </button>
     </div>
-    <Copyright v-if="!isFetching && histories.length > 1" class="!w-[100%]" />
-  </div>
-  <div v-if="!isFetching && histories.length <= 1" class="absolute left-0 right-0 bottom-[115px]">
-    <Copyright class="!w-[79%]" />
   </div>
 </template>
 

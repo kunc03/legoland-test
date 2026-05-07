@@ -58,9 +58,9 @@
     />
   </div>
 
-  <div class="pb-5">
+  <!-- <div class="pb-5">
     <Copyright />
-  </div>
+  </div> -->
 </template>
 
 <script setup>

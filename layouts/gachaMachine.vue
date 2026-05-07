@@ -3,6 +3,11 @@
     class="relative flex flex-col w-full h-full max-w-md mx-auto overflow-hidden bg-white"
   >
     <slot />
+
+    <div class="mt-auto">
+      <Copyright />
+    </div>
+
   </main>
 </template>
 <script setup>

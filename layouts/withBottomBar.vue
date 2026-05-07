@@ -14,10 +14,13 @@
 
     <slot name="header"></slot>
 
-    <section class="min-h-dvh max-h-[calc(100dvh-30px)] overflow-y-auto pb-28">
+    <section class="min-h-dvh max-h-[calc(100dvh-30px)] overflow-y-auto pb-36">
       <slot />
     </section>
-    <BottomBar />
+    <BottomBar bottom-offset="2.4rem" />
+    <div class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto pt-2">
+      <Copyright />
+    </div>
   </main>
 </template>
 
