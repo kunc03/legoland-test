@@ -4,7 +4,7 @@
   >
     <slot />
 
-    <div class="mt-auto">
+    <div v-if="copyrightSettings" class="mt-auto">
       <Copyright />
     </div>
 
@@ -20,6 +20,8 @@ const settings = useState('settings')
 
 const requestURL = useRequestURL()
 const url = requestURL.origin
+
+const copyrightSettings = computed(() => settings.value?.copyright?.is_enabled !== false)
 
 useAppSeo(settings.value, url)
 

@@ -134,6 +134,4 @@ const handleClick = (event) => {
 const roundedClass = computed(() => {
   return props.hasRounded ? 'rounded-xl' : 'rounded-none'
 })
-
-console.log('isRedeem', props.isRedeemed, 'isFailed', props.isFailed)
 </script>

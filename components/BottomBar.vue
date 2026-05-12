@@ -116,7 +116,7 @@ import close from '~/assets/images/close.svg'
 
 const props = defineProps({
   bottomOffset: {
-    type: String,
+    type: [String, Number],
     default: '0px',
   },
 })

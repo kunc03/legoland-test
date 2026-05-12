@@ -16,6 +16,8 @@ const gachaSettings = computed(() =>
 )
 const gacha = computed(() => gachaSettings.value)
 
+const copyrightSettings = computed(() => settings.value?.copyright?.is_enabled !== false)
+
 let maxWaitTimeout
 
 const emit = defineEmits(['finish'])
@@ -220,6 +222,6 @@ onUnmounted(() => {
         class="mt-6 ml-5 w-[126px] h-[24px]"
       /> -->
     </div>
-    <Copyright class="absolute bottom-0 left-0 right-0" />
+    <Copyright v-if="copyrightSettings" class="absolute bottom-0 left-0 right-0" />
   </div>
 </template>
