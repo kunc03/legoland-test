@@ -13,7 +13,7 @@
   >
     <template #container>
       <div
-        class="flex flex-col items-center justify-center min-w-[250px] h-full gap-4 p-5"
+        class="flex flex-col items-center justify-center min-w-[300px] h-full gap-4 p-5"
       >
         <div class="flex flex-col items-center justify-center w-full gap-8">
           <IconsWarning
