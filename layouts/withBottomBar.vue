@@ -17,8 +17,8 @@
     <section class="min-h-dvh max-h-[calc(100dvh-30px)] overflow-y-auto pb-36">
       <slot />
     </section>
-    <BottomBar bottom-offset="2.4rem" />
-    <div class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto pt-2">
+    <BottomBar :bottom-offset="isEnabled ? bottomOffset : '0'" />
+    <div v-if="isEnabled" ref="copyrightContainer" class="fixed bottom-0 left-0 right-0 z-50 max-w-md pt-2 mx-auto">
       <Copyright />
     </div>
   </main>
@@ -28,6 +28,11 @@
 import { useI18n } from 'vue-i18n'
 
 const layoutCustomProps = useAttrs()
+
+// Dynamic height monitoring for copyright container
+const copyrightContainer = ref(null)
+const copyrightHeight = ref(0)
+const isEnabled = computed(() => settings.value?.copyright?.is_enabled !== false)
 
 const hasBack = ref(layoutCustomProps.hasBack ?? false)
 const title = ref(layoutCustomProps.title)
@@ -64,6 +69,35 @@ const handleBackground = () => {
     background.value = ''
   }
 }
+
+const observeCopyrightHeight = () => {
+  if (!copyrightContainer.value) return
+  
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      copyrightHeight.value = entry.contentRect.height
+    }
+  })
+  
+  resizeObserver.observe(copyrightContainer.value)
+  
+  onUnmounted(() => {
+    resizeObserver.disconnect()
+  })
+}
+
+// Calculate bottom offset based on copyright height
+const bottomOffset = computed(() => {
+  if (copyrightHeight.value === 0) return 2.4 // default fallback
+  const heightInRem = copyrightHeight.value
+  // Convert px to rem (assuming 1rem = 16px)
+  const heightInRemWithMargin = heightInRem * 0.96 / 16
+  return `${heightInRemWithMargin}rem`
+})
+
+onMounted(() => {
+  observeCopyrightHeight()
+})
 
 watch([() => route.path, () => settings.value], () => {
   handleBackground()

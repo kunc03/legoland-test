@@ -5,7 +5,7 @@
   >
     <slot />
     <VersionDetector ref="versionDetector" />
-    <div class="mt-auto">
+    <div v-if="copyrightSettings" class="mt-auto">
       <Copyright />
     </div>
   </main>
@@ -27,6 +27,8 @@ const versionDetector = ref(null)
 // Triple click detection
 const clickCount = ref(0)
 const clickTimer = ref(null)
+
+const copyrightSettings = computed(() => settings.value?.copyright?.is_enabled !== false)
 
 const handleMainClick = (event) => {
   clickCount.value++
