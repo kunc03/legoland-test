@@ -31,7 +31,7 @@
         {{ settings?.prize?.step_2?.swipe_exchange?.data?.text_3 }}
       </p>
       <div
-        class="border-4 flex-1 w-5/6 text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-6 py-2 !font-extrabold rounded-lg text-[25px] min-h-12"
+        class="border-4 flex-1 w-[65%] sm:w-[50%] text-center absolute sm:top-16 top-12 left-1/2 transform -translate-x-1/2 px-4 py-2 !font-extrabold rounded-lg text-[90%] min-h-12"
         :style="{
           color: settings?.prize?.step_2?.swipe_exchange?.data?.text_1_color,
           borderColor:
@@ -42,7 +42,7 @@
       </div>
     </div>
   </div>
-  <div class="fixed bottom-14 w-full max-w-md px-8 mx-auto">
+  <div class="fixed w-full max-w-md px-8 mx-auto bottom-14">
     <SolidButton
       :on-click="() => goTo('top')"
       :label="settings?.prize?.step_2?.swipe_exchange?.data?.button_text_2"
