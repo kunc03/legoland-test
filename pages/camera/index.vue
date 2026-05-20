@@ -615,26 +615,31 @@ const pickPreferredCameraDeviceId = (devices) => {
   
   const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
   
-  // ✅ FIX: Always prefer back camera first (environment facing)
-  // This is more reliable than relying on imperfect label matching
-  const back = withLabel.find((d) => /back|rear|environment|true depth/i.test(d.label))
-  if (back?.deviceId) return back.deviceId
+  // 1. Try to find standard back camera (environment facing) without zoom, ultra-wide, telephoto, virtual, depth, or wide zoom labels
+  const standardBack = withLabel.find((d) => 
+    /back|rear|environment/i.test(d.label) && 
+    !/telephoto|zoom|ultra|depth|virtual|dual|triple/i.test(d.label)
+  )
+  if (standardBack?.deviceId) return standardBack.deviceId
   
-  // iOS sometimes uses generic labels, so also check unlabeled devices
-  // Typically, the first camera is back and second is front
+  // 2. Fallback to any back/environment camera, excluding depth or front indicators
+  const anyBack = withLabel.find((d) => 
+    /back|rear|environment/i.test(d.label) && 
+    !/front|user|selfie|facetime/i.test(d.label)
+  )
+  if (anyBack?.deviceId) return anyBack.deviceId
+  
+  // 3. Check unlabeled devices (commonly seen on generic fallback or permission-restricted iOS browsers)
   const unlabeled = devices.filter((d) => !d.label || d.label.trim().length === 0)
   if (unlabeled.length > 0) {
     return unlabeled[0].deviceId
   }
   
-  // Only use front camera if it's the only option
-  const front = withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label))
-  if (front?.deviceId && devices.length === 1) {
-    console.warn('[Camera] Only front camera available')
-    return front.deviceId
-  }
+  // 4. Fallback to any non-front camera
+  const nonFront = withLabel.find((d) => !/front|user|selfie|facetime/i.test(d.label))
+  if (nonFront?.deviceId) return nonFront.deviceId
   
-  // Final fallback: use first device
+  // 5. Final fallback
   return devices[0]?.deviceId ?? null
 }
 
@@ -828,6 +833,12 @@ const startZxing = async () => {
     zxingControls.value = controls
     cameraReady.value = true
 
+    if (paused.value) {
+      try {
+        videoEl.pause()
+      } catch (_) {}
+    }
+
     // Wait a moment for stream to settle and then read configuration
     setTimeout(async () => {
       await syncStreamSettings()
@@ -872,11 +883,19 @@ watch(selectedDeviceId, (newId) => {
 })
 
 watch(paused, (isPaused) => {
-  if (useZxingEngine.value) {
+  if (useZxingEngine.value && zxingVideo.value) {
     if (isPaused) {
-      stopZxing()
+      try {
+        zxingVideo.value.pause()
+      } catch (err) {
+        console.warn('[ZXing] Failed to pause video element:', err)
+      }
     } else {
-      startZxing()
+      try {
+        zxingVideo.value.play()
+      } catch (err) {
+        console.warn('[ZXing] Failed to play video element:', err)
+      }
     }
   }
 })
