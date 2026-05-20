@@ -1433,57 +1433,68 @@ watch(drawerVisible, (value) => {
   position: absolute;
   z-index: 15;
   pointer-events: none;
-  border: 2px solid rgba(251, 191, 36, 0.4);
-  background-color: rgba(251, 191, 36, 0.05);
-  border-radius: 12px;
-  box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
-  animation: highlight-pulse 2s ease-in-out infinite;
+  border: 2px solid rgba(251, 191, 36, 0.25);
+  background-color: rgba(251, 191, 36, 0.08);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.15),
+    0 0 20px rgba(251, 191, 36, 0.5),
+    inset 0 0 20px rgba(251, 191, 36, 0.06);
+  animation: highlight-pulse 1.8s ease-in-out infinite;
 }
 
 @keyframes highlight-pulse {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
-    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.15),
+      0 0 16px rgba(251, 191, 36, 0.4),
+      inset 0 0 16px rgba(251, 191, 36, 0.04);
+    border-color: rgba(251, 191, 36, 0.3);
   }
   50% {
-    box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
-    border-color: rgba(251, 191, 36, 0.9);
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.5),
+      0 0 36px rgba(251, 191, 36, 0.75),
+      0 0 60px rgba(251, 191, 36, 0.3),
+      inset 0 0 24px rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.7);
   }
 }
 
 .highlight-corner {
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
   border-color: #fbbf24;
   border-style: solid;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.9));
 }
 
 .highlight-corner.top-left {
-  top: -2px;
-  left: -2px;
-  border-width: 3px 0 0 3px;
-  border-radius: 4px 0 0 0;
+  top: -3px;
+  left: -3px;
+  border-width: 5px 0 0 5px;
+  border-radius: 6px 0 0 0;
 }
 
 .highlight-corner.top-right {
-  top: -2px;
-  right: -2px;
-  border-width: 3px 3px 0 0;
-  border-radius: 0 4px 0 0;
+  top: -3px;
+  right: -3px;
+  border-width: 5px 5px 0 0;
+  border-radius: 0 6px 0 0;
 }
 
 .highlight-corner.bottom-left {
-  bottom: -2px;
-  left: -2px;
-  border-width: 0 0 3px 3px;
-  border-radius: 0 0 0 4px;
+  bottom: -3px;
+  left: -3px;
+  border-width: 0 0 5px 5px;
+  border-radius: 0 0 0 6px;
 }
 
 .highlight-corner.bottom-right {
-  bottom: -2px;
-  right: -2px;
-  border-width: 0 3px 3px 0;
-  border-radius: 0 0 4px 0;
+  bottom: -3px;
+  right: -3px;
+  border-width: 0 5px 5px 0;
+  border-radius: 0 0 6px 0;
 }
 </style>
