@@ -86,8 +86,8 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
             transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: 'transform'
@@ -103,8 +103,8 @@
             playsinline
             muted
             :style="{
-              transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-              WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+              transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+              WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
               transformOrigin: 'center center',
               transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               willChange: 'transform'
@@ -399,6 +399,16 @@ const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
 
+const currentHardwareZoom = ref(1)
+const cssScale = computed(() => {
+  // Always keep CSS scale at 1 if native zoom is supported to prevent pixelation/blur.
+  // Only use digital CSS scale zoom as a fallback for devices/browsers without native zoom.
+  if (hasNativeZoom.value) {
+    return 1
+  }
+  return zoom.value
+})
+
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
   if (event.persisted) {
@@ -543,12 +553,14 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
+    currentHardwareZoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
     zoomMin.value = 1
     zoomMax.value = 5 
     zoomStep.value = 0.1
+    currentHardwareZoom.value = 1
   }
 
   let facing = trackSettings?.facingMode ?? null
@@ -582,15 +594,20 @@ const applyZoom = async (newZoom) => {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
+    // Successfully applied to hardware track! Update currentHardwareZoom
+    currentHardwareZoom.value = newZoom
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    isApplyingZoom = false
-    if (pendingZoom !== null) {
-      const nextZoom = pendingZoom
-      pendingZoom = null
-      applyZoom(nextZoom)
-    }
+    // Wait 50ms before releasing the lock to prevent browser/OS camera API thrashing while maintaining responsive native zoom
+    setTimeout(() => {
+      isApplyingZoom = false
+      if (pendingZoom !== null) {
+        const nextZoom = pendingZoom
+        pendingZoom = null
+        applyZoom(nextZoom)
+      }
+    }, 50)
   }
 }
 
@@ -640,31 +657,35 @@ const pickPreferredCameraDeviceId = (devices) => {
   
   const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
   
-  // 1. Try to find standard back camera (environment facing) without zoom, ultra-wide, telephoto, virtual, depth, or wide zoom labels
+  // 1. Try to find standard back camera (environment facing) without zoom, ultra-wide, telephoto, virtual, depth labels
   const standardBack = withLabel.find((d) => 
     /back|rear|environment/i.test(d.label) && 
     !/telephoto|zoom|ultra|depth|virtual|dual|triple/i.test(d.label)
   )
   if (standardBack?.deviceId) return standardBack.deviceId
   
-  // 2. Fallback to any back/environment camera, excluding depth or front indicators
+  // 2. Fallback to any back/environment camera, excluding front indicators
   const anyBack = withLabel.find((d) => 
     /back|rear|environment/i.test(d.label) && 
     !/front|user|selfie|facetime/i.test(d.label)
   )
   if (anyBack?.deviceId) return anyBack.deviceId
+
+  // 3. Fallback to any non-front camera (label exists but doesn't mention front)
+  const nonFront = withLabel.find((d) => !/front|user|selfie|facetime/i.test(d.label))
+  if (nonFront?.deviceId) return nonFront.deviceId
   
-  // 3. Check unlabeled devices (commonly seen on generic fallback or permission-restricted iOS browsers)
+  // 4. Check unlabeled devices (commonly seen on permission-restricted iOS browsers)
   const unlabeled = devices.filter((d) => !d.label || d.label.trim().length === 0)
   if (unlabeled.length > 0) {
     return unlabeled[0].deviceId
   }
   
-  // 4. Fallback to any non-front camera
-  const nonFront = withLabel.find((d) => !/front|user|selfie|facetime/i.test(d.label))
-  if (nonFront?.deviceId) return nonFront.deviceId
+  // 5. No back camera found at all — fall back to front camera explicitly
+  const frontCamera = withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label))
+  if (frontCamera?.deviceId) return frontCamera.deviceId
   
-  // 5. Final fallback
+  // 6. Final fallback: use whatever is available
   return devices[0]?.deviceId ?? null
 }
 
@@ -760,11 +781,11 @@ const selectedConstraints = computed(() => {
     }
   }
 
-  // ✅ FIX: Always prefer 'environment' facing mode (back camera) instead of checking isFrontCamera flag
-  // This prevents unexpected fallback to front camera on iOS
+  // ✅ Use { ideal: 'environment' } so the browser PREFERS back camera but gracefully
+  // falls back to front camera if no back camera exists (e.g. tablets, webcam-only devices)
   return {
     ...base,
-    facingMode: 'environment',
+    facingMode: { ideal: 'environment' },
     advanced,
   }
 })
@@ -874,8 +895,8 @@ const startZxing = async () => {
   hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE])
   hints.set(DecodeHintType.TRY_HARDER, true)
 
-  // Configure reader with hints and set delayBetweenScanAttempts to 100ms (default is 500ms) for high-speed scanning
-  const reader = new BrowserMultiFormatReader(hints, 500, 100)
+  // Configure reader with hints and set delayBetweenScanAttempts to 40ms (default is 500ms) to scan at ~25 frames per second for maximum speed and accuracy
+  const reader = new BrowserMultiFormatReader(hints, 500, 40)
   zxingReader.value = reader
 
   try {
@@ -1433,6 +1454,8 @@ watch(drawerVisible, (value) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: auto;
 }
 
 .detected-qr-highlight {
