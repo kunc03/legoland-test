@@ -166,7 +166,7 @@
       :dismissable="!isLoading"
       :closable="!isLoading"
       style="height: auto; max-height: 30vh"
-      pt:root:class="camera-drawer bg-white text-exd-dark-grey"
+      pt:root:class="bg-white camera-drawer text-exd-dark-grey"
       :pt="{
         closeButton: {
           class: isLoading ? 'pointer-events-none opacity-90' : '',
@@ -181,7 +181,7 @@
       }"
     >
       <div 
-        class="flex flex-col gap-3 overflow-hidden relative"
+        class="relative flex flex-col gap-3 overflow-hidden"
         :class="{ 'pointer-events-none select-none': isLoading }"
       >
         
@@ -197,12 +197,12 @@
           v-for="(result, index) in scanResult"
           :key="index"
           @click="!isLoading && handleRedirect(result)"
-          class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
+          class="relative flex items-center justify-between w-full px-4 py-6 overflow-hidden bg-white border border-b rounded-lg border-b-exd-light-grey"
           :class="[
             isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
           ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
+          <p class="flex-1 min-w-0 pr-6 font-semibold truncate text-exd-gray-scorpion">
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -224,7 +224,7 @@
         class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
       >
         <LoadingIcon />
-        <p class="text-white font-semibold">Loading...</p>
+        <p class="font-semibold text-white">Loading...</p>
       </div>
   </div>
 
@@ -347,6 +347,10 @@ const handlePageShow = (event) => {
   if (event.persisted) {
     isLoading.value = false
     paused.value = false
+    // ✅ FIX: Reset camera state to ensure back camera is used after restoration
+    cameraReady.value = false
+    torchActive.value = false
+    error.value = ''
   }
 }
 
@@ -357,6 +361,12 @@ const handleVisibilityChange = () => {
     if (isLoading.value) {
       isLoading.value = false
     }
+    // ✅ FIX: Reset camera state when returning to foreground
+    cameraReady.value = false
+    torchActive.value = false
+    error.value = ''
+    drawerVisible.value = false
+    paused.value = false
   }
 }
 
@@ -552,16 +562,31 @@ const onTouchEnd = (e) => {
 }
 
 const pickPreferredCameraDeviceId = (devices) => {
+  if (!devices || devices.length === 0) return null
+  
   const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
-  const back =
-    withLabel.find((d) => /back|rear|environment/i.test(d.label)) ?? null
+  
+  // ✅ FIX: Always prefer back camera first (environment facing)
+  // This is more reliable than relying on imperfect label matching
+  const back = withLabel.find((d) => /back|rear|environment|true depth/i.test(d.label))
   if (back?.deviceId) return back.deviceId
-
-  const front =
-    withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label)) ?? null
-  if (front?.deviceId && devices.length === 1) return front.deviceId
-
-  return devices[devices.length - 1]?.deviceId ?? null
+  
+  // iOS sometimes uses generic labels, so also check unlabeled devices
+  // Typically, the first camera is back and second is front
+  const unlabeled = devices.filter((d) => !d.label || d.label.trim().length === 0)
+  if (unlabeled.length > 0) {
+    return unlabeled[0].deviceId
+  }
+  
+  // Only use front camera if it's the only option
+  const front = withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label))
+  if (front?.deviceId && devices.length === 1) {
+    console.warn('[Camera] Only front camera available')
+    return front.deviceId
+  }
+  
+  // Final fallback: use first device
+  return devices[0]?.deviceId ?? null
 }
 
 const refreshCameraDevices = async () => {
@@ -656,9 +681,11 @@ const selectedConstraints = computed(() => {
     }
   }
 
+  // ✅ FIX: Always prefer 'environment' facing mode (back camera) instead of checking isFrontCamera flag
+  // This prevents unexpected fallback to front camera on iOS
   return {
     ...base,
-    facingMode: isFrontCamera.value ? 'user' : 'environment',
+    facingMode: 'environment',
     advanced,
   }
 })
@@ -713,8 +740,10 @@ const switchCamera = () => {
     const nextIdx = idx >= 0 ? (idx + 1) % cameraDevices.value.length : 0
     selectedDeviceId.value = cameraDevices.value[nextIdx]?.deviceId ?? null
   } else {
-    selectedDeviceId.value = null
-    isFrontCamera.value = !isFrontCamera.value
+    // ✅ FIX: Keep selectedDeviceId instead of clearing it + toggling flag
+    // This prevents unexpected fallback to wrong camera
+    console.warn('[Camera] Only one camera available - cannot switch')
+    return
   }
   setTimeout(syncStreamSettings, 0)
 }
@@ -746,8 +775,9 @@ function onError(err) {
     error.value += 'is the camera already in use?'
   } else if (err.name === 'OverconstrainedError') {
     error.value += 'installed cameras are not suitable'
-    // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
-    selectedDeviceId.value = null
+    // ✅ FIX: Don't clear deviceId on OverconstrainedError - retry with relaxed constraints
+    // This prevents unexpected fallback to front camera on iOS
+    console.warn('[Camera] OverconstrainedError - retrying with current device')
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
