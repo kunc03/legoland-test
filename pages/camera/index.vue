@@ -89,8 +89,10 @@
             transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            willChange: 'transform'
+            transition: isPinching ? 'none' : 'transform 0.15s cubic-bezier(0.23, 1, 0.320, 1)',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+            perspective: '1000px'
           }"
         />
 
@@ -102,12 +104,15 @@
             autoplay
             playsinline
             muted
+            disablePictureInPicture
             :style="{
               transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
               WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
               transformOrigin: 'center center',
-              transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-              willChange: 'transform'
+              transition: isPinching ? 'none' : 'transform 0.15s cubic-bezier(0.23, 1, 0.320, 1)',
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              perspective: '1000px'
             }"
           ></video>
           <template v-if="!cameraReady && !paused && !error">
@@ -328,6 +333,9 @@ import close from '~/assets/images/close.svg'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
+// Easing function for smooth animations (cubic bezier: ease-out-quint)
+const easeOutQuint = (t) => 1 - Math.pow(1 - t, 5)
+
 // Device Detection
 const isAndroid = typeof navigator !== 'undefined'
   ? /Android/i.test(navigator.userAgent)
@@ -503,6 +511,10 @@ const onCameraClick = async (e) => {
     let normX = (e.clientX - rect.left) / rect.width
     let normY = (e.clientY - rect.top) / rect.height
 
+    // Clamp to valid range [0, 1]
+    normX = Math.max(0, Math.min(1, normX))
+    normY = Math.max(0, Math.min(1, normY))
+
     if (!hasNativeZoom.value && zoom.value > 1) {
       normX = (0.5 - 0.5 / zoom.value) + (normX / zoom.value)
       normY = (0.5 - 0.5 / zoom.value) + (normY / zoom.value)
@@ -514,12 +526,19 @@ const onCameraClick = async (e) => {
           advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x: normX, y: normY }] }]
         })
       } catch (e1) {
-        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+        try {
+          await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+        } catch (e2) {
+          console.warn('Focus mode single-shot not supported')
+        }
       }
 
+      // Return to continuous focus after 2 seconds
       setTimeout(async () => {
         if (caps.focusMode.includes('continuous')) {
-          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          try {
+            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          } catch (_) {}
         }
       }, 2000)
     }
@@ -579,6 +598,7 @@ const syncStreamSettings = async () => {
 
 let isApplyingZoom = false
 let pendingZoom = null
+let zoomAnimationFrame = null
 
 const applyZoom = async (newZoom) => {
   const track = getVideoTrack()
@@ -592,14 +612,13 @@ const applyZoom = async (newZoom) => {
   isApplyingZoom = true
   try {
     await track.applyConstraints({
-      advanced: [{ zoom: newZoom }]
+      advanced: [{ zoom: Math.round(newZoom * 100) / 100 }] // Clamp to 2 decimals
     })
-    // Successfully applied to hardware track! Update currentHardwareZoom
     currentHardwareZoom.value = newZoom
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
-    // Wait 50ms before releasing the lock to prevent browser/OS camera API thrashing while maintaining responsive native zoom
+    // Reduce delay to 15ms for more responsive zoom while minimizing API thrashing
     setTimeout(() => {
       isApplyingZoom = false
       if (pendingZoom !== null) {
@@ -607,7 +626,7 @@ const applyZoom = async (newZoom) => {
         pendingZoom = null
         applyZoom(nextZoom)
       }
-    }, 50)
+    }, 15)
   }
 }
 
@@ -620,17 +639,21 @@ watch(zoom, (newVal) => {
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
     isPinching.value = true
+    e.preventDefault() // Prevent default pinch zoom behavior
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
     initialZoomAtPinchStart.value = zoom.value
+    if (rAFId) cancelAnimationFrame(rAFId) // Cancel any pending RAF
   }
 }
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    e.preventDefault() // Prevent page scrolling during pinch
     if (rAFId) cancelAnimationFrame(rAFId)
     
+    // Use immediate RAF for maximum responsiveness during pinch
     rAFId = requestAnimationFrame(() => {
       const t1 = e.touches[0]
       const t2 = e.touches[1]
@@ -649,6 +672,7 @@ const onTouchEnd = (e) => {
     initialPinchDistance.value = null
     isPinching.value = false
     if (rAFId) cancelAnimationFrame(rAFId)
+    e.preventDefault()
   }
 }
 
@@ -742,12 +766,15 @@ const selectedConstraints = computed(() => {
   let frameRate = { ideal: 30, max: 60 }
 
   if (isIOS) {
-    width = { min: 1280, ideal: 1920 }
-    height = { min: 720, ideal: 1080 }
+    // iOS Safari: Use lower ideal resolution to improve performance and focus quality
+    width = { min: 720, ideal: 1280 }
+    height = { min: 480, ideal: 720 }
+    frameRate = { ideal: 24, max: 30 } // iOS typically caps at 30fps
   } else if (isAndroid) {
-    width = { min: 1280, ideal: 1280 }
-    height = { min: 720, ideal: 720 }
-    frameRate = { ideal: 30, max: 30 }
+    // Android: Optimize for diverse hardware - use 720p as ideal for balance
+    width = { min: 640, ideal: 1280 }
+    height = { min: 480, ideal: 720 }
+    frameRate = { ideal: 24, max: 30 }
   }
 
   const base = {
@@ -757,20 +784,24 @@ const selectedConstraints = computed(() => {
     frameRate,
   }
 
+  // Prioritize focus and exposure for QR code detection
   const advanced = isAndroid 
     ? [
         { focusMode: 'continuous' },
-        { exposureMode: 'continuous' }
+        { exposureMode: 'continuous' },
+        { whiteBalanceMode: 'continuous' }
       ]
     : isIOS
     ? [
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' },
+        { whiteBalanceMode: 'continuous' }
       ]
     : [
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' },
         { whiteBalanceMode: 'continuous' },
+        { noiseSuppression: true }
       ]
 
   if (selectedDeviceId.value) {
@@ -781,8 +812,7 @@ const selectedConstraints = computed(() => {
     }
   }
 
-  // ✅ Use { ideal: 'environment' } so the browser PREFERS back camera but gracefully
-  // falls back to front camera if no back camera exists (e.g. tablets, webcam-only devices)
+  // Use { ideal: 'environment' } so the browser PREFERS back camera
   return {
     ...base,
     facingMode: { ideal: 'environment' },
@@ -894,9 +924,15 @@ const startZxing = async () => {
   const hints = new Map()
   hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE])
   hints.set(DecodeHintType.TRY_HARDER, true)
+  hints.set(DecodeHintType.ALLOW_EAN_EXTENSIONS, false) // Disable EAN extensions for faster QR detection
+  hints.set(DecodeHintType.ASSUME_CODE_39_CHECK_DIGIT, false)
+  hints.set(DecodeHintType.RETURN_CODEBOOK_INDICES, false)
 
-  // Configure reader with hints and set delayBetweenScanAttempts to 40ms (default is 500ms) to scan at ~25 frames per second for maximum speed and accuracy
-  const reader = new BrowserMultiFormatReader(hints, 500, 40)
+  // Reduce delayBetweenScanAttempts from 40ms to 25ms for ~40 scans/sec on mobile devices
+  // First param (500): unmodified constructor hint (ignored, use uninitialized for default behavior)
+  // Second param (constructor timeout): not used in modern ZXing
+  // Third param: delayBetweenScanAttempts in ms
+  const reader = new BrowserMultiFormatReader(hints, 0, 25)
   zxingReader.value = reader
 
   try {
@@ -1081,10 +1117,14 @@ function onError(err) {
   } else if (err.name === 'NotReadableError') {
     error.value += 'is the camera already in use?'
   } else if (err.name === 'OverconstrainedError') {
-    error.value += 'installed cameras are not suitable'
-    // ✅ FIX: Don't clear deviceId on OverconstrainedError - retry with relaxed constraints
-    // This prevents unexpected fallback to front camera on iOS
-    console.warn('[Camera] OverconstrainedError - retrying with current device')
+    error.value += 'installed cameras are not suitable - retrying with relaxed constraints'
+    console.warn('[Camera] OverconstrainedError - will retry with relaxed constraints')
+    // Retry after 500ms with relaxed constraints on iOS
+    setTimeout(() => {
+      if (!cameraReady.value && !paused.value && useZxingEngine.value) {
+        startZxing()
+      }
+    }, 500)
   } else if (err.name === 'StreamApiNotSupportedError') {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
@@ -1455,7 +1495,11 @@ watch(drawerVisible, (value) => {
   height: 100%;
   object-fit: cover;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: auto;
+  image-rendering: optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-user-select: none;
+  user-select: none;
+  display: block;
 }
 
 .detected-qr-highlight {
