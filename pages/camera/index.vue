@@ -133,6 +133,23 @@
         :style="{ left: focusPoint.x + 'px', top: focusPoint.y + 'px' }"
       ></div>
 
+      <!-- Scanned QR Target Highlight -->
+      <div 
+        v-if="detectedQrBox.visible" 
+        class="detected-qr-highlight"
+        :style="{
+          left: detectedQrBox.x + 'px',
+          top: detectedQrBox.y + 'px',
+          width: detectedQrBox.width + 'px',
+          height: detectedQrBox.height + 'px'
+        }"
+      >
+        <div class="highlight-corner top-left"></div>
+        <div class="highlight-corner top-right"></div>
+        <div class="highlight-corner bottom-left"></div>
+        <div class="highlight-corner bottom-right"></div>
+      </div>
+
       <div v-if="!cameraReady && !paused && !error" class="camera-loading z-6">
         <LoadingIcon />
         <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
@@ -344,6 +361,13 @@ const zxingVideo = ref(null)
 const useZxingEngine = ref(true)
 const zxingReader = ref(null)
 const zxingControls = ref(null)
+const detectedQrBox = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0
+})
 const paused = ref(false)
 const drawerVisible = ref(false)
 const scanResult = ref([])
@@ -781,11 +805,63 @@ const onCameraOff = () => {
   stopZxing()
 }
 
+const calculateBoundingBox = (points) => {
+  const videoEl = zxingVideo.value
+  if (!videoEl) return
+
+  const vW = videoEl.videoWidth
+  const vH = videoEl.videoHeight
+  const eW = videoEl.clientWidth
+  const eH = videoEl.clientHeight
+  if (!vW || !vH || !eW || !eH) return
+
+  let minX = Infinity, maxX = -Infinity
+  let minY = Infinity, maxY = -Infinity
+
+  for (const p of points) {
+    if (p.x < minX) minX = p.x
+    if (p.x > maxX) maxX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.y > maxY) maxY = p.y
+  }
+
+  const scaleX = eW / vW
+  const scaleY = eH / vH
+  const scale = Math.max(scaleX, scaleY)
+
+  const offsetX = (eW - vW * scale) / 2
+  const offsetY = (eH - vH * scale) / 2
+
+  let cssMinX = minX * scale + offsetX
+  let cssMaxX = maxX * scale + offsetX
+  let cssMinY = minY * scale + offsetY
+  let cssMaxY = maxY * scale + offsetY
+
+  if (shouldUnmirror.value) {
+    const tempMinX = cssMinX
+    cssMinX = eW - cssMaxX
+    cssMaxX = eW - tempMinX
+  }
+
+  const width = cssMaxX - cssMinX
+  const height = cssMaxY - cssMinY
+
+  const padding = 16
+  detectedQrBox.value = {
+    visible: true,
+    x: cssMinX - padding / 2,
+    y: cssMinY - padding / 2,
+    width: width + padding,
+    height: height + padding
+  }
+}
+
 const startZxing = async () => {
   if (!useZxingEngine.value) return
   if (zxingReader.value) return
   if (typeof window === 'undefined') return
 
+  detectedQrBox.value.visible = false
   await nextTick()
   const videoEl = zxingVideo.value
   if (!videoEl) {
@@ -821,6 +897,11 @@ const startZxing = async () => {
           if (text && !paused.value && !isLoading.value) {
             if (navigator.vibrate) {
               navigator.vibrate(200)
+            }
+            // Calculate bounding box from result points
+            const points = result.getResultPoints ? result.getResultPoints() : []
+            if (points && points.length >= 3) {
+              calculateBoundingBox(points)
             }
             scanResult.value = [text]
             paused.value = true
@@ -883,6 +964,9 @@ watch(selectedDeviceId, (newId) => {
 })
 
 watch(paused, (isPaused) => {
+  if (!isPaused) {
+    detectedQrBox.value.visible = false
+  }
   if (useZxingEngine.value && zxingVideo.value) {
     if (isPaused) {
       try {
@@ -1343,5 +1427,63 @@ watch(drawerVisible, (value) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.detected-qr-highlight {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+  border: 2px solid rgba(251, 191, 36, 0.4);
+  background-color: rgba(251, 191, 36, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+  animation: highlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
+    border-color: rgba(251, 191, 36, 0.9);
+  }
+}
+
+.highlight-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: #fbbf24;
+  border-style: solid;
+}
+
+.highlight-corner.top-left {
+  top: -2px;
+  left: -2px;
+  border-width: 3px 0 0 3px;
+  border-radius: 4px 0 0 0;
+}
+
+.highlight-corner.top-right {
+  top: -2px;
+  right: -2px;
+  border-width: 3px 3px 0 0;
+  border-radius: 0 4px 0 0;
+}
+
+.highlight-corner.bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 3px 3px;
+  border-radius: 0 0 0 4px;
+}
+
+.highlight-corner.bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 3px 3px 0;
+  border-radius: 0 0 4px 0;
 }
 </style>
