@@ -321,6 +321,7 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import { BrowserMultiFormatReader } from '@zxing/browser'
+import { DecodeHintType, BarcodeFormat } from '@zxing/library'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 import close from '~/assets/images/close.svg'
@@ -869,7 +870,12 @@ const startZxing = async () => {
     return
   }
 
-  const reader = new BrowserMultiFormatReader()
+  const hints = new Map()
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE])
+  hints.set(DecodeHintType.TRY_HARDER, true)
+
+  // Configure reader with hints and set delayBetweenScanAttempts to 100ms (default is 500ms) for high-speed scanning
+  const reader = new BrowserMultiFormatReader(hints, 500, 100)
   zxingReader.value = reader
 
   try {
