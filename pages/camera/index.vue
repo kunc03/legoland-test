@@ -74,6 +74,7 @@
     >
       <ClientOnly>
         <QrcodeStream
+          v-if="!useZxingEngine"
           ref="refQrcodeStream"
           :constraints="selectedConstraints"
           :track="trackFunctionSelected.value"
@@ -92,6 +93,31 @@
             willChange: 'transform'
           }"
         />
+
+        <!-- ZXing native engine: use our own video element so ZXing opens camera directly -->
+        <div v-else class="zxing-wrapper">
+          <video
+            ref="zxingVideo"
+            class="zxing-video"
+            autoplay
+            playsinline
+            muted
+            :style="{
+              transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+              WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+              transformOrigin: 'center center',
+              transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              willChange: 'transform'
+            }"
+          ></video>
+          <template v-if="!cameraReady && !paused && !error">
+            <div class="camera-loading z-6">
+              <LoadingIcon />
+              <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
+            </div>
+          </template>
+        </div>
+
         <template #fallback>
           <div class="camera-loading z-6">
             <LoadingIcon />
@@ -277,6 +303,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
+import { BrowserMultiFormatReader } from '@zxing/browser'
 import LoadingIcon from '~/components/LoadingIcon.vue'
 import arrow from '~/assets/images/arrow.svg'
 import close from '~/assets/images/close.svg'
@@ -312,6 +339,11 @@ const redirectLink = ref('')
 
 // Component State
 const refQrcodeStream = ref(null)
+const zxingVideo = ref(null)
+// ZXing reader (optional engine) - use as primary/secondary decoder for more control
+const useZxingEngine = ref(true)
+const zxingReader = ref(null)
+const zxingControls = ref(null)
 const paused = ref(false)
 const drawerVisible = ref(false)
 const scanResult = ref([])
@@ -351,6 +383,9 @@ const handlePageShow = (event) => {
     cameraReady.value = false
     torchActive.value = false
     error.value = ''
+    if (useZxingEngine.value) {
+      startZxing()
+    }
   }
 }
 
@@ -367,6 +402,13 @@ const handleVisibilityChange = () => {
     error.value = ''
     drawerVisible.value = false
     paused.value = false
+    if (useZxingEngine.value) {
+      startZxing()
+    }
+  } else {
+    if (useZxingEngine.value) {
+      stopZxing()
+    }
   }
 }
 
@@ -391,6 +433,9 @@ onMounted(() => {
   paused.value = false
   window.addEventListener('pageshow', handlePageShow)
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  if (useZxingEngine.value) {
+    startZxing()
+  }
 })
 
 onUnmounted(() => {
@@ -398,6 +443,7 @@ onUnmounted(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
   if (rAFId) cancelAnimationFrame(rAFId)
+  stopZxing()
 })
 
 // Click-to-focus UI
@@ -411,7 +457,7 @@ const onCameraClick = async (e) => {
     focusPoint.value.visible = false
   }, 1000)
 
-  const track = getQrcodeVideoTrack()
+  const track = getVideoTrack()
   if (!track) return
 
   try {
@@ -447,8 +493,11 @@ const onCameraClick = async (e) => {
   }
 }
 
-const getQrcodeVideoTrack = () => {
+const getVideoTrack = () => {
   if (typeof window === 'undefined') return null
+  if (useZxingEngine.value) {
+    return zxingVideo.value?.srcObject?.getVideoTracks?.()?.[0] ?? null
+  }
   const rootEl = refQrcodeStream.value?.$el ?? refQrcodeStream.value
   const videoEl = rootEl?.querySelector?.('video')
   return videoEl?.srcObject?.getVideoTracks?.()?.[0] ?? null
@@ -458,7 +507,7 @@ const syncStreamSettings = async () => {
   if (typeof window === 'undefined') return
 
   await nextTick()
-  const track = getQrcodeVideoTrack()
+  const track = getVideoTrack()
   const trackSettings = track?.getSettings?.()
   const capabilities = track?.getCapabilities?.()
 
@@ -495,7 +544,7 @@ let isApplyingZoom = false
 let pendingZoom = null
 
 const applyZoom = async (newZoom) => {
-  const track = getQrcodeVideoTrack()
+  const track = getVideoTrack()
   if (!track || !hasNativeZoom.value) return
   
   if (isApplyingZoom) {
@@ -709,7 +758,13 @@ const onCameraReady = (capabilities) => {
   cameraReady.value = true
   torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
   refreshCameraDevices().finally(() => {
-    setTimeout(syncStreamSettings, 0)
+    setTimeout(() => {
+      syncStreamSettings()
+      // Start ZXing decoding attached to the current video element if configured
+      if (useZxingEngine.value) {
+        startZxing().catch((e) => console.warn('[ZXing] start failed', e))
+      }
+    }, 0)
   })
 }
 
@@ -717,7 +772,129 @@ const onCameraOff = () => {
   if (!paused.value) {
     cameraReady.value = false
   }
+  // Stop ZXing when camera is turned off
+  stopZxing()
 }
+
+const startZxing = async () => {
+  if (!useZxingEngine.value) return
+  if (zxingReader.value) return
+  if (typeof window === 'undefined') return
+
+  await nextTick()
+  const videoEl = zxingVideo.value
+  if (!videoEl) {
+    console.warn('[ZXing] Video element not found')
+    return
+  }
+
+  const reader = new BrowserMultiFormatReader()
+  zxingReader.value = reader
+
+  try {
+    error.value = ''
+    cameraReady.value = false
+
+    // Request permissions and enumerate devices if empty
+    if (cameraDevices.value.length === 0) {
+      await refreshCameraDevices()
+    }
+
+    const constraints = {
+      video: selectedConstraints.value,
+      audio: false
+    }
+
+    console.log('[ZXing] Starting native stream with constraints:', constraints)
+
+    const controls = await reader.decodeFromConstraints(
+      constraints,
+      videoEl,
+      (result, err) => {
+        if (result) {
+          const text = result.getText ? result.getText() : (result.text || result)
+          if (text && !paused.value && !isLoading.value) {
+            if (navigator.vibrate) {
+              navigator.vibrate(200)
+            }
+            scanResult.value = [text]
+            paused.value = true
+            handleRedirect(text)
+          }
+        }
+      }
+    )
+
+    zxingControls.value = controls
+    cameraReady.value = true
+
+    // Wait a moment for stream to settle and then read configuration
+    setTimeout(async () => {
+      await syncStreamSettings()
+      const track = getVideoTrack()
+      const capabilities = track?.getCapabilities?.()
+      torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
+    }, 500)
+
+  } catch (err) {
+    console.error('[ZXing] Native stream error:', err)
+    onError(err)
+    stopZxing()
+  }
+}
+
+const stopZxing = () => {
+  if (zxingControls.value) {
+    try {
+      zxingControls.value.stop()
+    } catch (e) {
+      console.warn('[ZXing] stop controls failed', e)
+    }
+    zxingControls.value = null
+  }
+  if (zxingReader.value) {
+    try {
+      zxingReader.value.reset()
+    } catch (e) {
+      console.warn('[ZXing] reset reader failed', e)
+    }
+    zxingReader.value = null
+  }
+  cameraReady.value = false
+}
+
+// Watchers for ZXing reactive controls
+watch(selectedDeviceId, (newId) => {
+  if (useZxingEngine.value) {
+    stopZxing()
+    startZxing()
+  }
+})
+
+watch(paused, (isPaused) => {
+  if (useZxingEngine.value) {
+    if (isPaused) {
+      stopZxing()
+    } else {
+      startZxing()
+    }
+  }
+})
+
+watch(torchActive, async (newVal) => {
+  if (useZxingEngine.value) {
+    const track = getVideoTrack()
+    if (track && torchSupported.value) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ torch: newVal }]
+        })
+      } catch (err) {
+        console.warn('[ZXing] Failed to toggle torch:', err)
+      }
+    }
+  }
+})
 
 const toggleTorch = () => {
   torchActive.value = !torchActive.value
@@ -1135,5 +1312,17 @@ watch(drawerVisible, (value) => {
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
+}
+.zxing-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.zxing-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
