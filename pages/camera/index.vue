@@ -862,17 +862,24 @@ const selectedConstraints = computed(() => {
 const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
 
-const shouldUnmirror = computed(() => {
-  if (streamFacingMode.value === 'user') return true
-  if (streamFacingMode.value === 'environment') return false
-  const label =
-    cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
-      ?.label ?? ''
-  if (/front|user|selfie|facetime/i.test(label)) return true
-  if (/back|rear|environment/i.test(label)) return false
-  if (isDesktopDevice) return true
-  return isFrontCamera.value
-})
+const getSelectedDeviceLabel = () => {
+  return cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
+    ?.label ?? ''
+}
+
+const detectCameraFacing = () => {
+  if (streamFacingMode.value === 'user') return 'user'
+  if (streamFacingMode.value === 'environment') return 'environment'
+
+  const label = getSelectedDeviceLabel()
+  if (/front|user|selfie|facetime/i.test(label)) return 'user'
+  if (/back|rear|environment/i.test(label)) return 'environment'
+  if (isDesktopDevice) return 'user'
+  return 'environment'
+}
+
+const isFrontCamera = computed(() => detectCameraFacing() === 'user')
+const shouldUnmirror = computed(() => isFrontCamera.value)
 
 const onCameraReady = (capabilities) => {
   cameraReady.value = true
@@ -1324,11 +1331,6 @@ const handleRedirect = async (url) => {
 // Uses shouldUnmirror computed property which is synchronized with the actual stream's facing mode.
 // This ensures mirror state is ALWAYS consistent with the camera that is actually active,
 // not based on constraints (which may not reflect real-time stream state).
-
-const isFrontCamera = computed(() => {
-  // Derived from the ACTUAL active stream's facing mode, ensuring accuracy
-  return streamFacingMode.value === 'user' || (streamFacingMode.value === null && shouldUnmirror.value)
-})
 
 const videoTransformStyle = computed(() => {
   // ✅ iOS Safari Fix: Use shouldUnmirror (tied to actual stream facing mode) for consistency
