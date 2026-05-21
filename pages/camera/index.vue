@@ -86,13 +86,11 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: isPinching ? 'none' : 'transform 0.15s cubic-bezier(0.23, 1, 0.320, 1)',
-            willChange: 'transform',
-            backfaceVisibility: 'hidden',
-            perspective: '1000px'
+            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'transform'
           }"
         />
 
@@ -1652,6 +1650,34 @@ watch(drawerVisible, (value) => {
   /* Prevent flicker during transform */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* ✅ iOS 26.2+ Fix: Enforce 3D context and hardware acceleration */
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* ✅ Target QrcodeStream internal video element with same styling */
+.camera-stream-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-user-select: none;
+  user-select: none;
+  display: block;
+  transform-origin: center center;
+  -webkit-transform-origin: center center;
+  will-change: transform;
+  -webkit-will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .detected-qr-highlight {
