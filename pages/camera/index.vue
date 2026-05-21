@@ -105,15 +105,7 @@
             playsinline
             muted
             disablePictureInPicture
-            :style="{
-              transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-              WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-              transformOrigin: 'center center',
-              transition: isPinching ? 'none' : 'transform 0.15s cubic-bezier(0.23, 1, 0.320, 1)',
-              willChange: 'transform',
-              backfaceVisibility: 'hidden',
-              perspective: '1000px'
-            }"
+            :style="videoTransformStyle"
           ></video>
           <template v-if="!cameraReady && !paused && !error">
             <div class="camera-loading z-6">
@@ -388,7 +380,6 @@ const torchActive = ref(false)
 const torchSupported = ref(true)
 
 // Camera States
-const isFrontCamera = ref(false)
 const cameraDevices = ref([])
 const selectedDeviceId = ref(null)
 const cameraReady = ref(false)
@@ -1265,6 +1256,36 @@ const handleRedirect = async (url) => {
   }
 }
 
+// ✅ ROBUST MIRROR LOGIC FOR iOS SAFARI
+// Uses shouldUnmirror computed property which is synchronized with the actual stream's facing mode.
+// This ensures mirror state is ALWAYS consistent with the camera that is actually active,
+// not based on constraints (which may not reflect real-time stream state).
+
+const isFrontCamera = computed(() => {
+  // Derived from the ACTUAL active stream's facing mode, ensuring accuracy
+  return streamFacingMode.value === 'user' || (streamFacingMode.value === null && shouldUnmirror.value)
+})
+
+const videoTransformStyle = computed(() => {
+  // ✅ iOS Safari Fix: Use shouldUnmirror (tied to actual stream facing mode) for consistency
+  // Front camera (user): scaleX(-1) for natural mirror effect for selfie
+  // Back camera (environment): scaleX(1) — MUST NOT be mirrored by Safari
+  // CSS scaleX(1) cannot be overridden by Safari's auto-mirror on environment camera
+  const mirrorScale = shouldUnmirror.value ? 'scaleX(-1)' : 'scaleX(1)'
+  
+  return {
+    transform: `scale(${cssScale.value}) ${mirrorScale}`,
+    WebkitTransform: `scale(${cssScale.value}) ${mirrorScale}`, // Webkit prefix for Safari
+    MozTransform: `scale(${cssScale.value}) ${mirrorScale}`, // Firefox
+    msTransform: `scale(${cssScale.value}) ${mirrorScale}`, // IE/Edge
+    transformOrigin: 'center center',
+    // Prevent Safari from overriding transform
+    WebkitBackfaceVisibility: 'hidden',
+    backfaceVisibility: 'hidden',
+    perspective: '1000px'
+  }
+})
+
 watch(drawerVisible, (value) => {
   if (!value) {
     paused.value = false
@@ -1273,6 +1294,22 @@ watch(drawerVisible, (value) => {
 </script>
 
 <style scoped>
+/* 
+  ✅ iOS SAFARI CAMERA MIRRORING FIX - COMPREHENSIVE STRATEGY
+  
+  Problem: iOS Safari auto-mirrors environment (back) camera, causing QR codes to be flipped 180°
+  
+  Solution Stack:
+  1. [Script] shouldUnmirror computed - syncs mirror state with ACTUAL stream facing mode
+  2. [Script] videoTransformStyle computed - applies scaleX based on shouldUnmirror  
+  3. [CSS] 3D transform context - forces GPU rendering, prevents Safari override
+  4. [CSS] Explicit transform-origin + backface-visibility - reinforces transform behavior
+  5. [Constraint] facingMode: {exact: 'environment'} - forces back camera on mobile
+  
+  Key Principle: Bind mirror logic to ACTUAL stream state, not constraints.
+  Constraints may not reflect real-time stream state, especially on iOS pre-permission.
+*/
+
 .camera-page {
   width: 100%;
   height: 100dvh;
@@ -1332,6 +1369,12 @@ watch(drawerVisible, (value) => {
   position: relative;
   touch-action: none;
   overflow: hidden;
+  /* ✅ iOS Safari Fix: Force 3D rendering to prevent mirroring override */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* Ensure transform-origin is consistent */
+  transform-origin: center center;
+  -webkit-transform-origin: center center;
 }
 
 .focus-ring {
@@ -1534,6 +1577,15 @@ watch(drawerVisible, (value) => {
   -webkit-user-select: none;
   user-select: none;
   display: block;
+  /* ✅ iOS Safari Fix: Explicit transform inheritance + 3D context */
+  transform-origin: center center;
+  -webkit-transform-origin: center center;
+  /* Enable 3D rendering pipeline to prevent auto-mirror */
+  will-change: transform;
+  -webkit-will-change: transform;
+  /* Prevent flicker during transform */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .detected-qr-highlight {
