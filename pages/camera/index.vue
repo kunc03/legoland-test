@@ -1101,10 +1101,12 @@ watch(selectedDeviceId, async (newId) => {
   }
   
   if (currentDeviceId && currentDeviceId === newId) {
-    console.log('[ZXing] Device already active, skipping stream restart')\n    return
+    console.log('[ZXing] Device already active, skipping stream restart')
+    return
   }
   
-  console.log('[ZXing] Device changed from', currentDeviceId, 'to', newId, '- restarting stream')\n  stopZxing()
+  console.log('[ZXing] Device changed from', currentDeviceId, 'to', newId, '- restarting stream')
+  stopZxing()
   startZxing()
 })
 
