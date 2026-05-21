@@ -216,7 +216,7 @@
   "locationValidate": "You are too far from this spot location, please get closer",
   "downloadImage": "Downloading Character Image",
   "shareCharacter": "Share Character",
-  "no_available_data": "No Availabe Data",
+  "no_available_data": "No Available Data",
   "back_to_top": "Back to Top",
   "minLengthPostalCode": "The postcode must be 7 digits.",
   "postalCodeNotFound": "Postal code not found",
@@ -381,5 +381,17 @@
   "prizeCollectionsTitle": ["Enter the", "lottery!"],
   "gachaCollectionsTitle": ["Prize", "Exchange"],
   "prizesComingSoon": "Prizes coming soon! Stay tuned",
-  "noExchangeHistory": "No draw history yet"
+  "noExchangeHistory": "No draw history yet",
+  "qrFailed": "Please scan the correct QR code",
+  "loading": "Loading...",
+  "network_error": "Network error. Please check your connection and try again.",
+  "cameraErrorNotAllowed": "you need to grant camera access permission",
+  "cameraErrorNotFound": "no camera on this device",
+  "cameraErrorNotSupported": "secure context required (HTTPS, localhost)",
+  "cameraErrorNotReadable": "is the camera already in use?",
+  "cameraErrorOverconstrained": "installed cameras are not suitable",
+  "cameraErrorStreamApiNotSupported": "Stream API is not supported in this browser",
+  "cameraErrorInsecureContext": "Camera access is only permitted in secure context.",
+  "cameraErrorRetrying": "Retrying...",
+  "cameraErrorReloadPage": "Please reload the page to try again."
 }

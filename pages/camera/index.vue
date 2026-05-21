@@ -10,7 +10,6 @@
   <div class="camera-page">
     <!-- Top Controls Bar -->
     <div class="camera-controls-top">
-
       <div class="camera-controls-right">
         <!-- Camera Switch Button -->
         <button
@@ -64,45 +63,44 @@
     </div>
 
     <!-- Camera Stream -->
-    <div 
+    <div
       class="camera-stream-wrapper"
-      @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
+      @touchstart.prevent="onTouchStart"
+      @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
       @touchcancel="onTouchEnd"
       @click="onCameraClick"
     >
-      <ClientOnly>
-        <QrcodeStream
-          ref="refQrcodeStream"
-          :constraints="selectedConstraints"
-          :track="trackFunctionSelected.value"
-          :formats="selectedBarcodeFormats"
-          :paused="paused"
-          :torch="torchActive"
-          @detect="onDetect"
-          @error="onError"
-          @camera-on="onCameraReady"
-          @camera-off="onCameraOff"
-          :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            transformOrigin: 'center center',
-            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            willChange: 'transform'
-          }"
-        />
-        <template #fallback>
-          <div class="camera-loading z-6">
-            <LoadingIcon />
-            <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
-          </div>
-        </template>
-      </ClientOnly>
+      <div
+        ref="zoomWrapper"
+        class="camera-zoom-wrapper"
+        :class="{ 'is-pinching': isPinching }"
+      >
+        <ClientOnly>
+          <QrcodeStream
+            ref="refQrcodeStream"
+            :constraints="selectedConstraints"
+            :track="trackFunctionSelected.value"
+            :formats="selectedBarcodeFormats"
+            :paused="paused"
+            :torch="torchActive"
+            @detect="onDetect"
+            @error="onError"
+            @camera-on="onCameraReady"
+            @camera-off="onCameraOff"
+          />
+          <template #fallback>
+            <div class="camera-loading z-6">
+              <LoadingIcon />
+              <p class="camera-loading-text">{{ $t('startingCamera') }}</p>
+            </div>
+          </template>
+        </ClientOnly>
+      </div>
 
       <!-- Focus Ring UI -->
-      <div 
-        v-if="focusPoint.visible" 
+      <div
+        v-if="focusPoint.visible"
         class="focus-ring"
         :style="{ left: focusPoint.x + 'px', top: focusPoint.y + 'px' }"
       ></div>
@@ -127,13 +125,13 @@
 
     <!-- Zoom Slider UI -->
     <!-- <div v-if="zoomSupported && !paused && cameraReady" class="zoom-slider-container">
-      <input 
-        type="range" 
-        class="zoom-slider" 
-        :min="zoomMin" 
-        :max="zoomMax" 
-        :step="zoomStep" 
-        v-model.number="zoom" 
+      <input
+        type="range"
+        class="zoom-slider"
+        :min="zoomMin"
+        :max="zoomMax"
+        :step="zoomStep"
+        v-model.number="zoom"
       />
       <div class="zoom-text">{{ Number(zoom).toFixed(1) }}x</div>
     </div> -->
@@ -170,23 +168,22 @@
       :pt="{
         closeButton: {
           class: isLoading ? 'pointer-events-none opacity-90' : '',
-          disabled: isLoading
+          disabled: isLoading,
         },
         header: {
-          style: isLoading ? 'pointer-events: none;' : ''
+          style: isLoading ? 'pointer-events: none;' : '',
         },
         root: {
-          style: isLoading ? 'pointer-events: none;' : ''
-        }
+          style: isLoading ? 'pointer-events: none;' : '',
+        },
       }"
     >
-      <div 
+      <div
         class="flex flex-col gap-3 overflow-hidden relative"
         :class="{ 'pointer-events-none select-none': isLoading }"
       >
-        
-        <div 
-          v-if="isLoading" 
+        <div
+          v-if="isLoading"
           class="absolute inset-0 z-[999] bg-white/60 cursor-wait"
           @click.stop.prevent
           @mousedown.stop.prevent
@@ -199,10 +196,14 @@
           @click="!isLoading && handleRedirect(result)"
           class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
           :class="[
-            isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
+            isLoading
+              ? 'opacity-50 cursor-wait'
+              : 'cursor-pointer active:bg-gray-100',
           ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
+          <p
+            class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6"
+          >
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -219,13 +220,13 @@
       </div>
     </Drawer>
 
-    <div 
-        v-if="isLoading" 
-        class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
-      >
-        <LoadingIcon />
-        <p class="text-white font-semibold">Loading...</p>
-      </div>
+    <div
+      v-if="isLoading"
+      class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
+    >
+      <LoadingIcon />
+      <p class="text-white font-semibold">{{ $t('loading') }}</p>
+    </div>
   </div>
 
   <Dialog
@@ -284,17 +285,18 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 // Device Detection
-const isAndroid = typeof navigator !== 'undefined'
-  ? /Android/i.test(navigator.userAgent)
-  : false
+const isAndroid =
+  typeof navigator !== 'undefined'
+    ? /Android/i.test(navigator.userAgent)
+    : false
 
-const isIOS = typeof navigator !== 'undefined'
-  ? /iPhone|iPad|iPod/.test(navigator.userAgent)
-  : false
+const isIOS =
+  typeof navigator !== 'undefined'
+    ? /iPhone|iPad|iPod/.test(navigator.userAgent)
+    : false
 
-const isDesktopDevice = typeof navigator !== 'undefined'
-  ? navigator.maxTouchPoints === 0
-  : false
+const isDesktopDevice =
+  typeof navigator !== 'undefined' ? navigator.maxTouchPoints === 0 : false
 
 // Hooks & Composables
 const { setScanVerified, clearScanVerified } = useGachaVerification()
@@ -312,6 +314,7 @@ const redirectLink = ref('')
 
 // Component State
 const refQrcodeStream = ref(null)
+const zoomWrapper = ref(null)
 const paused = ref(false)
 const drawerVisible = ref(false)
 const scanResult = ref([])
@@ -326,6 +329,7 @@ const torchSupported = ref(true)
 const isFrontCamera = ref(false)
 const cameraDevices = ref([])
 const selectedDeviceId = ref(null)
+const activeDeviceId = ref(null)
 const cameraReady = ref(false)
 const streamFacingMode = ref(null)
 const hasUserSelectedCamera = ref(false)
@@ -341,6 +345,9 @@ const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
+let currentPinchZoom = 1
+let streamTimeoutRetries = 0
+const MAX_STREAM_TIMEOUT_RETRIES = 2
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -413,22 +420,31 @@ const onCameraClick = async (e) => {
     let normY = (e.clientY - rect.top) / rect.height
 
     if (!hasNativeZoom.value && zoom.value > 1) {
-      normX = (0.5 - 0.5 / zoom.value) + (normX / zoom.value)
-      normY = (0.5 - 0.5 / zoom.value) + (normY / zoom.value)
+      normX = 0.5 - 0.5 / zoom.value + normX / zoom.value
+      normY = 0.5 - 0.5 / zoom.value + normY / zoom.value
     }
 
     if (caps.focusMode.includes('single-shot')) {
       try {
         await track.applyConstraints({
-          advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x: normX, y: normY }] }]
+          advanced: [
+            {
+              focusMode: 'single-shot',
+              pointsOfInterest: [{ x: normX, y: normY }],
+            },
+          ],
         })
       } catch (e1) {
-        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+        await track.applyConstraints({
+          advanced: [{ focusMode: 'single-shot' }],
+        })
       }
 
       setTimeout(async () => {
         if (caps.focusMode.includes('continuous')) {
-          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' }],
+          })
         }
       }, 2000)
     }
@@ -442,6 +458,20 @@ const getQrcodeVideoTrack = () => {
   const rootEl = refQrcodeStream.value?.$el ?? refQrcodeStream.value
   const videoEl = rootEl?.querySelector?.('video')
   return videoEl?.srcObject?.getVideoTracks?.()?.[0] ?? null
+}
+
+const updateZoomTransform = (scaleValue, forceCssZoom = false) => {
+  const el = zoomWrapper.value
+  if (!el) return
+  // During an active pinch gesture we always want CSS zoom for smooth
+  // 60 FPS feedback. After the gesture ends we hand off to native zoom
+  // (if available) and reset CSS scale to 1 so the two don't multiply.
+  const scale = hasNativeZoom.value && !forceCssZoom ? 1 : scaleValue
+  const mirror = shouldUnmirror.value ? 'scaleX(-1)' : 'scaleX(1)'
+  const transformStr = `scale(${scale}) ${mirror}`
+  el.style.transform = transformStr
+  el.style.webkitTransform = transformStr
+  el.style.transformOrigin = 'center center'
 }
 
 const syncStreamSettings = async () => {
@@ -463,7 +493,7 @@ const syncStreamSettings = async () => {
     hasNativeZoom.value = false
     zoomSupported.value = true
     zoomMin.value = 1
-    zoomMax.value = 5 
+    zoomMax.value = 5
     zoomStep.value = 0.1
   }
 
@@ -477,8 +507,10 @@ const syncStreamSettings = async () => {
 
   const deviceId = trackSettings?.deviceId ?? null
   if (deviceId && cameraDevices.value.some((d) => d.deviceId === deviceId)) {
-    selectedDeviceId.value = deviceId
+    activeDeviceId.value = deviceId
   }
+
+  updateZoomTransform(zoom.value)
 }
 
 let isApplyingZoom = false
@@ -487,16 +519,16 @@ let pendingZoom = null
 const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
-  
+
   if (isApplyingZoom) {
     pendingZoom = newZoom
     return
   }
-  
+
   isApplyingZoom = true
   try {
     await track.applyConstraints({
-      advanced: [{ zoom: newZoom }]
+      advanced: [{ zoom: newZoom }],
     })
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
@@ -510,44 +542,80 @@ const applyZoom = async (newZoom) => {
   }
 }
 
-watch(zoom, (newVal) => {
-  if (zoomSupported.value) {
-    applyZoom(newVal)
-  }
-})
-
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
     isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
-    initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    initialPinchDistance.value = Math.hypot(
+      t1.clientX - t2.clientX,
+      t1.clientY - t2.clientY
+    )
     initialZoomAtPinchStart.value = zoom.value
+    currentPinchZoom = zoom.value
   }
 }
 
 const onTouchMove = (e) => {
-  if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+  if (
+    e.touches.length === 2 &&
+    initialPinchDistance.value &&
+    zoomSupported.value
+  ) {
     if (rAFId) cancelAnimationFrame(rAFId)
-    
+
+    // Capture coordinates synchronously — TouchEvent objects may be recycled
+    // by the browser before the rAF callback runs.
+    const t1x = e.touches[0].clientX
+    const t1y = e.touches[0].clientY
+    const t2x = e.touches[1].clientX
+    const t2y = e.touches[1].clientY
+
     rAFId = requestAnimationFrame(() => {
-      const t1 = e.touches[0]
-      const t2 = e.touches[1]
-      const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+      const distance = Math.hypot(t1x - t2x, t1y - t2y)
       const ratio = distance / initialPinchDistance.value
-      
+
       let newZoom = initialZoomAtPinchStart.value * ratio
       newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-      zoom.value = newZoom
+      currentPinchZoom = newZoom
+
+      // Force CSS zoom during the gesture so the user gets immediate,
+      // jank-free visual feedback even when native zoom is available.
+      updateZoomTransform(newZoom, true)
     })
   }
 }
 
 const onTouchEnd = (e) => {
-  if (e.touches.length < 2) {
-    initialPinchDistance.value = null
-    isPinching.value = false
+  if (e.touches.length < 2 && initialPinchDistance.value !== null) {
     if (rAFId) cancelAnimationFrame(rAFId)
+
+    const finalZoom = Math.max(
+      zoomMin.value,
+      Math.min(currentPinchZoom, zoomMax.value)
+    )
+    currentPinchZoom = finalZoom
+    initialPinchDistance.value = null
+
+    if (hasNativeZoom.value) {
+      // Keep isPinching true so Vue doesn't re-enable CSS transitions
+      // while we apply the native zoom and reset CSS scale to 1.
+      applyZoom(finalZoom)
+      updateZoomTransform(1, false)
+
+      // Re-enable CSS transitions only after the browser has painted the
+      // native-zoom frame and the CSS snap-back to scale(1).
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          isPinching.value = false
+        })
+      })
+    } else {
+      isPinching.value = false
+    }
+
+    // Commit final zoom to reactive state so the slider / UI stays in sync.
+    zoom.value = finalZoom
   }
 }
 
@@ -575,16 +643,10 @@ const refreshCameraDevices = async () => {
     selectedDeviceId.value &&
     cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
 
-  if (!hasUserSelectedCamera.value) {
-    const preferred = pickPreferredCameraDeviceId(cameraDevices.value)
-    if (preferred) {
-      selectedDeviceId.value = preferred
-      return
-    }
-  }
-
-  if (!hasSelectedInList) {
-    selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
+  // If a previously user-selected device is no longer present, clear it
+  if (!hasSelectedInList && selectedDeviceId.value) {
+    selectedDeviceId.value = null
+    hasUserSelectedCamera.value = false
   }
 }
 
@@ -632,16 +694,10 @@ const selectedConstraints = computed(() => {
     frameRate,
   }
 
-  const advanced = isAndroid 
-    ? [
-        { focusMode: 'continuous' },
-        { exposureMode: 'continuous' }
-      ]
+  const advanced = isAndroid
+    ? [{ focusMode: 'continuous' }, { exposureMode: 'continuous' }]
     : isIOS
-    ? [
-        { focusMode: 'continuous' },
-        { exposureMode: 'continuous' },
-      ]
+    ? [{ focusMode: 'continuous' }, { exposureMode: 'continuous' }]
     : [
         { focusMode: 'continuous' },
         { exposureMode: 'continuous' },
@@ -670,7 +726,7 @@ const shouldUnmirror = computed(() => {
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
   const label =
-    cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
+    cameraDevices.value.find((d) => d.deviceId === activeDeviceId.value)
       ?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
@@ -678,7 +734,17 @@ const shouldUnmirror = computed(() => {
   return isFrontCamera.value
 })
 
+watch([zoom, shouldUnmirror], () => {
+  if (!isPinching.value) {
+    updateZoomTransform(zoom.value)
+    if (zoomSupported.value) {
+      applyZoom(zoom.value)
+    }
+  }
+})
+
 const onCameraReady = (capabilities) => {
+  streamTimeoutRetries = 0
   cameraReady.value = true
   torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
   refreshCameraDevices().finally(() => {
@@ -708,7 +774,7 @@ const switchCamera = () => {
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
-      (d) => d.deviceId === selectedDeviceId.value
+      (d) => d.deviceId === activeDeviceId.value
     )
     const nextIdx = idx >= 0 ? (idx + 1) % cameraDevices.value.length : 0
     selectedDeviceId.value = cameraDevices.value[nextIdx]?.deviceId ?? null
@@ -737,21 +803,38 @@ function onError(err) {
   cameraReady.value = false
   isLoading.value = false
   if (err.name === 'NotAllowedError') {
-    error.value += 'you need to grant camera access permission'
+    error.value += t('cameraErrorNotAllowed')
   } else if (err.name === 'NotFoundError') {
-    error.value += 'no camera on this device'
+    error.value += t('cameraErrorNotFound')
   } else if (err.name === 'NotSupportedError') {
-    error.value += 'secure context required (HTTPS, localhost)'
+    error.value += t('cameraErrorNotSupported')
   } else if (err.name === 'NotReadableError') {
-    error.value += 'is the camera already in use?'
+    error.value += t('cameraErrorNotReadable')
   } else if (err.name === 'OverconstrainedError') {
-    error.value += 'installed cameras are not suitable'
+    error.value += t('cameraErrorOverconstrained')
     // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
     selectedDeviceId.value = null
+    hasUserSelectedCamera.value = false
   } else if (err.name === 'StreamApiNotSupportedError') {
-    error.value += 'Stream API is not supported in this browser'
+    error.value += t('cameraErrorStreamApiNotSupported')
   } else if (err.name === 'InsecureContextError') {
-    error.value += 'Camera access is only permitted in secure context.'
+    error.value += t('cameraErrorInsecureContext')
+  } else if (err.name === 'StreamLoadTimeoutError') {
+    error.value += err.message
+    if (streamTimeoutRetries < MAX_STREAM_TIMEOUT_RETRIES) {
+      streamTimeoutRetries++
+      error.value += ` ${t('cameraErrorRetrying')}`
+      setTimeout(() => {
+        error.value = ''
+        paused.value = true
+        setTimeout(() => {
+          paused.value = false
+        }, 500)
+      }, 1500)
+    } else {
+      error.value += ` ${t('cameraErrorReloadPage')}`
+    }
+    return
   } else {
     error.value += err.message
   }
@@ -791,47 +874,96 @@ const doRedirect = (url) => {
   sessionStorage.removeItem('IS_ALREADY_SPIN')
   sessionStorage.removeItem('SPIN_TYPE')
   sessionStorage.removeItem('READY_SPIN_AFTER_DATE')
-  
+
   const slug = getSlugFromUrl(url)
   if (slug) {
-    localStorage.removeItem(`GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`)
+    localStorage.removeItem(
+      `GACHA_FLOW_COMPLETED_${String(slug).toUpperCase()}`
+    )
     setScanVerified(slug)
   }
-  
+
   window.location.href = url
 }
 
+const normalizeQrUrl = (input) => {
+  if (!input) return input
+  const trimmed = String(input).trim()
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  // Detect domain-like strings without protocol (e.g., example.com/scan/abc or www.example.com/...)
+  if (
+    /^[a-zA-Z0-9][a-zA-Z0-9-]*(\.[a-zA-Z0-9][a-zA-Z0-9-]*)+(:\d+)?(\/|$)/.test(
+      trimmed
+    )
+  ) {
+    return `https://${trimmed}`
+  }
+  return trimmed
+}
+
 const handleRedirect = async (url) => {
+    console.log('[DEBUG] handleRedirect called with:', JSON.stringify(url))
+
   if (!url || isLoading.value) return
   setLoadingWithTimeout(true)
 
   try {
+    const normalizedUrl = normalizeQrUrl(url)
     let statusPath = ''
-    let redirectUrl = url
+    let redirectUrl = normalizedUrl
 
-    if (/^https?:\/\//i.test(url)) {
-      const urlObj = new URL(url)
-      const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
-      statusPath = segments.filter(s => s !== 'scan').join('/')
+    if (/^https?:\/\//i.test(normalizedUrl)) {
+      let urlObj
+      try {
+        urlObj = new URL(normalizedUrl)
+      } catch (e) {
+        urlObj = null
+      }
+
+      if (urlObj) {
+        const segments = urlObj.pathname
+          .replace(/^\//, '')
+          .split('/')
+          .filter(Boolean)
+        statusPath = segments.filter((s) => s !== 'scan').join('/')
+      } else {
+        // Fallback: parse manually if new URL fails
+        const segments = normalizedUrl
+          .replace(/^https?:\/\//i, '')
+          .split('/')
+          .filter(Boolean)
+        statusPath =
+          segments
+            .slice(1)
+            .filter((s) => s !== 'scan')
+            .join('/') ||
+          segments[0] ||
+          ''
+      }
     } else {
       // Relative path or plain code
-      const path = url.startsWith('/') ? url : `/scan/${url}`
+      const path = normalizedUrl.startsWith('/')
+        ? normalizedUrl
+        : `/scan/${normalizedUrl}`
       const segments = path.replace(/^\//, '').split('/').filter(Boolean)
-      statusPath = segments.filter(s => s !== 'scan').join('/')
-      
+      statusPath = segments.filter((s) => s !== 'scan').join('/')
+
       // Ensure we have a full URL for redirect
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-      const absolutePath = path.startsWith('/scan') ? path : `/scan${path.startsWith('/') ? '' : '/'}${path}`
+      const baseUrl =
+        typeof window !== 'undefined' ? window.location.origin : ''
+      const absolutePath = path.startsWith('/scan')
+        ? path
+        : `/scan${path.startsWith('/') ? '' : '/'}${path}`
       redirectUrl = `${baseUrl}${absolutePath}`
     }
 
     if (!statusPath) {
-      throw new Error('Invalid QR code')
+      throw new Error(t('qrFailed'))
     }
 
     const { checkStatus } = useGachaService()
     let response = null
-    
+
     // Only fetch status if on the camera page and have a valid statusPath (location)
     if (route.path.startsWith('/camera') && statusPath) {
       response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
@@ -841,14 +973,26 @@ const handleRedirect = async (url) => {
       doRedirect(redirectUrl)
     } else {
       isLoading.value = false
-      errorMessages.value = response?.message || t('no_available_data')
+      errorMessages.value = response?.message || t('qrFailed')
       redirectLink.value = ''
       isNotAllowed.value = true
     }
   } catch (err) {
     console.error('[Camera] handleRedirect error:', err)
     isLoading.value = false
-    errorMessages.value = err?._data?.message || err?.data?.message || t('no_available_data')
+
+    let message = t('qrFailed')
+    if (!navigator.onLine) {
+      message = t('network_error')
+    } else if (err?._data?.message) {
+      message = err._data.message
+    } else if (err?.data?.message) {
+      message = err.data.message
+    } else if (err?.message) {
+      message = err.message
+    }
+
+    errorMessages.value = message
     redirectLink.value = ''
     isNotAllowed.value = true
   }
@@ -923,6 +1067,17 @@ watch(drawerVisible, (value) => {
   overflow: hidden;
 }
 
+.camera-zoom-wrapper {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.camera-zoom-wrapper.is-pinching {
+  transition: none;
+}
+
 .focus-ring {
   position: absolute;
   width: 60px;
@@ -932,15 +1087,31 @@ watch(drawerVisible, (value) => {
   transform: translate(-50%, -50%) scale(1.5);
   pointer-events: none;
   z-index: 20;
-  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   animation: focus-pulse 1s ease-out forwards;
 }
 
 @keyframes focus-pulse {
-  0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; border-width: 1px; }
-  20% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
-  80% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2px; }
-  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; border-width: 1px; }
+  0% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+    border-width: 1px;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+    border-width: 2px;
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+    border-width: 2px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0;
+    border-width: 1px;
+  }
 }
 
 .zoom-slider-container {
@@ -965,7 +1136,7 @@ watch(drawerVisible, (value) => {
   color: white;
   font-size: 12px;
   font-weight: bold;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -1045,16 +1216,33 @@ watch(drawerVisible, (value) => {
   left: 8px;
   right: 8px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #fbbf24, #fbbf24, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fbbf24,
+    #fbbf24,
+    transparent
+  );
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
   animation: scan-line 2.5s ease-in-out infinite;
 }
 
 @keyframes scan-line {
-  0%, 100% { transform: translateY(8px); opacity: 0; }
-  10% { opacity: 1; }
-  50% { transform: translateY(250px); opacity: 1; }
-  60% { opacity: 0; }
+  0%,
+  100% {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(250px);
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
 }
 
 .viewfinder-hint {
@@ -1064,7 +1252,8 @@ watch(drawerVisible, (value) => {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-.low-light-tip, .error-banner {
+.low-light-tip,
+.error-banner {
   position: absolute;
   bottom: max(66px, env(safe-area-inset-bottom, 50px));
   left: 16px;
@@ -1099,10 +1288,12 @@ watch(drawerVisible, (value) => {
   cursor: pointer;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
 }
