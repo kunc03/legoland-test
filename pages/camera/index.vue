@@ -1180,50 +1180,73 @@ const doRedirect = (url) => {
 
 const handleRedirect = async (url) => {
   if (!url || isLoading.value) return
+  console.log('[DEBUG] handleRedirect called with url:', url)
   setLoadingWithTimeout(true)
 
   try {
     let statusPath = ''
     let redirectUrl = url
+    console.log('[DEBUG] Starting URL parsing...')
 
     if (/^https?:\/\//i.test(url)) {
+      console.log('[DEBUG] Detected absolute URL')
       const urlObj = new URL(url)
       const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
+      console.log('[DEBUG] URL segments:', segments)
       statusPath = segments.filter(s => s !== 'scan').join('/')
+      console.log('[DEBUG] Extracted statusPath:', statusPath)
     } else {
+      console.log('[DEBUG] Detected relative URL or plain code')
       // Relative path or plain code
       const path = url.startsWith('/') ? url : `/scan/${url}`
+      console.log('[DEBUG] Normalized path:', path)
       const segments = path.replace(/^\//, '').split('/').filter(Boolean)
+      console.log('[DEBUG] Path segments:', segments)
       statusPath = segments.filter(s => s !== 'scan').join('/')
       
       // Ensure we have a full URL for redirect
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
       const absolutePath = path.startsWith('/scan') ? path : `/scan${path.startsWith('/') ? '' : '/'}${path}`
       redirectUrl = `${baseUrl}${absolutePath}`
+      console.log('[DEBUG] statusPath:', statusPath)
+      console.log('[DEBUG] redirectUrl:', redirectUrl)
     }
 
     if (!statusPath) {
+      console.warn('[DEBUG] statusPath is empty!')
       throw new Error('Invalid QR code')
     }
 
     const { checkStatus } = useGachaService()
     let response = null
     
+    console.log('[DEBUG] Current route.path:', route.path)
+    console.log('[DEBUG] Checking conditions - route.path.startsWith("/camera"):', route.path.startsWith('/camera'))
+    console.log('[DEBUG] statusPath value:', statusPath)
+    console.log('[DEBUG] Will call checkStatus?', route.path.startsWith('/camera') && statusPath)
+    
     // Only fetch status if on the camera page and have a valid statusPath (location)
     if (route.path.startsWith('/camera') && statusPath) {
+      console.log('[DEBUG] ✓ Calling checkStatus with statusPath:', statusPath, 'lang:', LOCALE.value || 'en')
       response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+      console.log('[DEBUG] checkStatus response:', response)
+    } else {
+      console.log('[DEBUG] ✗ Skipping checkStatus - conditions not met')
     }
 
+    console.log('[DEBUG] Checking response.data.can_spin:', response?.data?.can_spin)
     if (response?.data?.can_spin === true) {
+      console.log('[DEBUG] ✓ can_spin is true, executing doRedirect')
       doRedirect(redirectUrl)
     } else {
+      console.log('[DEBUG] ✗ can_spin is not true. Full response:', response)
       isLoading.value = false
       errorMessages.value = response?.message || t('no_available_data')
       redirectLink.value = ''
       isNotAllowed.value = true
     }
   } catch (err) {
-    console.error('[Camera] handleRedirect error:', err)
+    console.error('[DEBUG] handleRedirect error:', err)
     isLoading.value = false
     errorMessages.value = err?._data?.message || err?.data?.message || t('no_available_data')
     redirectLink.value = ''
