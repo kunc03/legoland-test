@@ -413,12 +413,18 @@ const handlePageShow = (event) => {
   if (event.persisted) {
     isLoading.value = false
     paused.value = false
-    // ✅ FIX: Reset camera state to ensure back camera is used after restoration
-    cameraReady.value = false
+    // ✅ FIX: Don't fully reset camera state; only pause briefly and resume
+    // Resetting cameraReady and calling startZxing triggers device re-enumeration
+    // which can switch to a different camera on iOS, causing the visible "flip"
+    if (paused.value) {
+      paused.value = false
+    }
     torchActive.value = false
-    error.value = ''
-    if (useZxingEngine.value) {
-      startZxing()
+    // Resume video playback if it was playing
+    if (useZxingEngine.value && zxingVideo.value && !paused.value) {
+      try {
+        zxingVideo.value.play().catch(() => {})
+      } catch (_) {}
     }
   }
 }
@@ -430,16 +436,21 @@ const handleVisibilityChange = () => {
     if (isLoading.value) {
       isLoading.value = false
     }
-    // ✅ FIX: Reset camera state when returning to foreground
-    cameraReady.value = false
-    torchActive.value = false
-    error.value = ''
+    // ✅ FIX: When returning to foreground on iOS, the OS kills the stream.
+    // We need to restart it, BUT without resetting selectedDeviceId.
+    // Resetting would trigger device re-enumeration which can pick the wrong camera.
+    // Only reset if cameraReady is already false (stream actually died)
+    if (!cameraReady.value) {
+      torchActive.value = false
+      error.value = ''
+      if (useZxingEngine.value) {
+        startZxing()
+      }
+    }
     drawerVisible.value = false
     paused.value = false
-    if (useZxingEngine.value) {
-      startZxing()
-    }
   } else {
+    // Going to background
     if (useZxingEngine.value) {
       stopZxing()
     }
@@ -714,41 +725,56 @@ const refreshCameraDevices = async () => {
   if (typeof window === 'undefined') return
   if (!navigator?.mediaDevices?.enumerateDevices) return
 
-  const devices = await navigator.mediaDevices.enumerateDevices()
-  let videoDevices = devices.filter((d) => d.kind === 'videoinput')
-
-  // ✅ FORCE: Exclude front-facing cameras completely from lists on mobile devices (iOS / Android)
-  // This ensures camera selection, switcher button, and fallbacks will NEVER touch the front camera.
-  if (isIOS || isAndroid) {
-    videoDevices = videoDevices.filter((d) => {
-      const label = d.label || ''
-      return label.trim().length === 0 || !/front|user|selfie|facetime/i.test(label)
-    })
+  // ✅ FIX: Prevent concurrent refreshCameraDevices calls which can cause race conditions
+  // on iPhone 15+ where device enumeration is racy
+  if (isRefreshingCameraDevices) {
+    console.log('[Camera] Device refresh already in progress, skipping duplicate call')
+    return
   }
-  cameraDevices.value = videoDevices
 
-  const hasSelectedInList =
-    selectedDeviceId.value &&
-    cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
+  isRefreshingCameraDevices = true
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    let videoDevices = devices.filter((d) => d.kind === 'videoinput')
 
-  if (!hasUserSelectedCamera.value) {
-    const preferred = pickPreferredCameraDeviceId(cameraDevices.value)
-    if (preferred) {
-      selectedDeviceId.value = preferred
-      return
+    // ✅ FORCE: Exclude front-facing cameras completely from lists on mobile devices (iOS / Android)
+    // This ensures camera selection, switcher button, and fallbacks will NEVER touch the front camera.
+    if (isIOS || isAndroid) {
+      videoDevices = videoDevices.filter((d) => {
+        const label = d.label || ''
+        return label.trim().length === 0 || !/front|user|selfie|facetime/i.test(label)
+      })
     }
-    // ✅ FIX: preferred is null = all labels are empty (iOS pre-permission) or no rear camera found.
-    // Do NOT fall through to devices[0] fallback — that would pick the front camera.
-    // Keep selectedDeviceId as null so facingMode: 'environment' is used instead.
-    if (!hasSelectedInList) return
-  }
+    cameraDevices.value = videoDevices
 
-  if (!hasSelectedInList) {
-    selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
+    const hasSelectedInList =
+      selectedDeviceId.value &&
+      cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
+
+    if (!hasUserSelectedCamera.value) {
+      const preferred = pickPreferredCameraDeviceId(cameraDevices.value)
+      if (preferred) {
+        selectedDeviceId.value = preferred
+        return
+      }
+      // ✅ FIX: preferred is null = all labels are empty (iOS pre-permission) or no rear camera found.
+      // Do NOT fall through to devices[0] fallback — that would pick the front camera.
+      // Keep selectedDeviceId as null so facingMode: 'environment' is used instead.
+      if (!hasSelectedInList) return
+    }
+
+    if (!hasSelectedInList) {
+      selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
+    }
+  } finally {
+    isRefreshingCameraDevices = false
   }
 }
 
 const showLowLightTip = ref(true)
+
+// ✅ FIX: Track if refreshCameraDevices is in progress to prevent race conditions
+let isRefreshingCameraDevices = false
 
 definePageMeta({
   middleware: 'auth',
@@ -1000,12 +1026,29 @@ const startZxing = async () => {
 
     // Wait for stream to settle, then sync settings and enumerate devices.
     // At this point iOS has granted camera permission so labels are now available.
+    // ✅ FIX: On iPhone 15+, refreshCameraDevices during background restore can pick
+    // the wrong camera. Only refresh if we haven't already selected a device.
     setTimeout(async () => {
       await syncStreamSettings()
-      // Re-enumerate now that iOS camera permission is active and labels are populated.
-      // This identifies the correct back camera deviceId for subsequent restarts.
-      if (!hasUserSelectedCamera.value) {
+      // ✅ FIX: Only re-enumerate if no device has been explicitly selected yet.
+      // If selectedDeviceId is already set (from a previous initialization or user selection),
+      // don't change it. This prevents camera flipping on iOS when page is restored.
+      if (!hasUserSelectedCamera.value && !selectedDeviceId.value) {
         await refreshCameraDevices()
+      } else if (!hasUserSelectedCamera.value) {
+        // Device was already selected but we need to verify it's still valid
+        // Silently check if current track matches selected device
+        const track = getVideoTrack()
+        const currentDeviceId = track?.getSettings?.()?.deviceId
+        if (currentDeviceId && currentDeviceId !== selectedDeviceId.value) {
+          // The actual stream is using a different device than selectedDeviceId
+          // This shouldn't happen, but if it does, update our state to match reality
+          console.warn('[Camera] Stream device mismatch detected, updating state')
+          const found = cameraDevices.value.find(d => d.deviceId === currentDeviceId)
+          if (found) {
+            selectedDeviceId.value = currentDeviceId
+          }
+        }
       }
       const track = getVideoTrack()
       const capabilities = track?.getCapabilities?.()
@@ -1042,16 +1085,26 @@ const stopZxing = () => {
 // Watchers for ZXing reactive controls
 watch(selectedDeviceId, async (newId) => {
   if (!useZxingEngine.value) return
+  
   // ✅ FIX: After stream starts, refreshCameraDevices() identifies the correct back camera
   // deviceId and sets selectedDeviceId. Check if the current stream is ALREADY using that
   // device — if so, skip the restart to avoid an unnecessary camera flash/blink.
+  // This is especially important on iPhone 15+ where device enumeration can be racy.
   const currentTrack = getVideoTrack()
   const currentDeviceId = currentTrack?.getSettings?.()?.deviceId
-  if (currentDeviceId && currentDeviceId === newId) {
-    console.log('[ZXing] Device already active, skipping stream restart')
+  
+  // ✅ CRITICAL FIX for iPhone 15+: If we don't have a valid newId yet (null during init),
+  // don't restart the stream. Wait for a real device ID before restarting.
+  if (!newId) {
+    console.log('[Camera] selectedDeviceId changed to null, skipping restart')
     return
   }
-  stopZxing()
+  
+  if (currentDeviceId && currentDeviceId === newId) {
+    console.log('[ZXing] Device already active, skipping stream restart')\n    return
+  }
+  
+  console.log('[ZXing] Device changed from', currentDeviceId, 'to', newId, '- restarting stream')\n  stopZxing()
   startZxing()
 })
 
@@ -1103,14 +1156,23 @@ const switchCamera = () => {
   torchActive.value = false
   drawerVisible.value = false
   paused.value = false
-  cameraReady.value = false
+  
+  // ✅ FIX: Don't reset cameraReady here - let the watch handle the restart
+  // Resetting it could cause unnecessary re-enumeration on iOS
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
       (d) => d.deviceId === selectedDeviceId.value
     )
     const nextIdx = idx >= 0 ? (idx + 1) % cameraDevices.value.length : 0
-    selectedDeviceId.value = cameraDevices.value[nextIdx]?.deviceId ?? null
+    const nextDevice = cameraDevices.value[nextIdx]?.deviceId
+    
+    if (nextDevice && nextDevice !== selectedDeviceId.value) {
+      console.log('[Camera] Switching camera to device', nextDevice)
+      selectedDeviceId.value = nextDevice
+    } else {
+      console.warn('[Camera] Cannot switch to different camera')
+    }
   } else {
     // ✅ FIX: Keep selectedDeviceId instead of clearing it + toggling flag
     // This prevents unexpected fallback to wrong camera
