@@ -680,6 +680,12 @@ const pickPreferredCameraDeviceId = (devices) => {
   if (!devices || devices.length === 0) return null
   
   const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
+
+  // ✅ FIX: On iOS Safari, enumerateDevices() returns unlabeled devices before camera
+  // permission is granted. Picking devices[0] blindly would select the front camera
+  // (TrueDepth/selfie) which is first in the iOS device list.
+  // Return null so selectedConstraints falls back to facingMode: 'environment'.
+  if (withLabel.length === 0) return null
   
   // 1. Try to find standard back camera (environment facing) without zoom, ultra-wide, telephoto, virtual, depth labels
   const standardBack = withLabel.find((d) => 
@@ -699,17 +705,11 @@ const pickPreferredCameraDeviceId = (devices) => {
   const nonFront = withLabel.find((d) => !/front|user|selfie|facetime/i.test(d.label))
   if (nonFront?.deviceId) return nonFront.deviceId
   
-  // 4. Check unlabeled devices (commonly seen on permission-restricted iOS browsers)
-  const unlabeled = devices.filter((d) => !d.label || d.label.trim().length === 0)
-  if (unlabeled.length > 0) {
-    return unlabeled[0].deviceId
-  }
-  
-  // 5. No back camera found at all — fall back to front camera explicitly
+  // 4. No back camera found at all — fall back to front camera explicitly
   const frontCamera = withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label))
   if (frontCamera?.deviceId) return frontCamera.deviceId
   
-  // 6. Final fallback: use whatever is available
+  // 5. Final fallback: use whatever is available
   return devices[0]?.deviceId ?? null
 }
 
@@ -730,6 +730,10 @@ const refreshCameraDevices = async () => {
       selectedDeviceId.value = preferred
       return
     }
+    // ✅ FIX: preferred is null = all labels are empty (iOS pre-permission).
+    // Do NOT fall through to devices[0] fallback — that would pick the front camera.
+    // Keep selectedDeviceId as null so facingMode: 'environment' is used instead.
+    if (!hasSelectedInList) return
   }
 
   if (!hasSelectedInList) {
@@ -939,10 +943,12 @@ const startZxing = async () => {
     error.value = ''
     cameraReady.value = false
 
-    // Request permissions and enumerate devices if empty
-    if (cameraDevices.value.length === 0) {
-      await refreshCameraDevices()
-    }
+    // ✅ FIX: Do NOT enumerate devices before stream starts.
+    // On iOS Safari, enumerateDevices() returns empty labels before camera permission
+    // is granted. Calling it here causes the front camera (TrueDepth/selfie) to be
+    // selected because it appears first in the iOS device list with blank labels.
+    // Device enumeration is deferred to AFTER the stream starts (below),
+    // when iOS has granted permission and actual labels are available.
 
     const constraints = {
       video: selectedConstraints.value,
@@ -983,9 +989,15 @@ const startZxing = async () => {
       } catch (_) {}
     }
 
-    // Wait a moment for stream to settle and then read configuration
+    // Wait for stream to settle, then sync settings and enumerate devices.
+    // At this point iOS has granted camera permission so labels are now available.
     setTimeout(async () => {
       await syncStreamSettings()
+      // Re-enumerate now that iOS camera permission is active and labels are populated.
+      // This identifies the correct back camera deviceId for subsequent restarts.
+      if (!hasUserSelectedCamera.value) {
+        await refreshCameraDevices()
+      }
       const track = getVideoTrack()
       const capabilities = track?.getCapabilities?.()
       torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
@@ -1019,11 +1031,19 @@ const stopZxing = () => {
 }
 
 // Watchers for ZXing reactive controls
-watch(selectedDeviceId, (newId) => {
-  if (useZxingEngine.value) {
-    stopZxing()
-    startZxing()
+watch(selectedDeviceId, async (newId) => {
+  if (!useZxingEngine.value) return
+  // ✅ FIX: After stream starts, refreshCameraDevices() identifies the correct back camera
+  // deviceId and sets selectedDeviceId. Check if the current stream is ALREADY using that
+  // device — if so, skip the restart to avoid an unnecessary camera flash/blink.
+  const currentTrack = getVideoTrack()
+  const currentDeviceId = currentTrack?.getSettings?.()?.deviceId
+  if (currentDeviceId && currentDeviceId === newId) {
+    console.log('[ZXing] Device already active, skipping stream restart')
+    return
   }
+  stopZxing()
+  startZxing()
 })
 
 watch(paused, (isPaused) => {
