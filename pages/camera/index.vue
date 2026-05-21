@@ -705,11 +705,17 @@ const pickPreferredCameraDeviceId = (devices) => {
   const nonFront = withLabel.find((d) => !/front|user|selfie|facetime/i.test(d.label))
   if (nonFront?.deviceId) return nonFront.deviceId
   
-  // 4. No back camera found at all — fall back to front camera explicitly
+  // ✅ FORCE NO FRONT CAMERA ON MOBILE: If on mobile (iOS/Android), explicitly do not use the front camera.
+  if (isIOS || isAndroid) {
+    console.warn('[Camera] Mobile device: Front camera is strictly disallowed.')
+    return null
+  }
+  
+  // 4. No back camera found at all — fall back to front camera explicitly (Desktop/non-mobile webcam only)
   const frontCamera = withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label))
   if (frontCamera?.deviceId) return frontCamera.deviceId
   
-  // 5. Final fallback: use whatever is available
+  // 5. Final fallback: use whatever is available (Desktop/non-mobile only)
   return devices[0]?.deviceId ?? null
 }
 
@@ -718,7 +724,17 @@ const refreshCameraDevices = async () => {
   if (!navigator?.mediaDevices?.enumerateDevices) return
 
   const devices = await navigator.mediaDevices.enumerateDevices()
-  cameraDevices.value = devices.filter((d) => d.kind === 'videoinput')
+  let videoDevices = devices.filter((d) => d.kind === 'videoinput')
+
+  // ✅ FORCE: Exclude front-facing cameras completely from lists on mobile devices (iOS / Android)
+  // This ensures camera selection, switcher button, and fallbacks will NEVER touch the front camera.
+  if (isIOS || isAndroid) {
+    videoDevices = videoDevices.filter((d) => {
+      const label = d.label || ''
+      return label.trim().length === 0 || !/front|user|selfie|facetime/i.test(label)
+    })
+  }
+  cameraDevices.value = videoDevices
 
   const hasSelectedInList =
     selectedDeviceId.value &&
@@ -730,7 +746,7 @@ const refreshCameraDevices = async () => {
       selectedDeviceId.value = preferred
       return
     }
-    // ✅ FIX: preferred is null = all labels are empty (iOS pre-permission).
+    // ✅ FIX: preferred is null = all labels are empty (iOS pre-permission) or no rear camera found.
     // Do NOT fall through to devices[0] fallback — that would pick the front camera.
     // Keep selectedDeviceId as null so facingMode: 'environment' is used instead.
     if (!hasSelectedInList) return
@@ -816,10 +832,12 @@ const selectedConstraints = computed(() => {
     }
   }
 
-  // Use { ideal: 'environment' } so the browser PREFERS back camera
+  // ✅ FORCE NO FRONT CAMERA ON MOBILE: Use { exact: 'environment' } so the mobile browser is strictly forced to use back camera,
+  // falling back to { ideal: 'environment' } on desktop/laptops.
+  const facingModeValue = (isIOS || isAndroid) ? { exact: 'environment' } : { ideal: 'environment' }
   return {
     ...base,
-    facingMode: { ideal: 'environment' },
+    facingMode: facingModeValue,
     advanced,
   }
 })
