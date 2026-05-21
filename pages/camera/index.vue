@@ -1202,15 +1202,11 @@ const handleRedirect = async (url) => {
       redirectUrl = `${baseUrl}${absolutePath}`
     }
 
-    if (!statusPath) {
-      throw new Error('Invalid QR code')
-    }
-
     const { checkStatus } = useGachaService()
     let response = null
     
-    // Only fetch status if on the camera page and have a valid statusPath (location)
-    if (route.path.startsWith('/camera') && statusPath) {
+    // Only fetch status if on the camera page
+    if (route.path.startsWith('/camera')) {
       response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
     }
 
