@@ -667,27 +667,27 @@ const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
 
 const shouldUnmirror = computed(() => {
-  // 1. Cek dari reactive state bawaan library Anda dulu
+  // 1. Cek dari reactive state bawaan library
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
 
-  // 2. Fallback: Cek langsung ke media track yang sedang jalan (jika ref-nya ada)
-  // Misal library Anda mengekspos objek stream/track, atau lewat ref QrcodeStream
-  const videoTrack = refQrcodeStream.value?.$el?.querySelector('video')?.srcObject?.getVideoTracks()[0];
+  // 2. Fallback: Cek langsung ke media track yang sedang jalan
+  // Ditambahkan opsional chaining (?.) pada getVideoTracks untuk menghindari crash
+  const videoTrack = refQrcodeStream.value?.$el?.querySelector('video')?.srcObject?.getVideoTracks?.()[0];
   if (videoTrack) {
     const settings = videoTrack.getSettings();
     if (settings.facingMode === 'user') return true;
     if (settings.facingMode === 'environment') return false;
   }
 
-  // 3. Logika pengecekan label Anda yang sudah ada
+  // 3. Logika pengecekan label
   const label = cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
 
   if (isDesktopDevice) return true
   
-  // Jika semuanya blank (khas Safari iOS), return false supaya kamera belakang tidak nge-flip
+  // Fallback terakhir khusus Safari iOS (Default tidak di-mirror)
   return false 
 })
 
