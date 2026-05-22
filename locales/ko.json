@@ -381,17 +381,5 @@
   "prizeCollectionsTitle": ["추첨에", "참가!"],
   "gachaCollectionsTitle": ["경품", "교환"],
   "prizesComingSoon": "경품은 곧 공개됩니다! 기대해주세요.",
-  "noExchangeHistory": "추첨 내역이 없습니다",
-  "qrFailed": "올바른 QR 코드를 스캔하십시오.",
-  "loading": "로딩 중...",
-  "network_error": "네트워크 오류가 발생했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
-  "cameraErrorNotAllowed": "카메라 접근 권한을 허용해야 합니다",
-  "cameraErrorNotFound": "이 기기에 카메라가 없습니다",
-  "cameraErrorNotSupported": "보안 컨텍스트가 필요합니다(HTTPS, localhost)",
-  "cameraErrorNotReadable": "카메라가 이미 사용 중인가요?",
-  "cameraErrorOverconstrained": "설치된 카메라가 적합하지 않습니다",
-  "cameraErrorStreamApiNotSupported": "이 브라우저는 Stream API를 지원하지 않습니다",
-  "cameraErrorInsecureContext": "카메라 접근은 보안 컨텍스트에서만 허용됩니다.",
-  "cameraErrorRetrying": "다시 시도 중...",
-  "cameraErrorReloadPage": "페이지를 새로고침하여 다시 시도해 주세요."
+  "noExchangeHistory": "추첨 내역이 없습니다"
 }

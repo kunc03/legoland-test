@@ -381,17 +381,5 @@
   "prizeCollectionsTitle": ["Ikuti", "undian!"],
   "gachaCollectionsTitle": ["Tukar", "Hadiah"],
   "prizesComingSoon": "Hadiah akan segera hadir! Nantikan",
-  "noExchangeHistory": "Belum ada riwayat undian",
-  "qrFailed": "Silakan pindai kode QR yang benar.",
-  "loading": "Memuat...",
-  "network_error": "Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.",
-  "cameraErrorNotAllowed": "Anda perlu memberikan izin akses kamera",
-  "cameraErrorNotFound": "tidak ada kamera di perangkat ini",
-  "cameraErrorNotSupported": "konteks aman diperlukan (HTTPS, localhost)",
-  "cameraErrorNotReadable": "apakah kamera sudah digunakan?",
-  "cameraErrorOverconstrained": "kamera yang terinstal tidak cocok",
-  "cameraErrorStreamApiNotSupported": "Stream API tidak didukung di browser ini",
-  "cameraErrorInsecureContext": "Akses kamera hanya diizinkan dalam konteks aman.",
-  "cameraErrorRetrying": "Mencoba ulang...",
-  "cameraErrorReloadPage": "Silakan muat ulang halaman untuk mencoba lagi."
+  "noExchangeHistory": "Belum ada riwayat undian"
 }

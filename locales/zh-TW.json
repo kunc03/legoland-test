@@ -381,17 +381,5 @@
   "prizeCollectionsTitle": ["參加", "抽獎!"],
   "gachaCollectionsTitle": ["獎品", "兌換"],
   "prizesComingSoon": "獎品即將公布！敬請期待。",
-  "noExchangeHistory": "暫無抽獎紀錄",
-  "qrFailed": "請掃描正確的二維碼。",
-  "loading": "載入中...",
-  "network_error": "網路錯誤，請檢查您的連線後再試一次。",
-  "cameraErrorNotAllowed": "您需要授予相機存取權限",
-  "cameraErrorNotFound": "此裝置沒有相機",
-  "cameraErrorNotSupported": "需要安全連線（HTTPS、localhost）",
-  "cameraErrorNotReadable": "相機是否已被其他應用程式使用？",
-  "cameraErrorOverconstrained": "已安裝的相機不適用",
-  "cameraErrorStreamApiNotSupported": "此瀏覽器不支援 Stream API",
-  "cameraErrorInsecureContext": "相機存取僅允許在安全連線環境中使用。",
-  "cameraErrorRetrying": "重試中...",
-  "cameraErrorReloadPage": "請重新載入頁面後再試一次。"
+  "noExchangeHistory": "暫無抽獎紀錄"
 }
