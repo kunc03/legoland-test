@@ -10,7 +10,7 @@
 
   <div class="flex flex-col px-8 pt-32 text-black bg-center">
     <div
-      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 rounded-xl shadow"
+      class="flex flex-col max-w-sm gap-2 overflow-hidden bg-white border border-gray-200 shadow rounded-xl"
     >
       <div class="w-full overflow-hidden bg-[#FFF6E8]">
         <Skeleton v-if="isFetching" class="!w-full !h-full"></Skeleton>
@@ -183,7 +183,7 @@
   <Dialog
     v-model:visible="insufficientDialogVisible"
     modal
-    class="!max-w-sm border border-exd-gray-44 rounded-xl"
+    class="max-w-[85%] sm:max-w-[385px] border border-exd-gray-44 rounded-xl w-11/12"
     :style="{
       background: settings?.global?.modal?.background_color,
     }"

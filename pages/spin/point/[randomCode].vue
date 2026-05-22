@@ -252,7 +252,7 @@ const fetchImageFromApi = async () => {
       return
     }
 
-    if (e === 'refetch') {
+    if (e === 'refetch' || e?.type === 'refetch') {
       TOKEN.value = null
       USER.value = null
       fetchImageFromApi()
