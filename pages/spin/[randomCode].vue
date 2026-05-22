@@ -39,25 +39,38 @@
 
         <div
           v-else-if="!isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
-          class="grid w-full h-full grid-cols-12 pb-4"
+          class="flex flex-col w-full h-full"
         >
-          <div class="relative flex flex-col items-center justify-center min-h-0 col-span-10 col-start-2 gap-3">
-            <img
-              :src="eventTitle"
-              alt="event-title"
-              class="w-full h-auto max-h-[15%] object-contain shrink"
-            />
-            <img
-              :src="settings?.global?.gacha_machine_image"
-              alt="gacha2"
-              class="w-full h-auto max-h-[50%] object-contain shrink"
-              preload
-            />
-            <img
-              :src="instruction"
-              alt="instruction"
-              class="w-full h-auto max-h-[15%] object-contain shrink"
-            />
+          <div class="relative flex flex-col items-center justify-center w-full h-full min-h-0 px-6 pt-4 @[700px]:pt-10 gap-6 @[700px]:gap-8">
+            
+            <div 
+              class="flex w-full min-h-0 shrink-0" 
+              :class="{ 'justify-start': titleImagePosition === 'left', 'justify-center': titleImagePosition === 'center', 'justify-end': titleImagePosition === 'right' }"
+            >
+              <img
+                :src="eventTitle"
+                alt="event-title"
+                class="object-contain w-[85%] h-auto"
+              />
+            </div>
+            
+            <div class="flex items-center justify-center flex-1 w-full min-h-0">
+              <img
+                :src="settings?.global?.gacha_machine_image"
+                alt="gacha2"
+                class="object-contain w-[65%] min-h-[160px]"
+                preload
+              />
+            </div>
+            
+            <div class="flex items-center justify-center w-full min-h-0 pb-4 shrink-0">
+              <img
+                :src="instruction"
+                alt="instruction"
+                class="object-contain w-full h-auto"
+              />
+            </div>
+
           </div>
         </div>
 
@@ -461,7 +474,7 @@
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import close from '~/assets/images/close.svg'
-import eventTitle from '~/assets/images/event-title.png'
+import eventTitleFallback from '~/assets/images/event-title.png'
 import instruction from '~/assets/images/instruction.png'
 import gachaTom from '~/public/images/gacha-tom.png'
 import roulette from '~/assets/images/roulette.png'
@@ -469,49 +482,7 @@ import { useExternalRedeemStore } from '~/stores/external-redeem'
 
 const externalRedeemStore = useExternalRedeemStore()
 
-const gachaType = computed(() => {
-  return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
-})
 const settings = useState('settings')
-const gachaSettings = computed(() =>
-  gachaType.value === 'external'
-    ? settings.value?.external_gacha
-    : settings.value?.gacha
-)
-const gacha = computed(() => gachaSettings.value)
-const popUpContent = computed(() => {
-  const data =
-    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
-      ?.popup_content
-  if (!data) return ''
-
-  const preferredLocale = locale.value
-
-  if (typeof data === 'string') {
-    try {
-      const parsed = JSON.parse(data)
-      if (typeof parsed === 'string') return parsed
-      if (parsed && typeof parsed === 'object') {
-        return (
-          parsed?.[preferredLocale] ??
-          parsed?.ja ??
-          parsed?.en ??
-          parsed?.id ??
-          ''
-        )
-      }
-      return ''
-    } catch (e) {
-      return data
-    }
-  }
-
-  if (typeof data === 'object') {
-    return data?.[preferredLocale] ?? data?.ja ?? data?.en ?? data?.id ?? ''
-  }
-
-  return ''
-})
 
 const router = useRouter()
 const route = useRoute()
@@ -552,6 +523,56 @@ const modalSpinWarning = ref(false)
 const redirectLink = ref('')
 
 const isInstagram = ref(false)
+
+const gachaType = computed(() => {
+  return route.path.startsWith('/spin/prize/') ? 'external' : 'internal'
+})
+
+const gachaSettings = computed(() =>
+  gachaType.value === 'external'
+    ? settings.value?.external_gacha
+    : settings.value?.gacha
+)
+const gacha = computed(() => gachaSettings.value)
+const eventTitle = computed(
+  () => gacha.value?.spin_gacha_1_screen?.before_gacha_1_screen?.title_image || ''
+)
+const titleImagePosition = computed(
+  () => gacha.value?.spin_gacha_1_screen?.before_gacha_1_screen?.title_image_position || 'center'
+)
+const popUpContent = computed(() => {
+  const data =
+    gachaSettings.value?.spin_gacha_1_screen?.before_gacha_1_screen?.popup
+      ?.popup_content
+  if (!data) return ''
+
+  const preferredLocale = locale.value
+
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      if (typeof parsed === 'string') return parsed
+      if (parsed && typeof parsed === 'object') {
+        return (
+          parsed?.[preferredLocale] ??
+          parsed?.ja ??
+          parsed?.en ??
+          parsed?.id ??
+          ''
+        )
+      }
+      return ''
+    } catch (e) {
+      return data
+    }
+  }
+
+  if (typeof data === 'object') {
+    return data?.[preferredLocale] ?? data?.ja ?? data?.en ?? data?.id ?? ''
+  }
+
+  return ''
+})
 
 const handleCloseModalSpinWarning = () => {
   modalSpinWarning.value = false
