@@ -166,7 +166,7 @@
       :dismissable="!isLoading"
       :closable="!isLoading"
       style="height: auto; max-height: 30vh"
-      pt:root:class="camera-drawer bg-white text-exd-dark-grey"
+      pt:root:class="bg-white camera-drawer text-exd-dark-grey"
       :pt="{
         closeButton: {
           class: isLoading ? 'pointer-events-none opacity-90' : '',
@@ -181,7 +181,7 @@
       }"
     >
       <div 
-        class="flex flex-col gap-3 overflow-hidden relative"
+        class="relative flex flex-col gap-3 overflow-hidden"
         :class="{ 'pointer-events-none select-none': isLoading }"
       >
         
@@ -197,12 +197,12 @@
           v-for="(result, index) in scanResult"
           :key="index"
           @click="!isLoading && handleRedirect(result)"
-          class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
+          class="relative flex items-center justify-between w-full px-4 py-6 overflow-hidden bg-white border border-b rounded-lg border-b-exd-light-grey"
           :class="[
             isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
           ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
+          <p class="flex-1 min-w-0 pr-6 font-semibold truncate text-exd-gray-scorpion">
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -224,7 +224,7 @@
         class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
       >
         <LoadingIcon />
-        <p class="text-white font-semibold">Loading...</p>
+        <p class="font-semibold text-white">Loading...</p>
       </div>
   </div>
 
@@ -667,15 +667,28 @@ const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
 
 const shouldUnmirror = computed(() => {
+  // 1. Cek dari reactive state bawaan library Anda dulu
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
-  const label =
-    cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
-      ?.label ?? ''
+
+  // 2. Fallback: Cek langsung ke media track yang sedang jalan (jika ref-nya ada)
+  // Misal library Anda mengekspos objek stream/track, atau lewat ref QrcodeStream
+  const videoTrack = refQrcodeStream.value?.$el?.querySelector('video')?.srcObject?.getVideoTracks()[0];
+  if (videoTrack) {
+    const settings = videoTrack.getSettings();
+    if (settings.facingMode === 'user') return true;
+    if (settings.facingMode === 'environment') return false;
+  }
+
+  // 3. Logika pengecekan label Anda yang sudah ada
+  const label = cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
+
   if (isDesktopDevice) return true
-  return isFrontCamera.value
+  
+  // Jika semuanya blank (khas Safari iOS), return false supaya kamera belakang tidak nge-flip
+  return false 
 })
 
 const onCameraReady = (capabilities) => {
