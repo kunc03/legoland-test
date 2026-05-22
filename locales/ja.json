@@ -216,7 +216,7 @@
   "locationValidate": "スポットエリア外です。エリア内に戻ってから再度お試しください。",
   "downloadImage": "キャラの画像をダウンロードしています。",
   "shareCharacter": "キャラクターを共有する",
-  "no_available_data": "利用可能なデータがありません",
+  "no_available_data": "No Availabe Data",
   "back_to_top": "Back to Top",
   "minLengthPostalCode": "郵便番号は7桁でなければなりません。",
   "postalCodeNotFound": "郵便番号が見つかりません",
@@ -382,17 +382,5 @@
   "prizeCollectionsTitle": ["ちゅうせんに", "さんか！"],
   "gachaCollectionsTitle": ["けいひん", "こうかん"],
   "prizesComingSoon": "景品は近日公開予定です。お楽しみに。",
-  "noExchangeHistory": "抽選の履歴はありません",
-  "qrFailed": "正しいQRコードをスキャンしてください",
-  "loading": "読み込み中...",
-  "network_error": "ネットワークエラーが発生しました。接続を確認してもう一度お試しください。",
-  "cameraErrorNotAllowed": "カメラへのアクセス許可が必要です",
-  "cameraErrorNotFound": "このデバイスにカメラがありません",
-  "cameraErrorNotSupported": "安全なコンテキストが必要です（HTTPS、localhost）",
-  "cameraErrorNotReadable": "カメラは既に使用中ですか？",
-  "cameraErrorOverconstrained": "インストールされているカメラが適切ではありません",
-  "cameraErrorStreamApiNotSupported": "このブラウザはStream APIをサポートしていません",
-  "cameraErrorInsecureContext": "カメラへのアクセスは安全なコンテキストでのみ許可されています。",
-  "cameraErrorRetrying": "再試行中...",
-  "cameraErrorReloadPage": "ページを再読み込みしてもう一度お試しください。"
+  "noExchangeHistory": "抽選の履歴はありません"
 }
