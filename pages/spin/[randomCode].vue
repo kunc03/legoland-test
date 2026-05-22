@@ -41,7 +41,7 @@
           v-else-if="!isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
           class="flex flex-col w-full h-full"
         >
-          <div class="relative flex flex-col items-center justify-center w-full h-full min-h-0 px-6 pt-4 @[700px]:pt-10 gap-6 @[700px]:gap-8">
+          <div class="relative flex flex-col items-center justify-center w-full h-full min-h-0 px-4 pt-4 @[700px]:pt-10 gap-6 @[700px]:gap-8">
             
             <div 
               class="flex w-full min-h-0 shrink-0" 
