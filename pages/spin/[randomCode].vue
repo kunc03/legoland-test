@@ -27,7 +27,7 @@
       class="relative flex flex-col !bg-no-repeat !bg-cover !bg-center grow pt-[102px]"
     >
       <div
-        class="grow w-full flex flex-col items-center justify-center relative min-h-0 px-4"
+        class="relative flex flex-col items-center justify-center w-full min-h-0 px-4 grow"
       >
         <img
           v-if="!isPrizeSpinRoute && !externalRedeemStore.isExternalRedeem"
@@ -39,9 +39,9 @@
 
         <div
           v-else-if="!isPrizeSpinRoute && externalRedeemStore.isExternalRedeem"
-          class="grid grid-cols-12 w-full h-full pb-4"
+          class="grid w-full h-full grid-cols-12 pb-4"
         >
-          <div class="col-start-2 col-span-10 flex flex-col items-center justify-center gap-3 relative min-h-0">
+          <div class="relative flex flex-col items-center justify-center min-h-0 col-span-10 col-start-2 gap-3">
             <img
               :src="eventTitle"
               alt="event-title"
@@ -71,7 +71,7 @@
       </div>
 
       <div 
-        class="flex flex-col items-center justify-center w-full pb-7 bg-transparent"
+        class="flex flex-col items-center justify-center w-full bg-transparent pb-7"
       >
         <div
           v-if="
@@ -93,7 +93,7 @@
           </p>
         </div>
 
-        <div class="flex flex-col w-full items-center justify-center gap-2">
+        <div class="flex flex-col items-center justify-center w-full gap-2">
           <SolidButton
             :label="gacha?.spin_gacha_1_screen?.before_gacha_1_screen?.button_text"
             :bgColor="
@@ -810,6 +810,7 @@ const triggerGachaSpin = async () => {
     
     return true
   } catch (error) {
+    console.log('[ERROR] triggerGachaSpin failed:', error)
     errorMessages.value = error.data?.message || error._data?.message || t('no_available_data')
     modalSpinWarning.value = true
     console.error('[ERROR] triggerGachaSpin failed:', error)

@@ -40,7 +40,11 @@ const useFetchApi = async (method: any, url: string, opts = {}): Promise<any> =>
         TOKEN.value = null
         USER.value = null
 
-        return Promise.reject('refetch')
+        // return Promise.reject('refetch')
+        return Promise.reject({
+          type: 'refetch',
+          data: response?._data || null
+        })
       }
 
       return Promise.reject(response)
