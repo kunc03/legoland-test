@@ -43,6 +43,7 @@ const useFetchApi = async (method: any, url: string, opts = {}): Promise<any> =>
         // return Promise.reject('refetch')
         return Promise.reject({
           type: 'refetch',
+          status: response?.status,
           data: response?._data || null
         })
       }

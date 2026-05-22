@@ -412,7 +412,7 @@
           </p>
         </div>
         <SolidButton
-          :label="$t('myPage')"
+          :label="$t(buttonLabelKey)"
           :bgColor="
             gachaSettings?.after_gacha_screen?.data?.button_and_text_color
               ?.background
@@ -521,6 +521,7 @@ const locationBlocked = ref(false)
 const isSplashComplete = ref(false)
 const modalSpinWarning = ref(false)
 const redirectLink = ref('')
+const buttonLabelKey = ref('myPage')
 
 const isInstagram = ref(false)
 
@@ -831,10 +832,13 @@ const triggerGachaSpin = async () => {
     
     return true
   } catch (error) {
-    console.log('[ERROR] triggerGachaSpin failed:', error)
     errorMessages.value = error.data?.message || error._data?.message || t('no_available_data')
+    if (error.status === 401) {
+      buttonLabelKey.value = 'login'
+    } else {
+      buttonLabelKey.value = 'myPage'
+    }
     modalSpinWarning.value = true
-    console.error('[ERROR] triggerGachaSpin failed:', error)
     
     return false 
   }
