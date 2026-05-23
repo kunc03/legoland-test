@@ -85,10 +85,10 @@
           @camera-on="onCameraReady"
           @camera-off="onCameraOff"
           :style="{
-            transform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
-            WebkitTransform: `scale(${hasNativeZoom ? 1 : zoom}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: isPinching ? 'none' : 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: cssTransition,
             willChange: 'transform'
           }"
         />
@@ -337,10 +337,22 @@ const zoomMax = ref(1)
 const zoomStep = ref(0.1)
 const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
+const appliedNativeZoom = ref(1)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
+
+const cssScale = computed(() => {
+  const currentApplied = Math.max(0.1, appliedNativeZoom.value)
+  return zoom.value / currentApplied
+})
+
+const cssTransition = computed(() => {
+  if (isPinching.value) return 'none'
+  if (hasNativeZoom.value) return 'none'
+  return 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+})
 
 // Handle restoration from bfcache (Back-Forward Cache)
 const handlePageShow = (event) => {
@@ -459,12 +471,15 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
+    appliedNativeZoom.value = zoom.value
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
     zoomMin.value = 1
     zoomMax.value = 5 
     zoomStep.value = 0.1
+    zoom.value = 1
+    appliedNativeZoom.value = 1
   }
 
   let facing = trackSettings?.facingMode ?? null
@@ -483,10 +498,18 @@ const syncStreamSettings = async () => {
 
 let isApplyingZoom = false
 let pendingZoom = null
+let lastNativeZoomTime = 0
+const NATIVE_ZOOM_THROTTLE_MS = 120 // ms throttle to prevent overloading hardware
 
-const applyZoom = async (newZoom) => {
+const applyZoom = async (newZoom, force = false) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
+  
+  const now = Date.now()
+  if (!force && now - lastNativeZoomTime < NATIVE_ZOOM_THROTTLE_MS) {
+    pendingZoom = newZoom
+    return
+  }
   
   if (isApplyingZoom) {
     pendingZoom = newZoom
@@ -494,10 +517,12 @@ const applyZoom = async (newZoom) => {
   }
   
   isApplyingZoom = true
+  lastNativeZoomTime = now
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
+    appliedNativeZoom.value = newZoom
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
@@ -505,7 +530,7 @@ const applyZoom = async (newZoom) => {
     if (pendingZoom !== null) {
       const nextZoom = pendingZoom
       pendingZoom = null
-      applyZoom(nextZoom)
+      applyZoom(nextZoom, false)
     }
   }
 }
@@ -521,24 +546,30 @@ const onTouchStart = (e) => {
     isPinching.value = true
     const t1 = e.touches[0]
     const t2 = e.touches[1]
-    initialPinchDistance.value = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    initialPinchDistance.value = dist > 0 ? dist : 1
     initialZoomAtPinchStart.value = zoom.value
   }
 }
 
 const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
+    const t1 = e.touches[0]
+    const t2 = e.touches[1]
+    const x1 = t1.clientX
+    const y1 = t1.clientY
+    const x2 = t2.clientX
+    const y2 = t2.clientY
+
     if (rAFId) cancelAnimationFrame(rAFId)
     
     rAFId = requestAnimationFrame(() => {
-      const t1 = e.touches[0]
-      const t2 = e.touches[1]
-      const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+      const distance = Math.hypot(x1 - x2, y1 - y2)
       const ratio = distance / initialPinchDistance.value
       
       let newZoom = initialZoomAtPinchStart.value * ratio
       newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-      zoom.value = newZoom
+      zoom.value = Number(newZoom.toFixed(3))
     })
   }
 }
@@ -548,6 +579,10 @@ const onTouchEnd = (e) => {
     initialPinchDistance.value = null
     isPinching.value = false
     if (rAFId) cancelAnimationFrame(rAFId)
+    
+    if (zoomSupported.value && hasNativeZoom.value) {
+      applyZoom(zoom.value, true)
+    }
   }
 }
 
@@ -706,6 +741,8 @@ const switchCamera = () => {
   drawerVisible.value = false
   paused.value = false
   cameraReady.value = false
+  zoom.value = 1
+  appliedNativeZoom.value = 1
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
