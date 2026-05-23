@@ -382,5 +382,13 @@
   "prizeCollectionsTitle": ["ちゅうせんに", "さんか！"],
   "gachaCollectionsTitle": ["けいひん", "こうかん"],
   "prizesComingSoon": "景品は近日公開予定です。お楽しみに。",
-  "noExchangeHistory": "抽選の履歴はありません"
+  "noExchangeHistory": "抽選の履歴はありません",
+  "cameraErrorNotAllowed": "カメラのアクセス権限を許可する必要があります。",
+  "cameraErrorNotFound": "このデバイスにカメラが見つかりません。",
+  "cameraErrorNotSupported": "セキュアな接続（HTTPS、localhost）が必要です。",
+  "cameraErrorNotReadable": "カメラが既に他のタブやアプリで使用されていませんか？",
+  "cameraErrorOverconstrained": "接続されているカメラは適切ではありません。",
+  "cameraErrorStreamApiNotSupported": "このブラウザはStream APIに対応していません。",
+  "cameraErrorInsecureContext": "カメラへのアクセスはセキュアな接続でのみ許可されています。",
+  "cameraErrorStreamLoadTimeout": "カメラの読み込みがタイムアウトしました。カメラが他のタブやアプリで使用されていないか確認してください。"
 }

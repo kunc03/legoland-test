@@ -381,5 +381,13 @@
   "prizeCollectionsTitle": ["Ikuti", "undian!"],
   "gachaCollectionsTitle": ["Tukar", "Hadiah"],
   "prizesComingSoon": "Hadiah akan segera hadir! Nantikan",
-  "noExchangeHistory": "Belum ada riwayat undian"
+  "noExchangeHistory": "Belum ada riwayat undian",
+  "cameraErrorNotAllowed": "Anda harus memberikan izin akses kamera.",
+  "cameraErrorNotFound": "Tidak ada kamera yang terdeteksi di perangkat ini.",
+  "cameraErrorNotSupported": "Diperlukan konteks aman (HTTPS, localhost).",
+  "cameraErrorNotReadable": "Apakah kamera sedang digunakan oleh tab atau aplikasi lain?",
+  "cameraErrorOverconstrained": "Kamera yang terpasang tidak kompatibel.",
+  "cameraErrorStreamApiNotSupported": "Stream API tidak didukung di browser ini.",
+  "cameraErrorInsecureContext": "Akses kamera hanya diizinkan dalam konteks aman (HTTPS).",
+  "cameraErrorStreamLoadTimeout": "Waktu pemuatan kamera habis. Pastikan kamera tidak sedang digunakan oleh tab atau aplikasi lain."
 }

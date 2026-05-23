@@ -604,8 +604,10 @@ const selectedConstraints = computed(() => {
     width = { min: 1280, ideal: 1920 }
     height = { min: 720, ideal: 1080 }
   } else if (isAndroid) {
-    width = { min: 1280, ideal: 1280 }
-    height = { min: 720, ideal: 720 }
+    // Avoid mandatory 'min' constraints on Android/Samsung to prevent OverconstrainedError in portrait mode.
+    // Use ideal constraints instead which allow graceful fallback.
+    width = { ideal: 1280 }
+    height = { ideal: 720 }
     frameRate = { ideal: 30, max: 30 }
   }
 
@@ -632,7 +634,9 @@ const selectedConstraints = computed(() => {
         { whiteBalanceMode: 'continuous' },
       ]
 
-  if (selectedDeviceId.value) {
+  // Only apply deviceId constraint if the user has manually selected/switched camera.
+  // This prevents rapid restart loops on startup when selectedDeviceId is automatically synced.
+  if (hasUserSelectedCamera.value && selectedDeviceId.value) {
     return {
       ...base,
       deviceId: { exact: selectedDeviceId.value },
@@ -671,8 +675,8 @@ const shouldUnmirror = computed(() => {
 
   // 5. iOS FALLBACK (LAST RESORT): 
   // If the values above are empty/blank during the initial load or transition phase, 
-  // return TRUE to prevent the default front camera from being inverted.
-  return true 
+  // return isFrontCamera.value to prevent mirroring glitches.
+  return isFrontCamera.value
 })
 
 const onCameraReady = (capabilities) => {
@@ -730,27 +734,29 @@ const onDetect = (data) => {
 }
 
 function onError(err) {
-  error.value = `[${err.name}]: `
+  error.value = ''
   cameraReady.value = false
   isLoading.value = false
   if (err.name === 'NotAllowedError') {
-    error.value += 'you need to grant camera access permission'
+    error.value = t('cameraErrorNotAllowed')
   } else if (err.name === 'NotFoundError') {
-    error.value += 'no camera on this device'
+    error.value = t('cameraErrorNotFound')
   } else if (err.name === 'NotSupportedError') {
-    error.value += 'secure context required (HTTPS, localhost)'
+    error.value = t('cameraErrorNotSupported')
   } else if (err.name === 'NotReadableError') {
-    error.value += 'is the camera already in use?'
+    error.value = t('cameraErrorNotReadable')
   } else if (err.name === 'OverconstrainedError') {
-    error.value += 'installed cameras are not suitable'
+    error.value = t('cameraErrorOverconstrained')
     // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
     selectedDeviceId.value = null
   } else if (err.name === 'StreamApiNotSupportedError') {
-    error.value += 'Stream API is not supported in this browser'
+    error.value = t('cameraErrorStreamApiNotSupported')
   } else if (err.name === 'InsecureContextError') {
-    error.value += 'Camera access is only permitted in secure context.'
+    error.value = t('cameraErrorInsecureContext')
+  } else if (err.name === 'StreamLoadTimeoutError') {
+    error.value = t('cameraErrorStreamLoadTimeout')
   } else {
-    error.value += err.message
+    error.value = err.message
   }
   if (err.name === 'OverconstrainedError') {
     torchSupported.value = false
