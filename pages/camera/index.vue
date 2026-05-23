@@ -402,6 +402,19 @@ onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
+// Patch video element for iOS: add playsinline attributes to prevent
+// iOS Safari from showing its native play button / fullscreen overlay
+const patchVideoElement = () => {
+  const rootEl = refQrcodeStream.value?.$el ?? refQrcodeStream.value
+  const videoEl = rootEl?.querySelector?.('video')
+  if (videoEl) {
+    videoEl.setAttribute('playsinline', '')
+    videoEl.setAttribute('webkit-playsinline', '')
+    videoEl.setAttribute('muted', '')
+    videoEl.removeAttribute('controls')
+  }
+}
+
 onUnmounted(() => {
   window.removeEventListener('pageshow', handlePageShow)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
@@ -567,27 +580,17 @@ const onTouchMove = (e) => {
   if (e.touches.length === 2 && initialPinchDistance.value && zoomSupported.value) {
     const t1 = e.touches[0]
     const t2 = e.touches[1]
-    const x1 = t1.clientX
-    const y1 = t1.clientY
-    const x2 = t2.clientX
-    const y2 = t2.clientY
-
-    if (rAFId) cancelAnimationFrame(rAFId)
+    const distance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
+    const ratio = distance / initialPinchDistance.value
     
-    rAFId = requestAnimationFrame(() => {
-      const distance = Math.hypot(x1 - x2, y1 - y2)
-      const ratio = distance / initialPinchDistance.value
-      
-      let newZoom = initialZoomAtPinchStart.value * ratio
-      newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-      newZoom = Number(newZoom.toFixed(3))
-      zoom.value = newZoom
-      // During pinch: update displayZoom INSTANTLY (no lerp delay)
-      displayZoom.value = newZoom
-      // On iOS: native zoom not available, cssScale drives visual directly
-      // On Android: immediately call native zoom without waiting for settle
-      if (hasNativeZoom.value) applyZoom(newZoom)
-    })
+    let newZoom = initialZoomAtPinchStart.value * ratio
+    newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
+    newZoom = Number(newZoom.toFixed(3))
+    zoom.value = newZoom
+    // Update displayZoom INSTANTLY — no rAF delay
+    displayZoom.value = newZoom
+    // Native zoom: throttled via applyZoom internals
+    if (hasNativeZoom.value) applyZoom(newZoom)
   }
 }
 
@@ -741,6 +744,7 @@ const shouldUnmirror = computed(() => {
 const onCameraReady = (capabilities) => {
   cameraReady.value = true
   torchSupported.value = !!(capabilities && capabilities.torch !== undefined)
+  patchVideoElement()
   refreshCameraDevices().finally(() => {
     setTimeout(syncStreamSettings, 0)
   })
@@ -985,6 +989,16 @@ watch(drawerVisible, (value) => {
   position: relative;
   touch-action: none;
   overflow: hidden;
+}
+
+/* Hide iOS native video play button and controls */
+.camera-stream-wrapper :deep(video::-webkit-media-controls-panel),
+.camera-stream-wrapper :deep(video::-webkit-media-controls-play-button),
+.camera-stream-wrapper :deep(video::-webkit-media-controls-start-playback-button) {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .focus-ring {
