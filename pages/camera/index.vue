@@ -344,8 +344,11 @@ const isPinching = ref(false)
 let rAFId = null
 
 const cssScale = computed(() => {
-  const currentApplied = Math.max(0.1, appliedNativeZoom.value)
-  return zoom.value / currentApplied
+  if (hasNativeZoom.value) {
+    const currentApplied = Math.max(0.1, appliedNativeZoom.value)
+    return Math.max(1.0, zoom.value / currentApplied)
+  }
+  return zoom.value
 })
 
 const cssTransition = computed(() => {
