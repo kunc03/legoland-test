@@ -604,8 +604,10 @@ const selectedConstraints = computed(() => {
     width = { min: 1280, ideal: 1920 }
     height = { min: 720, ideal: 1080 }
   } else if (isAndroid) {
-    width = { min: 1280, ideal: 1280 }
-    height = { min: 720, ideal: 720 }
+    // Avoid mandatory 'min' constraints on Android/Samsung to prevent OverconstrainedError in portrait mode.
+    // Use ideal constraints instead which allow graceful fallback.
+    width = { ideal: 1280 }
+    height = { ideal: 720 }
     frameRate = { ideal: 30, max: 30 }
   }
 
@@ -632,7 +634,9 @@ const selectedConstraints = computed(() => {
         { whiteBalanceMode: 'continuous' },
       ]
 
-  if (selectedDeviceId.value) {
+  // Only apply deviceId constraint if the user has manually selected/switched camera.
+  // This prevents rapid restart loops on startup when selectedDeviceId is automatically synced.
+  if (hasUserSelectedCamera.value && selectedDeviceId.value) {
     return {
       ...base,
       deviceId: { exact: selectedDeviceId.value },
