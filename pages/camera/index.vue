@@ -166,7 +166,7 @@
       :dismissable="!isLoading"
       :closable="!isLoading"
       style="height: auto; max-height: 30vh"
-      pt:root:class="camera-drawer bg-white text-exd-dark-grey"
+      pt:root:class="bg-white camera-drawer text-exd-dark-grey"
       :pt="{
         closeButton: {
           class: isLoading ? 'pointer-events-none opacity-90' : '',
@@ -181,7 +181,7 @@
       }"
     >
       <div 
-        class="flex flex-col gap-3 overflow-hidden relative"
+        class="relative flex flex-col gap-3 overflow-hidden"
         :class="{ 'pointer-events-none select-none': isLoading }"
       >
         
@@ -197,12 +197,12 @@
           v-for="(result, index) in scanResult"
           :key="index"
           @click="!isLoading && handleRedirect(result)"
-          class="rounded-lg border bg-white py-6 px-4 flex items-center justify-between border-b border-b-exd-light-grey w-full relative overflow-hidden"
+          class="relative flex items-center justify-between w-full px-4 py-6 overflow-hidden bg-white border border-b rounded-lg border-b-exd-light-grey"
           :class="[
             isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer active:bg-gray-100'
           ]"
         >
-          <p class="text-exd-gray-scorpion font-semibold truncate flex-1 min-w-0 pr-6">
+          <p class="flex-1 min-w-0 pr-6 font-semibold truncate text-exd-gray-scorpion">
             {{ result }}
           </p>
           <div class="!absolute !right-3 !top-1/2 !transform !-translate-y-1/2">
@@ -224,7 +224,7 @@
         class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-[9999]"
       >
         <LoadingIcon />
-        <p class="text-white font-semibold">Loading...</p>
+        <p class="font-semibold text-white">Loading...</p>
       </div>
   </div>
 
@@ -551,19 +551,6 @@ const onTouchEnd = (e) => {
   }
 }
 
-const pickPreferredCameraDeviceId = (devices) => {
-  const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
-  const back =
-    withLabel.find((d) => /back|rear|environment/i.test(d.label)) ?? null
-  if (back?.deviceId) return back.deviceId
-
-  const front =
-    withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label)) ?? null
-  if (front?.deviceId && devices.length === 1) return front.deviceId
-
-  return devices[devices.length - 1]?.deviceId ?? null
-}
-
 const refreshCameraDevices = async () => {
   if (typeof window === 'undefined') return
   if (!navigator?.mediaDevices?.enumerateDevices) return
@@ -571,20 +558,17 @@ const refreshCameraDevices = async () => {
   const devices = await navigator.mediaDevices.enumerateDevices()
   cameraDevices.value = devices.filter((d) => d.kind === 'videoinput')
 
-  const hasSelectedInList =
-    selectedDeviceId.value &&
-    cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
+  // Only manage selectedDeviceId if the user has manually selected a camera.
+  // Otherwise, we let the browser choose via facingMode constraint, and syncStreamSettings
+  // will automatically populate selectedDeviceId with the active camera's actual ID.
+  if (hasUserSelectedCamera.value) {
+    const hasSelectedInList =
+      selectedDeviceId.value &&
+      cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
 
-  if (!hasUserSelectedCamera.value) {
-    const preferred = pickPreferredCameraDeviceId(cameraDevices.value)
-    if (preferred) {
-      selectedDeviceId.value = preferred
-      return
+    if (!hasSelectedInList) {
+      selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
     }
-  }
-
-  if (!hasSelectedInList) {
-    selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
   }
 }
 
@@ -667,15 +651,28 @@ const trackFunctionSelected = ref({ text: 'outline', value: paintOutline })
 const selectedBarcodeFormats = ref(['qr_code'])
 
 const shouldUnmirror = computed(() => {
+  // 1. PRIMARY PRIORITY: Use UI state from the camera switch/toggle button if available.
+  // (e.g., if you have a ref named 'activeFacingMode' with values 'user' or 'environment')
+  // if (activeFacingMode.value === 'environment') return false
+  // if (activeFacingMode.value === 'user') return true
+
+  // 2. SECONDARY DEFENSE: Check the library's built-in reactive state
   if (streamFacingMode.value === 'user') return true
   if (streamFacingMode.value === 'environment') return false
-  const label =
-    cameraDevices.value.find((d) => d.deviceId === selectedDeviceId.value)
-      ?.label ?? ''
+
+  // 3. TEXT FALLBACK: Check the device label if populated (for non-iOS devices or when the stream has stabilized)
+  const id = selectedDeviceId.value
+  const label = cameraDevices.value.find((d) => d.deviceId === id)?.label ?? ''
   if (/front|user|selfie|facetime/i.test(label)) return true
   if (/back|rear|environment/i.test(label)) return false
+
+  // 4. LAPTOP/DESKTOP CONDITION: Integrated PC webcams generally behave like a front camera
   if (isDesktopDevice) return true
-  return isFrontCamera.value
+
+  // 5. iOS FALLBACK (LAST RESORT): 
+  // If the values above are empty/blank during the initial load or transition phase, 
+  // return TRUE to prevent the default front camera from being inverted.
+  return true 
 })
 
 const onCameraReady = (capabilities) => {
