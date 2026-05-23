@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.21] - 2026-05-23
+
+### Added
+
+- **Dynamic Copyright**: Implemented dynamically updated copyright year in the footer.
+
+### Fixed
+
+- **Camera Scan Page**: Fixed camera flip and mirroring issue on iPhone 17 (iOS 16+ / 26.3) and handled `StreamLoadTimeoutError` camera load timeout and general scanning errors on Samsung devices with multi-language error displays.
+- **UI & Modal Styling**: Corrected modal width, button labels, and title image padding/layout on the gacha interface before spinning, and fixed unhandled error message before login.
+
 ## [1.3.16] - 2025-10-15
 
 ### Fixed
@@ -146,4 +157,4 @@ and this project adheres to
 
 ---
 
-_Last Updated: 2026-04-21_
+_Last Updated: 2026-05-23_
