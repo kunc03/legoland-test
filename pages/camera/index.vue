@@ -753,6 +753,8 @@ function onError(err) {
     error.value += 'Stream API is not supported in this browser'
   } else if (err.name === 'InsecureContextError') {
     error.value += 'Camera access is only permitted in secure context.'
+  } else if (err.name === 'StreamLoadTimeoutError') {
+    error.value += 'camera loading timed out. Please ensure the camera is not in use by another tab or app.'
   } else {
     error.value += err.message
   }
