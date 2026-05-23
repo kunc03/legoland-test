@@ -551,19 +551,6 @@ const onTouchEnd = (e) => {
   }
 }
 
-const pickPreferredCameraDeviceId = (devices) => {
-  const withLabel = devices.filter((d) => (d.label ?? '').trim().length > 0)
-  const back =
-    withLabel.find((d) => /back|rear|environment/i.test(d.label)) ?? null
-  if (back?.deviceId) return back.deviceId
-
-  const front =
-    withLabel.find((d) => /front|user|selfie|facetime/i.test(d.label)) ?? null
-  if (front?.deviceId && devices.length === 1) return front.deviceId
-
-  return devices[devices.length - 1]?.deviceId ?? null
-}
-
 const refreshCameraDevices = async () => {
   if (typeof window === 'undefined') return
   if (!navigator?.mediaDevices?.enumerateDevices) return
@@ -571,20 +558,17 @@ const refreshCameraDevices = async () => {
   const devices = await navigator.mediaDevices.enumerateDevices()
   cameraDevices.value = devices.filter((d) => d.kind === 'videoinput')
 
-  const hasSelectedInList =
-    selectedDeviceId.value &&
-    cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
+  // Only manage selectedDeviceId if the user has manually selected a camera.
+  // Otherwise, we let the browser choose via facingMode constraint, and syncStreamSettings
+  // will automatically populate selectedDeviceId with the active camera's actual ID.
+  if (hasUserSelectedCamera.value) {
+    const hasSelectedInList =
+      selectedDeviceId.value &&
+      cameraDevices.value.some((d) => d.deviceId === selectedDeviceId.value)
 
-  if (!hasUserSelectedCamera.value) {
-    const preferred = pickPreferredCameraDeviceId(cameraDevices.value)
-    if (preferred) {
-      selectedDeviceId.value = preferred
-      return
+    if (!hasSelectedInList) {
+      selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
     }
-  }
-
-  if (!hasSelectedInList) {
-    selectedDeviceId.value = cameraDevices.value[0]?.deviceId ?? null
   }
 }
 
