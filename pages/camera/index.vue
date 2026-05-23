@@ -675,8 +675,8 @@ const shouldUnmirror = computed(() => {
 
   // 5. iOS FALLBACK (LAST RESORT): 
   // If the values above are empty/blank during the initial load or transition phase, 
-  // return TRUE to prevent the default front camera from being inverted.
-  return true 
+  // return isFrontCamera.value to prevent mirroring glitches.
+  return isFrontCamera.value
 })
 
 const onCameraReady = (capabilities) => {
