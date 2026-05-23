@@ -88,7 +88,6 @@
             transform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             WebkitTransform: `scale(${cssScale}) ${shouldUnmirror ? 'scaleX(-1)' : 'scaleX(1)'}`,
             transformOrigin: 'center center',
-            transition: cssTransition,
             willChange: 'transform'
           }"
         />
@@ -342,14 +341,30 @@ const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
 
-const cssScale = computed(() => {
-  return hasNativeZoom.value ? 1.0 : zoom.value
+// Smooth interpolation for visual and camera constraints
+const displayZoom = ref(1)
+let isLerping = false
+
+const updateLerp = () => {
+  const diff = zoom.value - displayZoom.value
+  if (Math.abs(diff) > 0.001) {
+    displayZoom.value += diff * 0.2 // Easing factor for buttery smoothness
+    rAFId = requestAnimationFrame(updateLerp)
+  } else {
+    displayZoom.value = zoom.value
+    isLerping = false
+  }
+}
+
+watch(zoom, () => {
+  if (!isLerping) {
+    isLerping = true
+    updateLerp()
+  }
 })
 
-const cssTransition = computed(() => {
-  if (isPinching.value) return 'none'
-  if (hasNativeZoom.value) return 'none'
-  return 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+const cssScale = computed(() => {
+  return hasNativeZoom.value ? 1.0 : displayZoom.value
 })
 
 // Handle restoration from bfcache (Back-Forward Cache)
@@ -469,6 +484,7 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
+    displayZoom.value = zoom.value
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
@@ -476,6 +492,7 @@ const syncStreamSettings = async () => {
     zoomMax.value = 5 
     zoomStep.value = 0.1
     zoom.value = 1
+    displayZoom.value = 1
   }
 
   let facing = trackSettings?.facingMode ?? null
@@ -494,10 +511,18 @@ const syncStreamSettings = async () => {
 
 let isApplyingZoom = false
 let pendingZoom = null
+let lastNativeZoomTime = 0
+const NATIVE_ZOOM_THROTTLE_MS = 100 // Throttles native camera hardware resets on Android
 
-const applyZoom = async (newZoom) => {
+const applyZoom = async (newZoom, force = false) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
+  
+  const now = Date.now()
+  if (!force && now - lastNativeZoomTime < NATIVE_ZOOM_THROTTLE_MS) {
+    pendingZoom = newZoom
+    return
+  }
   
   if (isApplyingZoom) {
     pendingZoom = newZoom
@@ -505,6 +530,7 @@ const applyZoom = async (newZoom) => {
   }
   
   isApplyingZoom = true
+  lastNativeZoomTime = now
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
@@ -516,12 +542,12 @@ const applyZoom = async (newZoom) => {
     if (pendingZoom !== null) {
       const nextZoom = pendingZoom
       pendingZoom = null
-      applyZoom(nextZoom)
+      applyZoom(nextZoom, false)
     }
   }
 }
 
-watch(zoom, (newVal) => {
+watch(displayZoom, (newVal) => {
   if (zoomSupported.value) {
     applyZoom(newVal)
   }
@@ -565,6 +591,11 @@ const onTouchEnd = (e) => {
     initialPinchDistance.value = null
     isPinching.value = false
     if (rAFId) cancelAnimationFrame(rAFId)
+    
+    // Force final precise native zoom constraint when pinch ends
+    if (zoomSupported.value && hasNativeZoom.value) {
+      applyZoom(zoom.value, true)
+    }
   }
 }
 
@@ -724,6 +755,7 @@ const switchCamera = () => {
   paused.value = false
   cameraReady.value = false
   zoom.value = 1
+  displayZoom.value = 1
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
