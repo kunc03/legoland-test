@@ -337,18 +337,13 @@ const zoomMax = ref(1)
 const zoomStep = ref(0.1)
 const zoomSupported = ref(false)
 const hasNativeZoom = ref(false)
-const appliedNativeZoom = ref(1)
 const initialPinchDistance = ref(null)
 const initialZoomAtPinchStart = ref(1)
 const isPinching = ref(false)
 let rAFId = null
 
 const cssScale = computed(() => {
-  if (hasNativeZoom.value) {
-    const currentApplied = Math.max(0.1, appliedNativeZoom.value)
-    return Math.max(1.0, zoom.value / currentApplied)
-  }
-  return zoom.value
+  return hasNativeZoom.value ? 1.0 : zoom.value
 })
 
 const cssTransition = computed(() => {
@@ -474,7 +469,6 @@ const syncStreamSettings = async () => {
     zoomMax.value = capabilities.zoom.max || 10
     zoomStep.value = capabilities.zoom.step || 0.1
     zoom.value = trackSettings?.zoom || capabilities.zoom.min || 1
-    appliedNativeZoom.value = zoom.value
   } else {
     hasNativeZoom.value = false
     zoomSupported.value = true
@@ -482,7 +476,6 @@ const syncStreamSettings = async () => {
     zoomMax.value = 5 
     zoomStep.value = 0.1
     zoom.value = 1
-    appliedNativeZoom.value = 1
   }
 
   let facing = trackSettings?.facingMode ?? null
@@ -501,18 +494,10 @@ const syncStreamSettings = async () => {
 
 let isApplyingZoom = false
 let pendingZoom = null
-let lastNativeZoomTime = 0
-const NATIVE_ZOOM_THROTTLE_MS = 120 // ms throttle to prevent overloading hardware
 
-const applyZoom = async (newZoom, force = false) => {
+const applyZoom = async (newZoom) => {
   const track = getQrcodeVideoTrack()
   if (!track || !hasNativeZoom.value) return
-  
-  const now = Date.now()
-  if (!force && now - lastNativeZoomTime < NATIVE_ZOOM_THROTTLE_MS) {
-    pendingZoom = newZoom
-    return
-  }
   
   if (isApplyingZoom) {
     pendingZoom = newZoom
@@ -520,12 +505,10 @@ const applyZoom = async (newZoom, force = false) => {
   }
   
   isApplyingZoom = true
-  lastNativeZoomTime = now
   try {
     await track.applyConstraints({
       advanced: [{ zoom: newZoom }]
     })
-    appliedNativeZoom.value = newZoom
   } catch (err) {
     console.error('Failed to apply native zoom constraints:', err)
   } finally {
@@ -533,7 +516,7 @@ const applyZoom = async (newZoom, force = false) => {
     if (pendingZoom !== null) {
       const nextZoom = pendingZoom
       pendingZoom = null
-      applyZoom(nextZoom, false)
+      applyZoom(nextZoom)
     }
   }
 }
@@ -582,10 +565,6 @@ const onTouchEnd = (e) => {
     initialPinchDistance.value = null
     isPinching.value = false
     if (rAFId) cancelAnimationFrame(rAFId)
-    
-    if (zoomSupported.value && hasNativeZoom.value) {
-      applyZoom(zoom.value, true)
-    }
   }
 }
 
@@ -745,7 +724,6 @@ const switchCamera = () => {
   paused.value = false
   cameraReady.value = false
   zoom.value = 1
-  appliedNativeZoom.value = 1
 
   if (cameraDevices.value.length > 1) {
     const idx = cameraDevices.value.findIndex(
