@@ -342,26 +342,20 @@ const isPinching = ref(false)
 let rAFId = null
 
 // Smooth interpolation for visual and camera constraints
+// - During pinch: displayZoom follows zoom INSTANTLY (no delay)
+// - After release: short settle animation glides displayZoom to final value
 const displayZoom = ref(1)
-let isLerping = false
+let settleRafId = null
 
-const updateLerp = () => {
+const runSettleAnimation = () => {
   const diff = zoom.value - displayZoom.value
   if (Math.abs(diff) > 0.001) {
-    displayZoom.value += diff * 0.2 // Easing factor for buttery smoothness
-    rAFId = requestAnimationFrame(updateLerp)
+    displayZoom.value = Number((displayZoom.value + diff * 0.25).toFixed(4))
+    settleRafId = requestAnimationFrame(runSettleAnimation)
   } else {
     displayZoom.value = zoom.value
-    isLerping = false
   }
 }
-
-watch(zoom, () => {
-  if (!isLerping) {
-    isLerping = true
-    updateLerp()
-  }
-})
 
 const cssScale = computed(() => {
   return hasNativeZoom.value ? 1.0 : displayZoom.value
@@ -413,6 +407,7 @@ onUnmounted(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (isLoadingTimeout) clearTimeout(isLoadingTimeout)
   if (rAFId) cancelAnimationFrame(rAFId)
+  if (settleRafId) cancelAnimationFrame(settleRafId)
 })
 
 // Click-to-focus UI
@@ -548,7 +543,7 @@ const applyZoom = async (newZoom, force = false) => {
 }
 
 watch(displayZoom, (newVal) => {
-  if (zoomSupported.value) {
+  if (zoomSupported.value && hasNativeZoom.value) {
     applyZoom(newVal)
   }
 })
@@ -556,6 +551,10 @@ watch(displayZoom, (newVal) => {
 const onTouchStart = (e) => {
   if (e.touches.length === 2 && zoomSupported.value) {
     isPinching.value = true
+    if (settleRafId) {
+      cancelAnimationFrame(settleRafId)
+      settleRafId = null
+    }
     const t1 = e.touches[0]
     const t2 = e.touches[1]
     const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)
@@ -581,7 +580,13 @@ const onTouchMove = (e) => {
       
       let newZoom = initialZoomAtPinchStart.value * ratio
       newZoom = Math.max(zoomMin.value, Math.min(newZoom, zoomMax.value))
-      zoom.value = Number(newZoom.toFixed(3))
+      newZoom = Number(newZoom.toFixed(3))
+      zoom.value = newZoom
+      // During pinch: update displayZoom INSTANTLY (no lerp delay)
+      displayZoom.value = newZoom
+      // On iOS: native zoom not available, cssScale drives visual directly
+      // On Android: immediately call native zoom without waiting for settle
+      if (hasNativeZoom.value) applyZoom(newZoom)
     })
   }
 }
@@ -590,11 +595,17 @@ const onTouchEnd = (e) => {
   if (e.touches.length < 2) {
     initialPinchDistance.value = null
     isPinching.value = false
-    if (rAFId) cancelAnimationFrame(rAFId)
-    
-    // Force final precise native zoom constraint when pinch ends
-    if (zoomSupported.value && hasNativeZoom.value) {
+    if (rAFId) {
+      cancelAnimationFrame(rAFId)
+      rAFId = null
+    }
+    // After release: run settle animation for smooth final snap
+    // and force-apply final native zoom for precision
+    if (hasNativeZoom.value) {
       applyZoom(zoom.value, true)
+    } else {
+      // iOS: gentle settle to snap displayZoom exactly to final zoom value
+      runSettleAnimation()
     }
   }
 }
