@@ -734,29 +734,29 @@ const onDetect = (data) => {
 }
 
 function onError(err) {
-  error.value = `[${err.name}]: `
+  error.value = ''
   cameraReady.value = false
   isLoading.value = false
   if (err.name === 'NotAllowedError') {
-    error.value += t('cameraErrorNotAllowed')
+    error.value = t('cameraErrorNotAllowed')
   } else if (err.name === 'NotFoundError') {
-    error.value += t('cameraErrorNotFound')
+    error.value = t('cameraErrorNotFound')
   } else if (err.name === 'NotSupportedError') {
-    error.value += t('cameraErrorNotSupported')
+    error.value = t('cameraErrorNotSupported')
   } else if (err.name === 'NotReadableError') {
-    error.value += t('cameraErrorNotReadable')
+    error.value = t('cameraErrorNotReadable')
   } else if (err.name === 'OverconstrainedError') {
-    error.value += t('cameraErrorOverconstrained')
+    error.value = t('cameraErrorOverconstrained')
     // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
     selectedDeviceId.value = null
   } else if (err.name === 'StreamApiNotSupportedError') {
-    error.value += t('cameraErrorStreamApiNotSupported')
+    error.value = t('cameraErrorStreamApiNotSupported')
   } else if (err.name === 'InsecureContextError') {
-    error.value += t('cameraErrorInsecureContext')
+    error.value = t('cameraErrorInsecureContext')
   } else if (err.name === 'StreamLoadTimeoutError') {
-    error.value += t('cameraErrorStreamLoadTimeout')
+    error.value = t('cameraErrorStreamLoadTimeout')
   } else {
-    error.value += err.message
+    error.value = err.message
   }
   if (err.name === 'OverconstrainedError') {
     torchSupported.value = false
