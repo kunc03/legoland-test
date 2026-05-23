@@ -381,5 +381,13 @@
   "prizeCollectionsTitle": ["参加", "抽奖!"],
   "gachaCollectionsTitle": ["奖品", "兑换"],
   "prizesComingSoon": "奖品即将公布！敬请期待。",
-  "noExchangeHistory": "暂无抽奖记录"
+  "noExchangeHistory": "暂无抽奖记录",
+  "cameraErrorNotAllowed": "您需要授予相机访问权限。",
+  "cameraErrorNotFound": "在此设备上找不到相机。",
+  "cameraErrorNotSupported": "需要安全上下文（HTTPS、localhost）。",
+  "cameraErrorNotReadable": "相机是否已被其他标签页或应用使用？",
+  "cameraErrorOverconstrained": "安装的相机不适用。",
+  "cameraErrorStreamApiNotSupported": "此浏览器不支持 Stream API。",
+  "cameraErrorInsecureContext": "仅允许在安全上下文中访问相机。",
+  "cameraErrorStreamLoadTimeout": "加载相机流超时。请确保相机未被其他标签页或应用使用。"
 }

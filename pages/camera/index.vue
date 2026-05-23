@@ -738,23 +738,23 @@ function onError(err) {
   cameraReady.value = false
   isLoading.value = false
   if (err.name === 'NotAllowedError') {
-    error.value += 'you need to grant camera access permission'
+    error.value += t('cameraErrorNotAllowed')
   } else if (err.name === 'NotFoundError') {
-    error.value += 'no camera on this device'
+    error.value += t('cameraErrorNotFound')
   } else if (err.name === 'NotSupportedError') {
-    error.value += 'secure context required (HTTPS, localhost)'
+    error.value += t('cameraErrorNotSupported')
   } else if (err.name === 'NotReadableError') {
-    error.value += 'is the camera already in use?'
+    error.value += t('cameraErrorNotReadable')
   } else if (err.name === 'OverconstrainedError') {
-    error.value += 'installed cameras are not suitable'
+    error.value += t('cameraErrorOverconstrained')
     // On OverconstrainedError, clear deviceId so QrcodeStream retries with facingMode fallback
     selectedDeviceId.value = null
   } else if (err.name === 'StreamApiNotSupportedError') {
-    error.value += 'Stream API is not supported in this browser'
+    error.value += t('cameraErrorStreamApiNotSupported')
   } else if (err.name === 'InsecureContextError') {
-    error.value += 'Camera access is only permitted in secure context.'
+    error.value += t('cameraErrorInsecureContext')
   } else if (err.name === 'StreamLoadTimeoutError') {
-    error.value += 'camera loading timed out. Please ensure the camera is not in use by another tab or app.'
+    error.value += t('cameraErrorStreamLoadTimeout')
   } else {
     error.value += err.message
   }

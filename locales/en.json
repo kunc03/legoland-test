@@ -381,5 +381,13 @@
   "prizeCollectionsTitle": ["Enter the", "lottery!"],
   "gachaCollectionsTitle": ["Prize", "Exchange"],
   "prizesComingSoon": "Prizes coming soon! Stay tuned",
-  "noExchangeHistory": "No draw history yet"
+  "noExchangeHistory": "No draw history yet",
+  "cameraErrorNotAllowed": "You need to grant camera access permission.",
+  "cameraErrorNotFound": "No camera detected on this device.",
+  "cameraErrorNotSupported": "Secure context required (HTTPS, localhost).",
+  "cameraErrorNotReadable": "Is the camera already in use by another tab or app?",
+  "cameraErrorOverconstrained": "Installed cameras are not suitable.",
+  "cameraErrorStreamApiNotSupported": "Stream API is not supported in this browser.",
+  "cameraErrorInsecureContext": "Camera access is only permitted in secure context.",
+  "cameraErrorStreamLoadTimeout": "Camera loading timed out. Please ensure the camera is not in use by another tab or app."
 }
