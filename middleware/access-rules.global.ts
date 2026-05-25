@@ -1,4 +1,8 @@
 export default defineNuxtRouteMiddleware((to) => {
+  if (to.matched.length === 0) {
+    return navigateTo('/dashboard')
+  }
+
   const settings = useState<any>('settings')
   const screens = settings.value?.flow?.screens
 

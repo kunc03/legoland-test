@@ -226,9 +226,8 @@ export const useGachaService = () => {
    * Ensures only a single location segment is used.
    * Endpoint: GET gacha/check-status/{location}
    */
-  const checkStatus = (path: string, params: any = {}) => {
-    const location = String(path || '').split('/').filter(Boolean)[0] || path
-    return useFetchApi('GET', `gacha/check-status/${location}`, { params })
+  const checkStatus = ( params: { slug: string, lang: string }) => {
+    return useFetchApi('GET', `gacha/check-status`, { params })
   }
 
   /**

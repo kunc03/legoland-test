@@ -809,39 +809,19 @@ const handleRedirect = async (url) => {
   setLoadingWithTimeout(true)
 
   try {
-    let statusPath = ''
-    let redirectUrl = url
-
-    if (/^https?:\/\//i.test(url)) {
-      const urlObj = new URL(url)
-      const segments = urlObj.pathname.replace(/^\//, '').split('/').filter(Boolean)
-      statusPath = segments.filter(s => s !== 'scan').join('/')
-    } else {
-      // Relative path or plain code
-      const path = url.startsWith('/') ? url : `/scan/${url}`
-      const segments = path.replace(/^\//, '').split('/').filter(Boolean)
-      statusPath = segments.filter(s => s !== 'scan').join('/')
-      
-      // Ensure we have a full URL for redirect
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-      const absolutePath = path.startsWith('/scan') ? path : `/scan${path.startsWith('/') ? '' : '/'}${path}`
-      redirectUrl = `${baseUrl}${absolutePath}`
-    }
-
-    if (!statusPath) {
-      throw new Error('Invalid QR code')
-    }
-
     const { checkStatus } = useGachaService()
     let response = null
     
-    // Only fetch status if on the camera page and have a valid statusPath (location)
-    if (route.path.startsWith('/camera') && statusPath) {
-      response = await checkStatus(statusPath, { lang: LOCALE.value || 'en' })
+    // Only fetch status if on the camera page and have a valid url
+    if (route.path.startsWith('/camera') && url) {
+      response = await checkStatus({
+        slug: url,
+        lang: LOCALE.value || 'en',
+      })
     }
 
     if (response?.data?.can_spin === true) {
-      doRedirect(redirectUrl)
+      doRedirect(url)
     } else {
       isLoading.value = false
       errorMessages.value = response?.message || t('no_available_data')
