@@ -227,8 +227,7 @@ export const useGachaService = () => {
    * Endpoint: GET gacha/check-status/{location}
    */
   const checkStatus = (path: string, params: any = {}) => {
-    const location = String(path || '').split('/').filter(Boolean)[0] || path
-    return useFetchApi('GET', `gacha/check-status/${location}`, { params })
+    return useFetchApi('GET', `gacha/check-status/${path}`, { params })
   }
 
   /**
