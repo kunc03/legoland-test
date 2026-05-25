@@ -814,7 +814,10 @@ const handleRedirect = async (url) => {
     
     // Only fetch status if on the camera page and have a valid url
     if (route.path.startsWith('/camera') && url) {
-      response = await checkStatus(url, { lang: LOCALE.value || 'en' })
+      response = await checkStatus({
+        slug: url,
+        lang: LOCALE.value || 'en',
+      })
     }
 
     if (response?.data?.can_spin === true) {
